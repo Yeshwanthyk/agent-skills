@@ -2,52 +2,86 @@
 
 Copy-paste-ready snippets for the components named in `SKILL.md`. Adjust palette and tag names per system. None require build steps or external scripts.
 
-## Theme tokens — light and dark
+## Engineering Manual tokens — light and dark
 
-Dual-mode is non-negotiable (see `SKILL.md` → Themes). Drop this block in first; every other component reads its colors through these tokens. Light-first orientation: light values in `:root`, dark values in `[data-theme="dark"]` and the `prefers-color-scheme: dark` media query. The three-state toggle writes `data-theme` on `<html>` and persists to `localStorage`.
+This is the **default token block** for every explainer (see `SKILL.md` → Engineering Manual). Drop it in first; every other component reads its colors through these tokens. Light-first: cream paper + charcoal ink + cobalt accent. Dark variant: deep navy paper + cream ink + lifted cobalt. **One accent only** — layer roles vary lightness and dash style, never hue.
+
+### Font stack
+
+Load these in `<head>` before the token block. Departure Mono is the display face; Source Serif 4 is the body; IBM Plex Mono is the UI / label face. Press Start 2P is the no-CDN fallback.
+
+```html
+<!-- Departure Mono (display) — self-hosted via @font-face below.
+     For true self-containment, base64-inline the WOFF2 from
+     https://departuremono.com/DepartureMono-Regular.woff2 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300..700&family=IBM+Plex+Mono:wght@400;500;600&family=Press+Start+2P&display=swap">
+```
+
+```css
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('https://departuremono.com/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --font-display: 'Departure Mono', 'Press Start 2P', ui-monospace, Menlo, monospace;
+  --font-body:    'Source Serif 4', 'Iowan Old Style', 'Georgia', serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+```
 
 ### CSS token block
 
 ```css
-/* ── Light (default) ────────────────────────────────────────────── */
+/* ── Light (default) — Engineering Manual ─────────────────────── */
 :root {
   /* structure */
-  --bg:            oklch(98.5% 0.004 260);
-  --bg-alt:        oklch(96.5% 0.005 260);
-  --surface:       oklch(99.5% 0.003 260);
-  --surface-elev:  oklch(100%  0      0  );
-  --border:        oklch(90%   0.006 260);
-  --border-strong: oklch(82%   0.008 260);
+  --bg:            oklch(97.5% 0.012  80);   /* cream paper, slightly warm */
+  --bg-alt:        oklch(96%   0.014  80);
+  --surface:       oklch(98.5% 0.010  80);
+  --surface-elev:  oklch(99.5% 0.006  80);
+  --border:        oklch(85%   0.014 263);
+  --border-strong: oklch(72%   0.020 263);
 
   /* text */
-  --ink:       oklch(20% 0.015 260);
-  --ink-dim:   oklch(42% 0.012 260);
-  --ink-faint: oklch(60% 0.010 260);
+  --ink:       oklch(20% 0.015 270);          /* charcoal, slightly cool */
+  --ink-dim:   oklch(42% 0.012 270);
+  --ink-faint: oklch(60% 0.010 270);
 
-  /* layer accents (keep hue, vary lightness/chroma per theme) */
-  --c-external:   oklch(62% 0.155  55);  /* orange  */
-  --c-command:    oklch(55% 0.165 250);  /* blue    */
-  --c-source:     oklch(55% 0.135 150);  /* green   */
-  --c-events:     oklch(55% 0.165 305);  /* purple  */
-  --c-projection: oklch(58% 0.115 200);  /* teal    */
-  --c-api:        oklch(68% 0.145  85);  /* yellow  */
-  --c-error:      oklch(58% 0.180  25);  /* red     */
-  --c-skill:      oklch(63% 0.165 350);  /* pink    */
+  /* one accent — cobalt — and its tints */
+  --accent:        oklch(50%   0.220 263);    /* electric cobalt */
+  --accent-dim:    oklch(60%   0.180 263);
+  --accent-tint:   oklch(85%   0.080 263);    /* diagram fills */
+  --accent-bg:     oklch(95.5% 0.045 263);    /* active / hover */
+  --accent-faint:  oklch(92%   0.025 263);    /* graph paper grid */
 
-  /* low-chroma backgrounds for active/hover state of layered cards */
-  --c-external-bg:   oklch(95.5% 0.045  55);
-  --c-command-bg:    oklch(95.5% 0.045 250);
-  --c-source-bg:     oklch(95.5% 0.045 150);
-  --c-events-bg:     oklch(95.5% 0.045 305);
-  --c-projection-bg: oklch(95.5% 0.045 200);
-  --c-api-bg:        oklch(95.5% 0.045  85);
-  --c-error-bg:      oklch(95.5% 0.055  25);
-  --c-skill-bg:      oklch(95.5% 0.045 350);
+  /* layer roles — all map to cobalt; differentiate by stroke + label */
+  --c-external:   var(--accent);
+  --c-command:    var(--accent);
+  --c-source:     var(--accent);
+  --c-events:     var(--accent);
+  --c-projection: var(--accent);
+  --c-api:        var(--accent);
+  --c-error:      oklch(45% 0.140  25);       /* desaturated brick red */
+  --c-skill:      var(--accent);
+
+  --c-external-bg:   var(--accent-bg);
+  --c-command-bg:    var(--accent-bg);
+  --c-source-bg:     var(--accent-bg);
+  --c-events-bg:     var(--accent-bg);
+  --c-projection-bg: var(--accent-bg);
+  --c-api-bg:        var(--accent-bg);
+  --c-error-bg:      oklch(94% 0.030  25);
+  --c-skill-bg:      var(--accent-bg);
 
   /* status */
-  --ok:   oklch(52% 0.150 150);
-  --warn: oklch(60% 0.150  70);
-  --bad:  oklch(55% 0.180  25);
+  --ok:   var(--accent);
+  --warn: oklch(55% 0.160  70);                /* mustard, used sparingly */
+  --bad:  oklch(45% 0.140  25);
 
   /* motion */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -58,77 +92,56 @@ Dual-mode is non-negotiable (see `SKILL.md` → Themes). Drop this block in firs
   color-scheme: light;
 }
 
-/* ── Dark ──────────────────────────────────────────────────────── */
+/* ── Dark — deep navy paper ───────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:            oklch(15% 0.008 260);
-    --bg-alt:        oklch(18% 0.008 260);
-    --surface:       oklch(20% 0.008 260);
-    --surface-elev:  oklch(24% 0.008 260);
-    --border:        oklch(28% 0.010 260);
-    --border-strong: oklch(36% 0.012 260);
+    --bg:            oklch(15% 0.025 263);     /* deep navy paper */
+    --bg-alt:        oklch(18% 0.028 263);
+    --surface:       oklch(20% 0.030 263);
+    --surface-elev:  oklch(23% 0.032 263);
+    --border:        oklch(35% 0.045 263);
+    --border-strong: oklch(50% 0.080 263);
 
-    --ink:       oklch(94% 0.008 260);
-    --ink-dim:   oklch(72% 0.010 260);
-    --ink-faint: oklch(54% 0.010 260);
+    --ink:       oklch(94% 0.010  80);          /* cream-white */
+    --ink-dim:   oklch(75% 0.012  80);
+    --ink-faint: oklch(58% 0.014  80);
 
-    /* desaturated 10–20%, lifted lightness so accents read on dark surface */
-    --c-external:   oklch(72% 0.140  55);
-    --c-command:    oklch(70% 0.140 250);
-    --c-source:     oklch(70% 0.115 150);
-    --c-events:     oklch(70% 0.140 305);
-    --c-projection: oklch(72% 0.100 200);
-    --c-api:        oklch(78% 0.130  85);
-    --c-error:      oklch(70% 0.155  25);
-    --c-skill:      oklch(74% 0.140 350);
+    --accent:        oklch(70%   0.180 263);    /* lifted, slight desat */
+    --accent-dim:    oklch(60%   0.150 263);
+    --accent-tint:   oklch(40%   0.120 263);
+    --accent-bg:     oklch(28%   0.080 263);
+    --accent-faint:  oklch(24%   0.050 263);
 
-    --c-external-bg:   oklch(28% 0.060  55);
-    --c-command-bg:    oklch(28% 0.060 250);
-    --c-source-bg:     oklch(28% 0.050 150);
-    --c-events-bg:     oklch(28% 0.060 305);
-    --c-projection-bg: oklch(28% 0.045 200);
-    --c-api-bg:        oklch(28% 0.060  85);
-    --c-error-bg:      oklch(28% 0.070  25);
-    --c-skill-bg:      oklch(28% 0.060 350);
+    --c-error:      oklch(65% 0.160  25);
+    --c-error-bg:   oklch(30% 0.080  25);
 
-    --ok:   oklch(70% 0.140 150);
-    --warn: oklch(74% 0.140  70);
-    --bad:  oklch(68% 0.155  25);
+    --warn: oklch(72% 0.155  70);
+    --bad:  oklch(65% 0.160  25);
 
     color-scheme: dark;
   }
 }
 
-/* ── Explicit overrides (toggle wins over OS) ──────────────────── */
+/* ── Explicit override — toggle wins over OS ──────────────────── */
 [data-theme="dark"] {
-  --bg:            oklch(15% 0.008 260);
-  --bg-alt:        oklch(18% 0.008 260);
-  --surface:       oklch(20% 0.008 260);
-  --surface-elev:  oklch(24% 0.008 260);
-  --border:        oklch(28% 0.010 260);
-  --border-strong: oklch(36% 0.012 260);
-  --ink:       oklch(94% 0.008 260);
-  --ink-dim:   oklch(72% 0.010 260);
-  --ink-faint: oklch(54% 0.010 260);
-  --c-external:   oklch(72% 0.140  55);
-  --c-command:    oklch(70% 0.140 250);
-  --c-source:     oklch(70% 0.115 150);
-  --c-events:     oklch(70% 0.140 305);
-  --c-projection: oklch(72% 0.100 200);
-  --c-api:        oklch(78% 0.130  85);
-  --c-error:      oklch(70% 0.155  25);
-  --c-skill:      oklch(74% 0.140 350);
-  --c-external-bg:   oklch(28% 0.060  55);
-  --c-command-bg:    oklch(28% 0.060 250);
-  --c-source-bg:     oklch(28% 0.050 150);
-  --c-events-bg:     oklch(28% 0.060 305);
-  --c-projection-bg: oklch(28% 0.045 200);
-  --c-api-bg:        oklch(28% 0.060  85);
-  --c-error-bg:      oklch(28% 0.070  25);
-  --c-skill-bg:      oklch(28% 0.060 350);
-  --ok:   oklch(70% 0.140 150);
-  --warn: oklch(74% 0.140  70);
-  --bad:  oklch(68% 0.155  25);
+  --bg:            oklch(15% 0.025 263);
+  --bg-alt:        oklch(18% 0.028 263);
+  --surface:       oklch(20% 0.030 263);
+  --surface-elev:  oklch(23% 0.032 263);
+  --border:        oklch(35% 0.045 263);
+  --border-strong: oklch(50% 0.080 263);
+  --ink:       oklch(94% 0.010  80);
+  --ink-dim:   oklch(75% 0.012  80);
+  --ink-faint: oklch(58% 0.014  80);
+  --accent:        oklch(70%   0.180 263);
+  --accent-dim:    oklch(60%   0.150 263);
+  --accent-tint:   oklch(40%   0.120 263);
+  --accent-bg:     oklch(28%   0.080 263);
+  --accent-faint:  oklch(24%   0.050 263);
+  --c-error:      oklch(65% 0.160  25);
+  --c-error-bg:   oklch(30% 0.080  25);
+  --warn: oklch(72% 0.155  70);
+  --bad:  oklch(65% 0.160  25);
   color-scheme: dark;
 }
 
@@ -146,6 +159,41 @@ Dual-mode is non-negotiable (see `SKILL.md` → Themes). Drop this block in firs
   line-height: 1.62;
 }
 
+/* base body styling — Engineering Manual */
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--bg);
+  hyphens: auto;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern", "liga", "onum";
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+h1 { font-size: clamp(40px, 6vw, 64px); line-height: 1; margin: 0 0 .4em; }
+h2 { font-size: 22px; margin: 2em 0 .6em; }
+h3 { font-size: 14px; letter-spacing: 0.06em; color: var(--ink-dim); }
+
+.label, .eyebrow, .cite, .meta, code, pre, th, td.num {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+}
+.label, .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  color: var(--accent);
+}
+
 /* honour reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -157,10 +205,11 @@ Dual-mode is non-negotiable (see `SKILL.md` → Themes). Drop this block in firs
 
 Notes:
 
-- The explicit `[data-theme="dark"]` block is duplicated from the media query so the toggle wins over OS preference. Worth the repetition; conditional CSS via `@media` cannot be overridden by a class at the same specificity without `:where()` gymnastics.
-- Hue is held constant per layer (orange = 55, blue = 250, etc.) across both themes. Only lightness and chroma move. This keeps the explainer feeling like the same document in either mode.
-- `color-scheme` is set so native form controls and scrollbars match.
-- Add `--bg-grid` if the page uses a subtle grid background; lower its alpha in dark mode by ~30%.
+- All eight layer roles map to `--accent` (cobalt). Differentiation is through stroke style (solid vs dashed), label weight, and ALL-CAPS UI. Resist the urge to vary hue — the discipline is what makes the aesthetic work.
+- The single exception is `--c-error` and `--bad`, which use a desaturated brick red `oklch(45% 0.140 25)`. Reserve these for true error states only.
+- `border-radius` is implicitly `0` everywhere. Do not set it.
+- `box-shadow` is forbidden globally. Depth comes from rule lines and lightness shifts. See anti-patterns.
+- Hue is held at 263 across the whole palette. Cream paper has its own hue (80, warm). Charcoal ink has a slight cool cast (270). This three-hue restraint is the visual signature.
 
 ### Three-state toggle UI
 
@@ -245,6 +294,257 @@ After writing, open the file in all three states and scan for:
 - log entries unreadable in the opposite mode
 - chart/SVG strokes that disappear (set them to a token, not a hex)
 - the `.changed` flash readable in both modes (use accent + alpha, not a hex)
+
+## Engineering Manual components
+
+These seven patterns are the visual signature of the aesthetic. Use them anywhere a diagram, frame, list, or section break appears. Each is independent and copy-paste ready. They also work outside Engineering Manual — the cobalt token simply becomes whatever the active accent is.
+
+### 1. Dashed leader line with arrowhead marker (SVG)
+
+For any diagram where labels point to features. Solid for primary geometry, dashed for leaders.
+
+```html
+<svg viewBox="0 0 600 360" class="diagram">
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 8 4 L 0 8 z" fill="var(--accent)" />
+    </marker>
+  </defs>
+
+  <!-- primary geometry: solid 1.5px cobalt -->
+  <rect x="180" y="80" width="240" height="140"
+        fill="none" stroke="var(--accent)" stroke-width="1.5" />
+
+  <!-- leader: dashed, ends with arrowhead pointing at the feature -->
+  <path d="M 470 60 L 420 60 L 380 90"
+        fill="none" stroke="var(--accent)" stroke-width="1.5"
+        stroke-dasharray="4 3" marker-end="url(#arrow)" />
+
+  <!-- ALL-CAPS mono label -->
+  <text x="475" y="64" class="diagram-label">TOP SHELL</text>
+</svg>
+```
+
+```css
+.diagram { width: 100%; height: auto; display: block; }
+.diagram-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+```
+
+Rules: leader paths have at most one bend. Arrowhead points **at the feature**, never away. Label is set 4–6px past the leader's start. One marker `<defs>` block serves the whole document.
+
+### 2. Graph-paper background pattern (SVG)
+
+Drop inside a diagram frame. Two overlaid grids, 10px minor + 50px major, ~12% opacity.
+
+```html
+<svg viewBox="0 0 600 360" class="diagram">
+  <defs>
+    <pattern id="grid-minor" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M 10 0 L 0 0 0 10" fill="none"
+            stroke="var(--accent-faint)" stroke-width="0.5" />
+    </pattern>
+    <pattern id="grid-major" width="50" height="50" patternUnits="userSpaceOnUse">
+      <rect width="50" height="50" fill="url(#grid-minor)" />
+      <path d="M 50 0 L 0 0 0 50" fill="none"
+            stroke="var(--accent-tint)" stroke-width="0.7" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grid-major)" />
+  <!-- diagram content layered on top -->
+</svg>
+```
+
+Use the `--accent-faint` and `--accent-tint` tokens so the grid auto-adjusts in dark mode. Never hardcode a hex.
+
+### 3. Vertical FIG marginalia
+
+Rotated figure number on the left edge of every diagram frame, optional bracket metadata on the right.
+
+```html
+<figure class="fig">
+  <span class="fig-num">FIG.001</span>
+  <span class="fig-meta">[ 3.5" FLOPPY DISK ]</span>
+  <svg class="diagram" viewBox="0 0 600 360"> ... </svg>
+  <figcaption class="fig-cap">An exploded view of the floppy disk assembly.</figcaption>
+</figure>
+```
+
+```css
+.fig {
+  position: relative;
+  margin: 2.5rem 0;
+  padding: 0 48px;       /* leave room for marginalia on both sides */
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.fig-num,
+.fig-meta {
+  position: absolute;
+  top: 24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  text-transform: uppercase;
+}
+.fig-num  { left: 14px; }
+.fig-meta { right: 14px; transform: rotate(180deg); }
+.fig-cap {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-dim);
+  margin: 12px 0 0;
+}
+```
+
+Number FIGs sequentially across the document. Don't restart per section.
+
+### 4. Dot-leader list rows (TOC)
+
+The signature TOC row: title on the left, ellipsis fill in the middle, word count or page reference on the right.
+
+```html
+<ol class="toc">
+  <li><a href="#screen">How does a screen work?</a><span class="wc">3.6K WORDS</span></li>
+  <li><a href="#color">What is a color space?</a><span class="wc">6.2K WORDS</span></li>
+  <li><a href="#contrast">Color contrast.</a><span class="wc"></span></li>
+</ol>
+```
+
+```css
+.toc { list-style: none; padding: 0; margin: 0; }
+.toc li {
+  display: flex; align-items: baseline;
+  font-family: var(--font-body);
+  font-size: 14px;
+  margin: 0.4em 0;
+}
+.toc li::before {
+  content: "•";
+  color: var(--accent);
+  margin-right: 0.6em;
+  font-size: 11px;
+}
+.toc a {
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.toc a::after {
+  content: "";
+  flex: 1;
+  margin: 0 6px;
+  border-bottom: 1px dotted var(--border-strong);
+  transform: translateY(-3px);
+}
+.toc .wc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.toc a:hover { color: var(--accent); }
+```
+
+The `flex: 1` pseudo-element with a dotted bottom-border is what produces the Edwardian dot-leader fill. Don't use repeated `.` characters — they don't reflow correctly.
+
+### 5. Hatched / tessellated divider rule
+
+Replace `<hr>` between major sections with a repeating SVG pattern. Reads as a printed-book typographic ornament.
+
+```html
+<div class="rule-hatch" role="separator"></div>
+```
+
+```css
+.rule-hatch {
+  height: 8px;
+  margin: 2.5rem 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M0 4 L4 0 L8 4 L4 8 Z M6 4 L10 0' fill='none' stroke='%231d4ed8' stroke-width='0.8'/></svg>");
+  background-repeat: repeat-x;
+  background-position: center;
+}
+[data-theme="dark"] .rule-hatch,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .rule-hatch {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M0 4 L4 0 L8 4 L4 8 Z M6 4 L10 0' fill='none' stroke='%237aa7ff' stroke-width='0.8'/></svg>");
+  }
+}
+```
+
+The encoded hex (`%231d4ed8`, `%237aa7ff`) is cobalt for light mode and lifted cobalt for dark. SVG `data:` URLs cannot read CSS variables, so this is the one place hex is permitted — keep it inside a single `.rule-hatch` rule.
+
+### 6. Drop cap on first paragraph
+
+Classic editorial drop cap on the first paragraph of each major section.
+
+```html
+<section class="chapter">
+  <p class="lead">Have you ever wondered how a touch screen knows you are
+    touching it? Well, it has these layers of transparent metal
+    electrodes embedded in the display…</p>
+  <p>Because the electrodes are laid out on a grid…</p>
+</section>
+```
+
+```css
+.chapter > p.lead {
+  text-align: justify;
+  hyphens: auto;
+  text-wrap: pretty;
+}
+.chapter > p.lead::first-letter {
+  font-family: var(--font-display);
+  color: var(--ink);
+  float: left;
+  font-size: 3.4em;
+  line-height: 0.9;
+  padding: 4px 8px 0 0;
+  margin-top: 4px;
+}
+```
+
+Use the display (pixel) font for the cap so it reads as part of the engineering vocabulary, not as a stage prop. Lowercase opening letter is fine — the cap takes over.
+
+### 7. Bracket metadata corners
+
+Version stamp, copyright, or running head, anchored in a corner with bracket framing.
+
+```html
+<div class="corner-meta tl">V1.0</div>
+<div class="corner-meta tr">PROGRESS · SOURCE</div>
+<div class="corner-meta br">© 2026</div>
+```
+
+```css
+.corner-meta {
+  position: fixed;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+.corner-meta.tl { top: 18px; left: 24px; }
+.corner-meta.tr { top: 18px; right: 24px; color: var(--accent); }
+.corner-meta.br { bottom: 18px; right: 24px; }
+.corner-meta::before { content: "[ "; color: var(--ink-faint); }
+.corner-meta::after  { content: " ]"; color: var(--ink-faint); }
+```
+
+At most three corners populated. The top-right is the only one allowed to use the accent color — it earns attention because it usually marks live state ("PROGRESS", "V1.0", current chapter).
 
 ## Tab navigation
 

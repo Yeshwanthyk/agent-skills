@@ -79,7 +79,39 @@ open http://localhost:$PORT/<name>-explainer.html
 cp /tmp/<name>-explainer.html ~/Downloads/<name>-explainer.html
 ```
 
-## 5. Dual-theme + contrast spot check
+## 5. Aesthetic check — Engineering Manual
+
+If the explainer ships in the default Engineering Manual aesthetic, run this check. It takes 90 seconds and prevents the page from drifting into generic-dashboard territory.
+
+**Discipline scan** — grep the file. Each should be zero hits, or close to it:
+
+```bash
+FILE=/tmp/<name>-explainer.html
+grep -nE 'box-shadow' $FILE | grep -v ':\s*none' | head           # must be empty
+grep -nE 'border-radius:\s*[1-9]' $FILE | head                     # must be empty (or only the toggle)
+grep -nE "font-family:.*(Inter|Roboto|Helvetica|system-ui)" $FILE  # must be empty
+grep -nE 'linear-gradient|radial-gradient' $FILE | head            # must be empty
+grep -cE '#[0-9a-fA-F]{3,8}' $FILE                                 # one block of hex inside :root + [data-theme="dark"] only
+```
+
+A non-zero count on any of the first four is a violation. Fix before shipping.
+
+**Vocabulary scan** — confirm the Engineering Manual signature is actually present:
+
+- [ ] **Title** uses `--font-display` (Departure Mono / Press Start 2P) at 40–64px, ALL-CAPS, cobalt.
+- [ ] **Body** uses `--font-body` (Source Serif 4 or fallback serif), justified, with `hyphens: auto`.
+- [ ] **UI labels, citations, FIG numbers** use `--font-mono` (IBM Plex Mono).
+- [ ] **At least one diagram** uses dashed leader lines with arrowhead markers (search for `marker-end="url(#arrow)"`).
+- [ ] **At least one diagram** has a graph-paper background (search for `pattern id="grid-`).
+- [ ] **At least one figure** uses vertical FIG marginalia (search for `writing-mode: vertical-rl`).
+- [ ] **TOC or section list** uses dot-leader rows (search for `border-bottom: 1px dotted` inside a flex pseudo-element).
+- [ ] **At least one section break** uses the hatched divider (search for `rule-hatch` or the inline `data:image/svg+xml` pattern).
+- [ ] **First paragraph of the document** has a drop cap (`::first-letter`).
+- [ ] **Single accent hue** — grep for OKLCH hue values; cobalt (263) and the brick-red (25) for `--bad` should be the only two non-neutral hues.
+
+If the explainer ships in a different aesthetic (Terminal Native / Editorial Light / Lab Notebook), confirm the one-sentence physical scene was written in the page header or report and that the chosen palette and font stack are internally consistent.
+
+## 6. Dual-theme + contrast spot check
 
 Non-negotiable. The file ships to every kind of OS — both modes must work.
 
@@ -104,7 +136,7 @@ Contrast spot-check (any contrast tool; eyeball OK if you're sure of OKLCH light
 
 If any pairing fails: bump `--ink-dim` darker (light) / lighter (dark), or reduce chroma on the accent and lift its lightness one step. **Don't lower contrast to make the design look softer.** Soft is what `--ink-faint` is for, used for non-essential text only.
 
-## Authoring strategy for very large files
+## 7. Authoring strategy for very large files
 
 Heredoc-append in chunks; validate after each chunk so failures are localised:
 

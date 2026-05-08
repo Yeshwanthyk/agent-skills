@@ -140,6 +140,42 @@ Each entry: bad pattern → why it fails → cure.
 - **Why:** The explainer is a document; a reader should be able to choose how to read it.
 - **Cure:** Three-state segmented control (`auto · light · dark`) in the header. Persist to `localStorage`. Inline boot script in `<head>` to avoid flash of wrong theme.
 
+## Ad-hoc aesthetic improvisation
+
+- **Bad:** Inventing a fresh palette, font pairing, and visual language for every explainer. "This one feels Stripe-ish, this one feels Linear-ish, this one is sort of Notion."
+- **Why:** The output ends up generic AI-dashboard regardless of intent. Strong opinions produce strong work; weak opinions produce slop.
+- **Cure:** Engineering Manual is the default. Deviate only via the escape hatch (Terminal Native, Editorial Light, Lab Notebook) and only after writing the one-sentence physical scene that forces the change. Never blend two aesthetics.
+
+## Default-blueprint without engineering-manual discipline
+
+- **Bad:** "Blueprint" aesthetic implemented as `body { background: #0a1929; }` plus some teal lines and called done. Multiple accent hues, drop shadows, rounded cards, Inter for everything, no marginalia, no graph paper, no leader lines, no FIG numbers.
+- **Why:** Looks like every other dark dashboard. Misses the entire point of the reference-book lineage — the **discipline** is the aesthetic, not the color choice.
+- **Cure:** If you commit to Engineering Manual, ship the full vocabulary: cobalt-only accent, Departure Mono + Source Serif 4 + IBM Plex Mono, dashed leader lines on every diagram, FIG numbering in vertical marginalia, graph-paper backgrounds, dot-leader TOC, hatched dividers, drop caps. Half-doing it is worse than not doing it.
+
+## Shadows or rounded corners on Engineering Manual
+
+- **Bad:** `box-shadow: 0 4px 12px rgba(0,0,0,0.1)` on a card. `border-radius: 8px` on a diagram frame. `border-radius: 6px` on the tab buttons.
+- **Why:** The aesthetic reads as **printed**. Print has no blur, no soft corners. The moment a shadow appears, the page becomes "webapp" again.
+- **Cure:** Match-and-refuse. Search the file for `box-shadow` and `border-radius` before declaring done. Both should be zero matches outside maybe a 4px radius on the segmented theme toggle. Depth comes from rule lines and lightness shifts.
+
+## Inter / Roboto / system-ui body on Engineering Manual
+
+- **Bad:** `font-family: 'Inter', sans-serif` for the body. Or letting `system-ui` win because the load chain failed.
+- **Why:** Inter, Roboto, and system-ui are AI-slop signals. They're invisible to the author but deeply familiar to readers — they read as "another dashboard".
+- **Cure:** Source Serif 4 for body, IBM Plex Mono for UI labels, Departure Mono for the title. All three free and OFL. Validate by inspecting the rendered page; the body must read as a serif.
+
+## More than one accent hue
+
+- **Bad:** Cobalt for primary, plus orange for source-of-truth, plus green for OK, plus pink for skill, plus purple for events. Five hues across the palette.
+- **Why:** The makingsoftware aesthetic survives on one-accent-only discipline. Multiple hues collapse it back into a generic palette.
+- **Cure:** Use the cobalt accent everywhere. Differentiate layers by **stroke style** (solid vs dashed), **label weight**, **ALL-CAPS vs sentence case**, **lightness of accent tint**. The single permitted exception is `--bad` for true error states (desaturated brick red).
+
+## Graph-paper background on a non-diagram surface
+
+- **Bad:** Page-wide graph paper background, or graph paper behind body text.
+- **Why:** Graph paper signals "diagram frame". Putting it everywhere kills the signal.
+- **Cure:** Graph paper only inside `.fig` frames or explicit diagram containers. Body text sits on cream paper with no pattern.
+
 ## Server still running on exit
 
 - **Bad:** `python3 -m http.server` left in foreground; the agent hangs.

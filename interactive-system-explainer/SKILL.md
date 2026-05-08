@@ -57,7 +57,107 @@ Explainers ship as shareable artefacts. They land on every kind of OS, every kin
 
 Light values live in `:root`. Dark values live in `[data-theme="dark"]` and the `prefers-color-scheme: dark` media query. Light-first reads as "engineering reference" — closer to a printed technical document. That is the right default for source-cited explainers.
 
-Go dark-first only when the system itself is a tool that runs in a dark environment (terminal CLI, observability dashboard at 2am) and you can write the one-sentence physical scene that forces the answer. "Observability dashboard" does not force it. "SRE glancing at incident severity on a 27-inch monitor at 2am in a dim room" does. Run the sentence, not the category.
+The **default aesthetic is Engineering Manual** (next section). It is light-first by design. Deviate only when the system itself dictates a different feel (terminal CLI in Catppuccin, observability dashboard at 2am in deep slate) and you can write the one-sentence physical scene that forces the answer. "Observability dashboard" does not force it. "SRE glancing at incident severity on a 27-inch monitor at 2am in a dim room" does. Run the sentence, not the category.
+
+## Engineering Manual (default aesthetic)
+
+A reference-book look in the lineage of Tufte, Ableton's *Learning Music*, Bartosz Ciechanowski, *The Art of Electronics*, the Whole Earth Catalog, and Dan Hollick's makingsoftware.com. Built for source-cited technical documents that should feel **printed**, not webapp.
+
+Every explainer ships in this aesthetic by default. The full token block, font stack, and component patterns live in `references/patterns.md` under "Engineering Manual tokens — light and dark" and the seven Engineering Manual component patterns below it.
+
+### The physical scene
+
+> *An engineer reads this on a high-DPI laptop in a quiet office, leaning back. The page should feel like an opened reference book. The reader should be able to print it and have it still look right.*
+
+If your one-sentence scene doesn't fit this, you have grounds to pick a different aesthetic from the escape hatch below. Otherwise, use this.
+
+### Palette — three colors total
+
+```text
+paper       cream       oklch(97.5% 0.012  80)   /* slightly warm */
+ink         charcoal    oklch(20%   0.015 270)   /* slightly cool */
+accent      cobalt      oklch(50%   0.220 263)   /* electric blue */
+ink-dim                 oklch(42%   0.012 270)
+ink-faint               oklch(60%   0.010 270)
+accent-tint             oklch(85%   0.080 263)   /* diagram fills */
+accent-bg               oklch(95.5% 0.045 263)   /* active states */
+```
+
+No other accent colors. Layer roles (`--c-external`, `--c-command`, etc.) all map to **shades of the cobalt accent** — vary lightness, hold hue. The discipline of one-accent-only is what makes the aesthetic look expensive. Resist the urge to add green for "source" or red for "error". Use ink weight, italics, ALL-CAPS, and dashed-vs-solid strokes for differentiation instead. The only exception: `--bad` may use a desaturated brick red (`oklch(45% 0.140 25)`) for true error states.
+
+### Dark variant — deep navy paper
+
+```text
+paper       navy        oklch(15% 0.025 263)
+ink         cream-white oklch(94% 0.010  80)
+accent      cobalt      oklch(70% 0.180 263)   /* lifted lightness, slight desat */
+accent-tint             oklch(40% 0.120 263)
+accent-bg               oklch(28% 0.080 263)
+```
+
+Keeps the document feel by tinting paper toward the cobalt hue rather than going neutral black. Cobalt accent stays — only its lightness shifts.
+
+### Typography
+
+```text
+display  Departure Mono   (pixel/bitmap, OFL, departuremono.com)
+body     Source Serif 4   (transitional serif, OFL, Google Fonts)
+ui       IBM Plex Mono    (monospace UI labels, OFL, Google Fonts)
+fallback Press Start 2P   (display fallback if Departure Mono unavailable)
+```
+
+Load order: Departure Mono via `@font-face` (CDN or base64-inlined for true self-containment), Source Serif 4 + IBM Plex Mono via Google Fonts `<link>`. Press Start 2P is the Google-Fonts-only fallback for stricter no-CDN scenarios.
+
+Use:
+
+- **Display** for the title only. ALL-CAPS. Cobalt. ~48–64px. Letter-spacing flat (pixel fonts already have built-in spacing).
+- **Body** for prose. Justified, hyphenated, 65–75ch measure. **Drop cap** on the first paragraph of each section. `text-wrap: pretty` on long paragraphs.
+- **UI** for tab labels, citations, FIG numbers, metadata, table headers, code, log entries. ALL-CAPS at 11px with 5–10% letter-spacing for labels; mixed case for code and citations.
+- One family per role. No deviation. Three families is the cap.
+
+### Diagram conventions
+
+Every diagram in the explainer follows the engineering-illustration vocabulary:
+
+- **1.5px cobalt strokes**, no thicker. Solid for primary geometry, dashed (`stroke-dasharray: 4 3`) for hidden / projection / leader lines.
+- **30%-tint cobalt fills** for shaded areas (`var(--c-tint)`). Never a different hue.
+- **Square graph-paper background** inside diagram frames — SVG `<pattern>` with two overlaid grids (10px minor, 50px major), opacity ~12%. See `patterns.md`.
+- **Dashed leader lines with tiny arrowhead markers** connecting labels to features. ALL-CAPS mono labels in cobalt. See `patterns.md`.
+- **FIG numbering in vertical marginalia** — `FIG.001`, `FIG.002` rotated 90° in the diagram's left margin (`writing-mode: vertical-rl`).
+- **Bracket metadata** in the right margin or corner — `[ 3.5" FLOPPY DISK ]`, `© 2026`, also rotated.
+- **Exploded axonometric** when explaining composite or layered systems. Layers separated by faint dashed connectors.
+- **No shadows. No gradients. No rounded corners.** Sharp corners on every container, every card, every diagram frame.
+
+### Layout conventions
+
+- **Hatched/tessellated horizontal rule** under the title and between major sections — not `<hr>`. Repeating SVG pattern. See `patterns.md`.
+- **TOC with dot-leader rows** — chapter title on the left, ellipsis fill in the middle (`border-bottom: 1px dotted`), word count or page reference on the right in muted mono. See `patterns.md`.
+- **Three-column TOC grid** for non-trivial scope — chapter number in mono, chapter title in serif caps, articles bulleted underneath.
+- **Running head** in the top-right corner — e.g. `PROGRESS · SOURCE` or `V1.0`, like a print book.
+- **Generous margins**. Book-page rhythm, not webapp-cramped. Aim for ~80px page padding on desktop.
+- **Justified body text** with hyphenation (`hyphens: auto`).
+
+### Discipline rules — absolute
+
+Match-and-refuse. If you write any of these, rewrite.
+
+- No `box-shadow` anywhere. Depth comes from rule lines and lightness shifts, not blur.
+- No `border-radius` greater than `0`. Sharp corners only.
+- No gradient on text. No gradient on backgrounds. No gradient on borders.
+- No emoji. No icons except inline SVG drawn in the same 1.5px cobalt vocabulary.
+- No more than one accent color (cobalt). Plus the desaturated brick red for true errors.
+- No font-family beyond the three named (display + body + ui).
+- No `border-radius` on diagrams. No drop shadows on cards. No glow. No pulse.
+
+### Escape hatch
+
+If the system genuinely demands a different aesthetic — terminal CLI tool, dark-first observability dashboard, children's-product oriented system — write the one-sentence physical scene first, then pick from this short list:
+
+- **Terminal Native** — deep navy-black paper, amber + green accents, monospace everywhere. For CLI tools, REPLs, debuggers.
+- **Editorial Light** — warm white, terracotta + sage, transitional serif. For workflow / business systems where prose dominates.
+- **Lab Notebook** — graph paper background, handwriting-adjacent serif (Caveat for annotations), pencil greys. For experimental / scientific systems.
+
+Do not invent a fresh aesthetic per explainer. Pick from this set or use Engineering Manual.
 
 ### Three-state toggle in the header
 
@@ -148,7 +248,7 @@ Apply this checklist before declaring a tab done. Each pane / tab must pass.
 1. **Discover** — read the actual source (files, tests, docs, traces). Capture the discovery checklist below. If a question can only be answered by guessing, either inspect more code or fork a subagent to research that area first. Never invent lifecycle.
 2. **Outline tabs** — group concepts into tabs (overview, models, state machine, turn anatomy, history, algorithm deep-dive, scenarios, deploy, comparison, source map). Aim for 6–12 tabs for non-trivial systems.
 3. **Breadboard affordances** — for every tab list the UI affordances and the underlying data shape they read/mutate. Reject any control that does neither.
-4. **Pick an aesthetic** — blueprint, IDE-named (Nord, Catppuccin, Solarized, Gruvbox), editorial, paper/ink, terminal. Avoid generic AI dashboard.
+4. **Confirm aesthetic** — Engineering Manual by default. Only deviate via the escape hatch with a written one-sentence physical scene. Avoid generic AI dashboard at all costs.
 5. **Write one self-contained `.html`** — inline HTML/CSS/JS, no bundler, no npm, no CDN unless approved. Open directly in a browser.
 6. **Validate** — extract `<script>` block, run `node --check`, verify brace and paren balance, count tabs/sections, serve and `curl` for HTTP 200, copy to `~/Downloads` if requested.
 7. **Report** — file path, served URL, tabs included, scenarios included, assumptions, validation evidence.
@@ -327,7 +427,7 @@ Header should include a legend mapping the seven layer colors to their meanings,
 
 ## Layer color meanings
 
-The semantic layer roles are stable across explainers — only the OKLCH values per theme change.
+The semantic layer roles are stable across explainers. Under Engineering Manual they all map to **shades of the cobalt accent** — varied by lightness, dashed-vs-solid strokes, ink weight, and ALL-CAPS labels rather than by hue. Only outside Engineering Manual (i.e. via the escape hatch) do these become distinct hues.
 
 ```text
 --c-external    external boundary (HTTP, webhooks, schedulers)
@@ -340,7 +440,7 @@ The semantic layer roles are stable across explainers — only the OKLCH values 
 --c-skill       domain-specific accent (skills, roles, plugins)
 ```
 
-The full OKLCH token block for both themes lives in `references/patterns.md` under "Theme tokens — light and dark". Forbidden palettes (indigo `#8b5cf6` family, neon cyan/magenta, gradient text, glowing box-shadows) covered there and in `references/anti-patterns.md`.
+The full OKLCH token block for both themes lives in `references/patterns.md` under "Engineering Manual tokens — light and dark". Forbidden palettes (indigo `#8b5cf6` family, neon cyan/magenta, gradient text, glowing box-shadows) covered there and in `references/anti-patterns.md`.
 
 ## JavaScript architecture
 
