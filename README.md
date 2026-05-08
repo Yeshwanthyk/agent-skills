@@ -18,17 +18,6 @@ Use when you want a visual architecture explainer, interactive system walkthroug
 
 ## Install
 
-### With [`gitgud`](https://github.com/Yeshwanthyk/gitgud) (recommended)
-
-```sh
-gitgud add github:Yeshwanthyk/agent-skills/stateful-systems
-gitgud add github:Yeshwanthyk/agent-skills/interactive-system-explainer
-```
-
-`gitgud` syncs the skills into Claude Code, Codex, and Pi automatically.
-
-### Manual install (Claude Code)
-
 Clone the repo and copy the skill folders into your skills directory:
 
 ```sh
