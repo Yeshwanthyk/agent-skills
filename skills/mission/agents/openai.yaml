@@ -1,0 +1,7 @@
+interface:
+  display_name: "Mission Tracker"
+  short_description: "Keep work aligned on the mission, even through side quests"
+  default_prompt: "Use $mission to keep this task aligned to the original mission and maintain a running log of progress towards mission."
+
+policy:
+  allow_implicit_invocation: true

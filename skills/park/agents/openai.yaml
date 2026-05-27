@@ -1,0 +1,7 @@
+interface:
+  display_name: "Park Future Work"
+  short_description: "Park future work with enough context to resume later"
+  default_prompt: "Use $park to capture this deferred idea in NEXT.md with enough context to resume it later."
+
+policy:
+  allow_implicit_invocation: true
