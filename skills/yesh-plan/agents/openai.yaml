@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan"
+  short_description: "Capture finalized decisions as a plan."
+  default_prompt: "Turn finalized discussion into a concise implementation-shaped plan."

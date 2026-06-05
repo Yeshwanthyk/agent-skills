@@ -1,0 +1,4 @@
+interface:
+  display_name: "How"
+  short_description: "Walk through existing systems clearly."
+  default_prompt: "Explain how the current subsystem works with key files, boundaries, and call graphs."

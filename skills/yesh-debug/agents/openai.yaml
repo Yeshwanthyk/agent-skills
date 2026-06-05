@@ -1,0 +1,4 @@
+interface:
+  display_name: "Debug"
+  short_description: "Understand behavior and find root cause."
+  default_prompt: "Investigate this from evidence, separate facts from inference, name the root cause or rationale, affected files/state, fix path, and verification."

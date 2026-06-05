@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arena"
+  short_description: "Compare parallel approaches and synthesize."
+  default_prompt: "Run multiple approaches, compare tradeoffs, and recommend the best path."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Architect"
+  short_description: "Shape future code with contracts first."
+  default_prompt: "Design the future shape with types, interfaces, boundaries, state, and prod/test call graphs."

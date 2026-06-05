@@ -1,0 +1,4 @@
+interface:
+  display_name: "Show Work"
+  short_description: "Reconstruct actual work from session state."
+  default_prompt: "Review the session and current implementation, then show what actually happened, changed, verified, and remains uncertain."
