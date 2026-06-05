@@ -88,13 +88,14 @@ If the explainer ships in the default Engineering Manual aesthetic, run this che
 ```bash
 FILE=/tmp/<name>-explainer.html
 grep -nE 'box-shadow' $FILE | grep -v ':\s*none' | head           # must be empty
-grep -nE 'border-radius:\s*[1-9]' $FILE | head                     # must be empty (or only the toggle)
+grep -nE 'border-radius:\s*[1-9]' $FILE | head                     # must be empty
 grep -nE "font-family:.*(Inter|Roboto|Helvetica|system-ui)" $FILE  # must be empty
 grep -nE 'linear-gradient|radial-gradient' $FILE | head            # must be empty
+grep -nE 'data:image' $FILE | head                                 # must be empty unless explicitly approved
 grep -cE '#[0-9a-fA-F]{3,8}' $FILE                                 # one block of hex inside :root + [data-theme="dark"] only
 ```
 
-A non-zero count on any of the first four is a violation. Fix before shipping.
+A non-zero count on any of the first five is a violation. Fix before shipping.
 
 **Vocabulary scan** — confirm the Engineering Manual signature is actually present:
 
@@ -104,8 +105,8 @@ A non-zero count on any of the first four is a violation. Fix before shipping.
 - [ ] **At least one diagram** uses dashed leader lines with arrowhead markers (search for `marker-end="url(#arrow)"`).
 - [ ] **At least one diagram** has a graph-paper background (search for `pattern id="grid-`).
 - [ ] **At least one figure** uses vertical FIG marginalia (search for `writing-mode: vertical-rl`).
-- [ ] **TOC or section list** uses dot-leader rows (search for `border-bottom: 1px dotted` inside a flex pseudo-element).
-- [ ] **At least one section break** uses the hatched divider (search for `rule-hatch` or the inline `data:image/svg+xml` pattern).
+- [ ] **Navigation is not duplicated** -- if sticky tabs expose every section, skip the hero TOC; if a section list exists, it is compact and leaves the first real section visible.
+- [ ] **At least one section break** uses a quiet `rule-hatch` divider; no repeating SVG or `data:image` hatches unless the user explicitly asked for ornament.
 - [ ] **First paragraph of the document** has a drop cap (`::first-letter`).
 - [ ] **Single accent hue** — grep for OKLCH hue values; cobalt (263) and the brick-red (25) for `--bad` should be the only two non-neutral hues.
 

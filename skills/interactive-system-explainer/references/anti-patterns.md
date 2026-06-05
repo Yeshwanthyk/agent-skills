@@ -146,17 +146,23 @@ Each entry: bad pattern → why it fails → cure.
 - **Why:** The output ends up generic AI-dashboard regardless of intent. Strong opinions produce strong work; weak opinions produce slop.
 - **Cure:** Engineering Manual is the default. Deviate only via the escape hatch (Terminal Native, Editorial Light, Lab Notebook) and only after writing the one-sentence physical scene that forces the change. Never blend two aesthetics.
 
+## Oversized hero TOC or ornamental divider
+
+- **Bad:** A first viewport dominated by a giant TOC, decorative section index, or repeated SVG hatch before the reader reaches content.
+- **Why:** The explainer becomes a poster for its own navigation instead of a working technical instrument.
+- **Cure:** Use sticky tabs as primary navigation. Add a compact section list only when it reduces cognitive load and keeps the first real section visible. Use the quiet 1px `rule-hatch`; avoid repeating SVG or `data:image` dividers unless the user explicitly asks for ornament.
+
 ## Default-blueprint without engineering-manual discipline
 
 - **Bad:** "Blueprint" aesthetic implemented as `body { background: #0a1929; }` plus some teal lines and called done. Multiple accent hues, drop shadows, rounded cards, Inter for everything, no marginalia, no graph paper, no leader lines, no FIG numbers.
 - **Why:** Looks like every other dark dashboard. Misses the entire point of the reference-book lineage — the **discipline** is the aesthetic, not the color choice.
-- **Cure:** If you commit to Engineering Manual, ship the full vocabulary: cobalt-only accent, Departure Mono + Source Serif 4 + IBM Plex Mono, dashed leader lines on every diagram, FIG numbering in vertical marginalia, graph-paper backgrounds, dot-leader TOC, hatched dividers, drop caps. Half-doing it is worse than not doing it.
+- **Cure:** If you commit to Engineering Manual, ship the full vocabulary: cobalt-only accent, Departure Mono + Source Serif 4 + IBM Plex Mono, dashed leader lines on every diagram, FIG numbering in vertical marginalia, graph-paper backgrounds, sticky tabs, quiet section rules, optional compact section lists, and drop caps. Half-doing it is worse than not doing it.
 
 ## Shadows or rounded corners on Engineering Manual
 
 - **Bad:** `box-shadow: 0 4px 12px rgba(0,0,0,0.1)` on a card. `border-radius: 8px` on a diagram frame. `border-radius: 6px` on the tab buttons.
 - **Why:** The aesthetic reads as **printed**. Print has no blur, no soft corners. The moment a shadow appears, the page becomes "webapp" again.
-- **Cure:** Match-and-refuse. Search the file for `box-shadow` and `border-radius` before declaring done. Both should be zero matches outside maybe a 4px radius on the segmented theme toggle. Depth comes from rule lines and lightness shifts.
+- **Cure:** Match-and-refuse. Search the file for `box-shadow` and `border-radius` before declaring done. Both should be zero matches. Depth comes from rule lines and lightness shifts.
 
 ## Inter / Roboto / system-ui body on Engineering Manual
 

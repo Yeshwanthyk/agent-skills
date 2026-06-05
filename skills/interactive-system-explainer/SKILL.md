@@ -130,9 +130,9 @@ Every diagram in the explainer follows the engineering-illustration vocabulary:
 
 ### Layout conventions
 
-- **Hatched/tessellated horizontal rule** under the title and between major sections — not `<hr>`. Repeating SVG pattern. See `patterns.md`.
-- **TOC with dot-leader rows** — chapter title on the left, ellipsis fill in the middle (`border-bottom: 1px dotted`), word count or page reference on the right in muted mono. See `patterns.md`.
-- **Three-column TOC grid** for non-trivial scope — chapter number in mono, chapter title in serif caps, articles bulleted underneath.
+- **Quiet horizontal rule** under the title and between major sections -- a 1px rule with a short cobalt lead-in. Never use dense repeated SVG ornaments or `data:image` hatches that dominate the viewport. See `patterns.md`.
+- **Optional compact section list** only when it reduces navigation burden. Keep it under ~180px on desktop, skip it when sticky tabs already expose all sections, and never use class names like `.page` inside it because they collide with document wrappers. See `patterns.md`.
+- **Sticky tabs are primary navigation** for non-trivial scope. Do not duplicate them with a full-viewport TOC.
 - **Running head** in the top-right corner — e.g. `PROGRESS · SOURCE` or `V1.0`, like a print book.
 - **Generous margins**. Book-page rhythm, not webapp-cramped. Aim for ~80px page padding on desktop.
 - **Justified body text** with hyphenation (`hyphens: auto`).
@@ -524,13 +524,15 @@ A 1500–2000 line single-file explainer cannot be written in one shot. The prov
 5. Append `<script>` in 3–4 chunks (state + tabs, sequence player, DAG + meter + cut-points, scenarios), validate after each.
 6. Final validation pass: brace/paren balance, `node --check`, curl 200.
 
-Use heredoc append (`cat >> file << 'EOF' ... EOF`) so each chunk is independent and any failure is localised.
+Use the host editor's safe patch mechanism for each chunk so failures stay local. In Codex, use `apply_patch`; heredoc append is acceptable only in environments where that is the standard safe edit primitive.
 
 ## Anti-patterns
 
 Reject:
 
 - decorative controls that do not mutate state or filter a view
+- oversized hero TOCs or decorative section rules that consume the first viewport
+- dense repeated SVG / `data:image` divider ornaments
 - scrolling-only layout when the page covers 6+ distinct concepts
 - hard-coded scenario branches in renderer code
 - mixing source-of-truth and derived state in the same panel

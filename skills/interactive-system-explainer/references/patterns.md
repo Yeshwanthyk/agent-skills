@@ -226,7 +226,6 @@ Notes:
   display: inline-flex; gap: 0;
   padding: 2px;
   border: 1px solid var(--border);
-  border-radius: 6px;
   background: var(--surface);
 }
 .theme-toggle button {
@@ -237,7 +236,6 @@ Notes:
   font: 500 11px var(--mono, ui-monospace, monospace);
   color: var(--ink-faint);
   cursor: pointer;
-  border-radius: 4px;
   transition: background var(--dur-fast) var(--ease-out),
               color var(--dur-fast) var(--ease-out);
 }
@@ -409,59 +407,54 @@ Rotated figure number on the left edge of every diagram frame, optional bracket 
 
 Number FIGs sequentially across the document. Don't restart per section.
 
-### 4. Dot-leader list rows (TOC)
+### 4. Compact section list (optional)
 
-The signature TOC row: title on the left, ellipsis fill in the middle, word count or page reference on the right.
+Use this only when it reduces navigation burden. If sticky tabs already expose every section, skip the section list entirely. Keep it compact enough that the first real section remains visible in the first viewport, and avoid generic class names like `.page` that can collide with document wrappers.
 
 ```html
-<ol class="toc">
-  <li><a href="#screen">How does a screen work?</a><span class="wc">3.6K WORDS</span></li>
-  <li><a href="#color">What is a color space?</a><span class="wc">6.2K WORDS</span></li>
-  <li><a href="#contrast">Color contrast.</a><span class="wc"></span></li>
+<ol class="section-list" aria-label="Sections">
+  <li><a href="#tab-overview"><span>Overview</span><span class="toc-index">01</span></a></li>
+  <li><a href="#tab-state"><span>State Machine</span><span class="toc-index">02</span></a></li>
+  <li><a href="#tab-scenarios"><span>Simulator</span><span class="toc-index">03</span></a></li>
 </ol>
 ```
 
 ```css
-.toc { list-style: none; padding: 0; margin: 0; }
-.toc li {
-  display: flex; align-items: baseline;
+.section-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 16px;
+}
+.section-list li { min-width: 0; }
+.section-list a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 0;
   font-family: var(--font-body);
-  font-size: 14px;
-  margin: 0.4em 0;
-}
-.toc li::before {
-  content: "•";
-  color: var(--accent);
-  margin-right: 0.6em;
-  font-size: 11px;
-}
-.toc a {
   color: var(--ink);
   text-decoration: none;
-  white-space: nowrap;
 }
-.toc a::after {
-  content: "";
-  flex: 1;
-  margin: 0 6px;
-  border-bottom: 1px dotted var(--border-strong);
-  transform: translateY(-3px);
-}
-.toc .wc {
+.section-list a:hover { color: var(--accent); }
+.toc-index {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
   color: var(--ink-faint);
   white-space: nowrap;
 }
-.toc a:hover { color: var(--accent); }
 ```
 
-The `flex: 1` pseudo-element with a dotted bottom-border is what produces the Edwardian dot-leader fill. Don't use repeated `.` characters — they don't reflow correctly.
+Do not use dotted leader fills for dense technical explainers. They invite the section list to become a decorative object instead of a navigation aid.
 
-### 5. Hatched / tessellated divider rule
+### 5. Quiet divider rule
 
-Replace `<hr>` between major sections with a repeating SVG pattern. Reads as a printed-book typographic ornament.
+Use a quiet rule between major sections. It should read as layout structure, not as ornament.
 
 ```html
 <div class="rule-hatch" role="separator"></div>
@@ -469,21 +462,21 @@ Replace `<hr>` between major sections with a repeating SVG pattern. Reads as a p
 
 ```css
 .rule-hatch {
-  height: 8px;
-  margin: 2.5rem 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M0 4 L4 0 L8 4 L4 8 Z M6 4 L10 0' fill='none' stroke='%231d4ed8' stroke-width='0.8'/></svg>");
-  background-repeat: repeat-x;
-  background-position: center;
+  height: 1px;
+  margin: 2rem 0;
+  background: var(--border);
+  position: relative;
 }
-[data-theme="dark"] .rule-hatch,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .rule-hatch {
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M0 4 L4 0 L8 4 L4 8 Z M6 4 L10 0' fill='none' stroke='%237aa7ff' stroke-width='0.8'/></svg>");
-  }
+.rule-hatch::before {
+  content: "";
+  display: block;
+  width: 96px;
+  height: 1px;
+  background: var(--accent);
 }
 ```
 
-The encoded hex (`%231d4ed8`, `%237aa7ff`) is cobalt for light mode and lifted cobalt for dark. SVG `data:` URLs cannot read CSS variables, so this is the one place hex is permitted — keep it inside a single `.rule-hatch` rule.
+The class name remains `rule-hatch` for backward compatibility with existing templates, but the implementation is intentionally restrained. Do not use repeating SVG or `data:image` hatches unless the user explicitly asks for ornament.
 
 ### 6. Drop cap on first paragraph
 
@@ -566,7 +559,7 @@ nav.tabs { display:flex; gap:6px; flex-wrap:wrap; padding:14px 20px;
            border-bottom:1px solid var(--border); position:sticky; top:0;
            background:var(--bg); z-index:10; }
 nav.tabs button { background:transparent; border:1px solid transparent;
-                  border-radius:6px; padding:7px 12px; font:500 12.5px var(--ui);
+                  padding:7px 12px; font:500 12.5px var(--ui);
                   color:var(--ink-dim); cursor:pointer;
                   transition: background 120ms, color 120ms, border-color 120ms; }
 nav.tabs button:hover { color:var(--ink); border-color:var(--border); }
@@ -941,7 +934,7 @@ This is the boundary into the runtime. <a class="cite">client.ts:55–102</a>
 .cite { display:inline-block; padding:1px 6px; margin-left:4px;
         font:500 10.5px var(--mono); color:var(--ink-faint);
         background:var(--surface); border:1px solid var(--border);
-        border-radius:3px; vertical-align:1px; cursor:default; }
+        vertical-align:1px; cursor:default; }
 .cite:hover { color:var(--ink-dim); }
 ```
 
