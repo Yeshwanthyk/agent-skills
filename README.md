@@ -20,36 +20,35 @@ export SKILLS_DIR="$HOME/.claude/skills"
 # export SKILLS_DIR="$HOME/.pi/agent/skills"
 
 mkdir -p "$SKILLS_DIR"
-cp -R stateful-systems "$SKILLS_DIR/"
+cp -R skills/stateful-systems "$SKILLS_DIR/"
 ```
 
 Install every skill in this repo:
 
 ```sh
-find . -mindepth 2 -maxdepth 2 -name SKILL.md \
+find skills -mindepth 2 -maxdepth 2 -name SKILL.md \
   -exec sh -c 'mkdir -p "$1"; cp -R "$(dirname "$2")" "$1/"' sh "$SKILLS_DIR" {} \;
 ```
 
-Each installable skill is a top-level directory containing `SKILL.md`.
+Each installable skill is a directory under `skills/` containing `SKILL.md`.
 
 ## Skills
 
 | Skill | Use |
 | --- | --- |
-| [`code-simplifier`](./code-simplifier) | Simplify recently modified code while preserving behavior. |
-| [`context-explorer`](./context-explorer) | Generate interactive context and token-usage explorers from agent transcripts. |
-| [`frontend-design`](./frontend-design) | Build distinctive production-grade frontend interfaces. |
-| [`interactive-system-explainer`](./interactive-system-explainer) | Generate self-contained interactive HTML explainers for technical systems. |
-| [`interface-design`](./interface-design) | Design dashboards, admin panels, apps, tools, and interactive products. |
-| [`librarian`](./librarian) | Cache and refresh remote git repositories for reuse. |
-| [`mission`](./mission) | Keep long-running coding work aligned while handling side quests. |
-| [`park`](./park) | Capture deferred ideas and future implementation notes in `NEXT.md`. |
-| [`review-export`](./review-export) | Generate shareable HTML code review documents from git diffs. |
-| [`skill-writer`](./skill-writer) | Write Agent Skills and `SKILL.md` files. |
-| [`stateful-systems`](./stateful-systems) | Model and build lifecycle/state-machine-driven systems. |
-| [`thermo-nuclear-code-quality-review`](./thermo-nuclear-code-quality-review) | Run a strict maintainability review for abstraction quality and spaghetti growth. |
-| [`ui-skills`](./ui-skills) | Apply opinionated constraints for better agent-built interfaces. |
-| [`visual-explainer`](./visual-explainer) | Generate self-contained visual explanations of systems, plans, and data. |
+| [`interactive-system-explainer`](./skills/interactive-system-explainer) | Generate self-contained interactive HTML explainers for technical systems. |
+| [`review-export`](./skills/review-export) | Generate shareable HTML code review documents from git diffs. |
+| [`stateful-systems`](./skills/stateful-systems) | Model and build lifecycle/state-machine-driven systems. |
+| [`yesh-architect`](./skills/yesh-architect) | Design architecture before implementation: types, interfaces, boundaries, and call graphs. |
+| [`yesh-arena`](./skills/yesh-arena) | Run multiple approaches in parallel, then select and synthesize the best path. |
+| [`yesh-commit`](./skills/yesh-commit) | Group changes into logical commits with PR summaries and pre-commit verification. |
+| [`yesh-debug`](./skills/yesh-debug) | Debug from evidence (logs, traces, failing tests) to root cause and minimal fix. |
+| [`yesh-how`](./skills/yesh-how) | Map how an existing subsystem works: key files, flow, boundaries, and call graphs. |
+| [`yesh-interrogate`](./skills/yesh-interrogate) | Adversarially stress-test a plan, diff, or design and synthesize blocker-first findings. |
+| [`yesh-plan`](./skills/yesh-plan) | Convert a finalized discussion into a concise implementation plan. |
+| [`yesh-ship`](./skills/yesh-ship) | Implement already-shaped work through verification and second-pass validation. |
+| [`yesh-show-work`](./skills/yesh-show-work) | Reconstruct realistic, reviewable decision trails and handoff summaries. |
+| [`yesh-status`](./skills/yesh-status) | Report live runtime and repo state before claiming work is done. |
 
 ## External Not Owned Skills
 
