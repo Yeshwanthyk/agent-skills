@@ -50,21 +50,6 @@ Each installable skill is a directory under `skills/` containing `SKILL.md`. Som
 | [`yesh-show-work`](./skills/yesh-show-work) | Reconstruct realistic implementation history, decisions, verification, gaps, and handoff summaries from the session and diff. |
 | [`yesh-status`](./skills/yesh-status) | Check live repo, runtime, process, port, log, browser, and test state before reporting status or claiming work is done. |
 
-## External Not Owned Skills
-
-These skills live outside this repo and can be installed via [`gitgud`](https://github.com/yeshwanthyk/gitgud):
-
-| Skill | Source | Install |
-| --- | --- | --- |
-| `breadboard` | [rjs/shaping-skills](https://github.com/rjs/shaping-skills) | `gitgud install breadboard --source rjs/shaping-skills` |
-| `shaping` | [rjs/shaping-skills](https://github.com/rjs/shaping-skills) | `gitgud install shaping --source rjs/shaping-skills` |
-| `framing-doc` | [rjs/shaping-skills](https://github.com/rjs/shaping-skills) | `gitgud install framing-doc --source rjs/shaping-skills` |
-| `kickoff-doc` | [rjs/shaping-skills](https://github.com/rjs/shaping-skills) | `gitgud install kickoff-doc --source rjs/shaping-skills` |
-| `impeccable` | [impeccable.style](https://impeccable.style/) | `gitgud install impeccable --source https://impeccable.style/` |
-| `grill-with-docs` | [mattpocock/skills](https://github.com/mattpocock/skills) | `gitgud install grill-with-docs --source mattpocock/skills` |
-| `improve-codebase-architecture` | [mattpocock/skills](https://github.com/mattpocock/skills) | `gitgud install improve-codebase-architecture --source mattpocock/skills` |
-| `make-interfaces-feel-better` | [jakubkrehel/make-interfaces-feel-better](https://github.com/jakubkrehel/make-interfaces-feel-better) | `gitgud install make-interfaces-feel-better --source jakubkrehel/make-interfaces-feel-better` |
-
 ## License
 
 MIT
