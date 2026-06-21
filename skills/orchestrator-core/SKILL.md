@@ -1,6 +1,6 @@
 ---
 name: orchestrator-core
-description: Central orchestration for multi-worker or multi-thread work. Use when the user asks Codex to orchestrate, coordinate, monitor, manage workers, manage threads, keep a central ledger, run several workstreams, avoid duplicate/conflicting work, prepare owner decisions, or maintain progress across active tasks.
+description: Central orchestration for multi-worker or multi-thread work. Use when the user asks Codex to orchestrate, coordinate, monitor, manage workers, manage threads, keep worker thread titles accurate, keep a central ledger, run several workstreams, avoid duplicate/conflicting work, prepare owner decisions, or maintain progress across active tasks.
 ---
 
 # Orchestrator Core
@@ -29,20 +29,24 @@ intake -> ledger -> delegate -> monitor -> intervene/ask -> closeout -> report
 
 ## Start
 
-1. Identify the current authorization: monitoring, delegation, implementation, public mutation, merge/close, release, or other irreversible action.
-2. If delegation is not explicitly authorized, stop before creating workers and ask for that permission.
-3. Create or read the persistent ledger. Default to `~/orchestrator.md` unless the user names another file.
-4. Inventory current tasks, workers, threads, artifacts, and explicit owner decisions from the conversation and available tools.
-5. Classify every item as `autonomous`, `needs owner`, `blocked`, `active`, `done`, or `out of scope`.
-6. Delegate substantial investigation or implementation to workers only after the ledger has the item, scope, authorization, and expected proof.
+1. Identify current role: root orchestrator or assigned worker. If this thread is a worker, do the assigned work only; do not create, steer, rename, archive, or ledger other workers.
+2. Identify the current authorization: monitoring, delegation, implementation, public mutation, merge/close, release, or other irreversible action.
+3. If delegation is not explicitly authorized, stop before creating workers and ask for that permission.
+4. Create or read the persistent ledger. Default to `~/orchestrator.md` unless the user names another file.
+5. Inventory current tasks, workers, threads, artifacts, and explicit owner decisions from the conversation and available tools.
+6. Classify every item as `autonomous`, `needs owner`, `blocked`, `active`, `done`, or `out of scope`.
+7. Delegate substantial investigation or implementation to workers only after the ledger has the item, scope, authorization, desired title, and expected proof.
 
 ## Root Ownership
 
 - Only the root orchestrator creates, reuses, forks, assigns, renames, retires, or steers workers.
 - Workers perform only their assigned work. They must not create subworkers, manage other threads, or edit the central ledger.
 - Put the no-subdelegation rule and granted permissions in every worker prompt.
+- Before creating or materially steering a worker, derive the item id, desired thread title, assignment, authorization boundary, and expected proof.
+- Set or update the worker title with the current platform's thread-title tool when available. Prefer Codex/thread tools exposed in the session; use app-specific session APIs only when the owner explicitly names that app.
+- Title format: `<Area>: <short current task>`. Area is repo, domain, or subsystem; task is 2-5 words. Avoid generic titles, stale source-thread titles, and tool/vendor names.
+- If no title tool is available, include `desired thread title:` in the worker prompt and record/report `title unchanged: tool unavailable`.
 - Keep one worker per coherent workstream. Reuse the existing worker for the same workstream when possible.
-- Rename a worker when assigning or materially changing work, if the platform exposes thread naming. Use `<Area>: <short current task>`.
 - Keep the coordinator lightweight. Do not do extended implementation in the root thread unless the user explicitly wants a single-thread execution.
 
 ## Monitoring
