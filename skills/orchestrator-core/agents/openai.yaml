@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orchestrator Core"
+  short_description: "Coordinate workers and central task state."
+  default_prompt: "Use $orchestrator-core to coordinate workers and maintain a central task ledger."

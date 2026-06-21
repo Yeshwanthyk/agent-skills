@@ -37,6 +37,7 @@ Each installable skill is a directory under `skills/` containing `SKILL.md`. Som
 | Skill | Use |
 | --- | --- |
 | [`interactive-system-explainer`](./skills/interactive-system-explainer) | Generate polished self-contained HTML explainers for technical systems with tabs, scenario simulators, diagrams, source citations, and invariant checks. |
+| [`orchestrator-core`](./skills/orchestrator-core) | Coordinate workers, threads, decisions, and a central task ledger across active workstreams. |
 | [`review-export`](./skills/review-export) | Generate shareable HTML code review documents from git diffs. |
 | [`stateful-systems`](./skills/stateful-systems) | Model and build stateful systems with lifecycle states, transitions, events, projections, read models, jobs, backfills, and freshness contracts. |
 | [`yesh-architect`](./skills/yesh-architect) | Shape architecture before implementation with boundary inputs, failure channels, state transitions, dependency seams, and call graphs. |
