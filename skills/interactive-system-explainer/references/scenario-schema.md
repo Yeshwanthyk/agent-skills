@@ -130,6 +130,37 @@ startPlay() / stopPlay()     → setInterval(nextStep, 1100)
 
 `prevStep` does **not** try to invert patches. It resets state and re-applies steps `0..target-1`. This sidesteps reversibility bugs entirely and is fast enough for any human-scale scenario.
 
+## JavaScript architecture
+
+Use three layers:
+
+```text
+1. Static fixtures: scenarios, tree, flow nodes, state-machine details, comparison rows
+2. Renderer functions: renderState, renderHistory, renderInvariants, renderStepLabel
+3. Event handlers: tab clicks, node clicks, scenario picker, prev/next/play
+```
+
+The simulator owns one shared state object with an explicit shape. Patches use dotted-path strings:
+
+```js
+function applyPatch(state, patch) {
+  const changed = new Set();
+  for (const [path, val] of Object.entries(patch || {})) {
+    const segs = path.split('.');
+    let o = state;
+    for (let i = 0; i < segs.length - 1; i++) {
+      o[segs[i]] ??= {};
+      o = o[segs[i]];
+    }
+    o[segs.at(-1)] = val;
+    changed.add(path);
+  }
+  return changed;
+}
+```
+
+The returned `changed` Set drives the temporary `.changed` class for ~1.5s so readers can see exactly what each step mutated.
+
 ## Choosing scenarios
 
 For any non-trivial system, ship **at least one scenario per category**:
@@ -143,7 +174,7 @@ For any non-trivial system, ship **at least one scenario per category**:
 | Recovery    | Something fails and the system heals                       |
 | Integration | External moving part (MCP server, webhook, scheduler)     |
 
-The recovery scenarios are where the explainer earns its keep. Don't ship without at least one.
+Do not ship without at least one recovery scenario.
 
 ## Anti-pattern
 
