@@ -1,4 +1,4 @@
 interface:
   display_name: "How"
-  short_description: "Walk through existing systems clearly."
-  default_prompt: "Explain how the current subsystem works with key files, boundaries, and call graphs."
+  short_description: "Map, trace, and inventory existing systems."
+  default_prompt: "Explain how the current subsystem works: map it end to end with file:line refs, call graphs, and interface inventories."
