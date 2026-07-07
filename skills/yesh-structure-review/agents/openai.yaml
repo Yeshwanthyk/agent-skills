@@ -1,0 +1,4 @@
+interface:
+  display_name: "Structure Review"
+  short_description: "Post-feature structure cleanup review."
+  default_prompt: "Review the recently completed work for stronger underlying structures — state machines, typed objects, registries, reducers, queues/caches/indexes — and report act-now/defer/leave findings."
