@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stateful Systems"
+  short_description: "Model lifecycles, commands, events, projections."
+  default_prompt: "Model this stateful system: lifecycle states, transitions, invariants, commands/events, projections, and the tests that pin them."
