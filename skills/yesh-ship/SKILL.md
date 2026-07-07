@@ -18,12 +18,13 @@ Finish shaped work without staging or committing.
 7. For app behavior, prefer an existing app-level AI/browser/e2e harness when it can exercise the same surface a human can: launch/open, authenticate with safe test state, click/type/navigate, inspect visible results, and change relevant user-tweakable settings/options.
 8. If a harness/e2e exists for the changed behavior, use it. If the change needs one and none exists, add the smallest useful harness/test.
 9. Run targeted verification.
-10. Adversarial review gate: spawn read-only review subagents when available. Give them the plan, relevant prior diffs/context, current diff, verification output, and scope boundaries; ask for blockers, regressions, invariant breaks, missing tests, and scope drift.
-11. Synthesize reviewer findings with your own diff review. Classify findings as `fixed`, `dismissed-with-reason`, `out-of-scope`, or `remaining-blocker`.
+10. Adversarial review gate: spawn read-only review subagents when available. Use the shared filled prompt from `references/reviewer-prompt.md` with `references/rubric.md` and `references/code-quality-review.md`. Give every reviewer the same context package: plan, prior diffs/context, current diff, verification output, and scope boundaries. Require structured findings: severity, location (`file:line`), finding, evidence, optional suggestion.
+11. Synthesize reviewer findings with your own diff review. Deduplicate; treat independent agreement as high signal; do not dismiss a lone finding that names a concrete execution path or security/correctness risk. Filter with pragmatic lead judgment per `references/lead-judgment.md`: dismiss findings that conflict with known constraints, local patterns, or unreachable paths, with reason. Classify findings as `fixed`, `dismissed-with-reason`, `out-of-scope`, or `remaining-blocker`.
 12. Fix in-scope blockers you introduced.
 13. Second pass: rerun affected verification and re-review prior findings plus the diff touched since first review; avoid reopening architecture unless a correctness blocker invalidates the plan.
-14. Update operational docs only when they are part of done-ness.
-15. Stop before staging or commit unless explicitly asked.
+14. If the diff shows structural strain (scattered state booleans, duplicated dispatch, loose parameter threading), offer a follow-up `yesh-structure-review` pass. Never fold structural cleanup into the ship diff.
+15. Update operational docs only when they are part of done-ness.
+16. Stop before staging or commit unless explicitly asked.
 
 ## Correctness Gate
 
@@ -80,7 +81,7 @@ Notes
 - Do not invent architecture mid-ship. Hand missing public API, persistence/schema, adapter/service, error, or state contracts back to `yesh-plan` or `yesh-architect`.
 - Treat review findings as work, not commentary; fix in-scope blockers before final.
 - Prefer adversarial read-only reviewers over rubber-stamp review. If subagents are unavailable, perform the same blocker-first pass locally and say so.
-- Reviewer prompts must include the plan, relevant previous diffs/context, current diff, verification output, and explicit out-of-scope boundaries.
+- Reviewer prompts must use `references/reviewer-prompt.md`, `references/rubric.md`, and `references/code-quality-review.md`, with the plan, relevant previous diffs/context, current diff, verification output, and explicit out-of-scope boundaries.
 - Triage vague/question-shaped review feedback before editing.
 - Prefer existing test harnesses/e2e over inventing new ones.
 - App-level harnesses should have human-parity access for the relevant flow: visible UI, input events, navigation, test accounts/data, logs/diagnostics, and user-configurable settings/options.

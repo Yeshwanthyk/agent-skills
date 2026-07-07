@@ -41,15 +41,13 @@ Each installable skill is a directory under `skills/` containing `SKILL.md`. Som
 | [`review-export`](./skills/review-export) | Generate shareable HTML code review documents from git diffs. |
 | [`stateful-systems`](./skills/stateful-systems) | Model and build stateful systems with lifecycle states, transitions, events, projections, read models, jobs, backfills, and freshness contracts. |
 | [`yesh-architect`](./skills/yesh-architect) | Shape architecture before implementation with boundary inputs, failure channels, state transitions, dependency seams, and call graphs. |
-| [`yesh-arena`](./skills/yesh-arena) | Run multiple approaches in parallel, compare alternatives against concrete criteria, and synthesize the best path. |
 | [`yesh-commit`](./skills/yesh-commit) | Group shipped changes into logical commits with PR summaries, dirty-tree review, and practical pre-commit verification. |
 | [`yesh-debug`](./skills/yesh-debug) | Debug symptoms, regressions, logs, screenshots, or failing tests from evidence to root cause and minimal fix path. |
 | [`yesh-how`](./skills/yesh-how) | Explain how an existing subsystem works: source of truth, boundaries, production/test flows, conventions, and gotchas. |
-| [`yesh-interrogate`](./skills/yesh-interrogate) | Adversarially review a plan, diff, design, PR, or artifact and synthesize blocker-first findings. |
 | [`yesh-plan`](./skills/yesh-plan) | Convert finalized discussion into an implementation-shaped plan with locked decisions, contracts, files, chunks, and verification. |
 | [`yesh-ship`](./skills/yesh-ship) | Implement already-shaped work through scoped edits, real-seam verification, blocker review, fixes, and second-pass validation. |
-| [`yesh-show-work`](./skills/yesh-show-work) | Reconstruct realistic implementation history, decisions, verification, gaps, and handoff summaries from the session and diff. |
 | [`yesh-status`](./skills/yesh-status) | Check live repo, runtime, process, port, log, browser, and test state before reporting status or claiming work is done. |
+| [`yesh-structure-review`](./skills/yesh-structure-review) | Post-feature structure review: state machines, typed objects, registries, reducers - act-now/defer/leave findings after behavior works. |
 
 ## License
 

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Interrogate"
-  short_description: "Adversarially review with a shared rubric."
-  default_prompt: "Stress test this with independent read-only reviewers or rubric passes, then return Act On, Consider, Noted, Dismissed, and an agreement map."
