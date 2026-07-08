@@ -2,7 +2,27 @@
 
 Installable Agent Skills for Claude Code, Codex, and Pi.
 
-## Install
+## Install With gitgud
+
+Track this repo, select the skills you want, then materialize and sync them into agent-specific skill directories.
+
+```sh
+gitgud add https://github.com/Yeshwanthyk/agent-skills
+gitgud select github:Yeshwanthyk/agent-skills
+gitgud apply
+```
+
+`gitgud apply` writes selected skills to `~/.gitgud/skills` and syncs managed symlinks into Claude, Codex, Pi, Droid, and Amp skill dirs.
+
+Useful checks:
+
+```sh
+gitgud status
+gitgud list
+gitgud sync --dry-run
+```
+
+## Manual Install
 
 Clone the repo, choose a target skills directory, then copy either one skill or all skills.
 
@@ -10,27 +30,27 @@ Clone the repo, choose a target skills directory, then copy either one skill or 
 git clone https://github.com/Yeshwanthyk/agent-skills.git
 cd agent-skills
 
-# Claude Code
-export SKILLS_DIR="$HOME/.claude/skills"
-
-# Codex
-# export SKILLS_DIR="$HOME/.codex/skills"
-
-# Pi
-# export SKILLS_DIR="$HOME/.pi/agent/skills"
-
-mkdir -p "$SKILLS_DIR"
-cp -R skills/stateful-systems "$SKILLS_DIR/"
-```
-
-Install every skill in this repo:
-
-```sh
-find skills -mindepth 2 -maxdepth 2 -name SKILL.md \
-  -exec sh -c 'mkdir -p "$1"; cp -R "$(dirname "$2")" "$1/"' sh "$SKILLS_DIR" {} \;
+mkdir -p "$HOME/.codex/skills"
+cp -R skills/stateful-systems "$HOME/.codex/skills/"
 ```
 
 Each installable skill is a directory under `skills/` containing `SKILL.md`. Some skills also include supporting agents, scripts, references, templates, or fonts; copy the whole skill directory.
+
+## Yesh Workflows
+
+| Situation | Flow |
+| --- | --- |
+| Current-system understanding | `/how` |
+| Bug, regression, runtime symptom | `/status` -> `/debug` -> `/ship` -> `/commit` |
+| Architecture before implementation | `/how` -> `/architect` -> `/plan` -> `/ship` -> `/commit` |
+| Finalized work plan | `/plan` -> `/ship` -> `/commit` |
+| Post-feature cleanup pass | `/structure` after behavior works |
+
+Removed older slate skills are folded into the current flow:
+
+- `/interrogate` review behavior lives in `yesh-ship` blocker-first review.
+- `/show-work` reconstruction is handled by explicit reporting in `/ship` and `/commit`.
+- `/arena` is no longer an active skill.
 
 ## Skills
 
