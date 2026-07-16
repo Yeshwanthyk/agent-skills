@@ -1,4 +1,6 @@
 interface:
   display_name: "How"
-  short_description: "Map, trace, and inventory existing systems."
-  default_prompt: "Explain how the current subsystem works: map it end to end with file:line refs, call graphs, and interface inventories."
+  short_description: "Map current execution paths and boundaries"
+  default_prompt: "Use $yesh-how to explain the current system through execution paths, state ownership, boundaries, and proof."
+policy:
+  allow_implicit_invocation: true

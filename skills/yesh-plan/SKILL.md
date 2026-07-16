@@ -1,103 +1,27 @@
 ---
 name: yesh-plan
-description: Use for /plan, converting finalized discussion into a concise implementation plan. Captures locked decisions, constraints, contract/failure/boundary changes, state changes, adapter audit results, call graph, chunks, files, and verification without reopening the design.
+description: Turn a settled approach into a human-readable, implementation-ready packet.
 ---
 
 # Yesh Plan
 
-Turn what was already discussed and finalized into an implementation-shaped plan.
+Create an **implementation packet** that explains the idea before detailing the work.
 
-## Workflow
+## Process
 
-1. Read the current conversation and any referenced notes/artifacts.
-2. Extract decisions, constraints, rejected options, and unresolved questions.
-3. Use prior `yesh-how` and `yesh-architect` outputs as inputs when available.
-4. Run the handoff gate. If public API, persistence/schema migration, adapter/service shape, expected failure channel, or state ownership is not decided, say what is missing and return to `yesh-architect`.
-5. Lay out only what will actually be added or changed.
-6. Include code-shaped contract sketches where useful: boundary inputs, domain values, failure channels, state transitions, and dependency seams.
-7. If prefactors were chosen during architecture, put them before behavior changes.
-8. Keep chunks few and concrete, usually 3-5. Each chunk must name files/symbols, verification, and what not to touch.
-9. Keep it complete enough to implement, not elaborate for its own sake.
+1. Begin with a plain-language orientation: what changes, why the approach fits, how the major pieces work together, and which tradeoffs shaped the decision.
+2. Capture the settled scope, constraints, contracts, state ownership, failure behavior, and target production and test paths.
+3. Name the files and symbols that carry each change.
+4. Break the work into ordered chunks sized for focused implementation.
+5. For each chunk, state the behavior delivered, files and symbols, execution path, state transition or boundary touched, dependencies, verification, and risk.
+6. Place preparatory structural work before the behavior that depends on it.
+7. Describe migration, rollout, observability, and residual risk where they shape delivery.
+8. End with the decisions that remain open and the work they gate.
 
 ## Output
 
-````md
-Decided
-- ...
+Present orientation, settled decisions, scope, target flow, implementation chunks, verification matrix, rollout, risks, and open decisions in that order.
 
-Handoff gate
-- accepted architecture:
-- decisions locked:
-- unresolved gaps:
-- return to architect if:
+## Completion
 
-Out of scope
-- ...
-
-Repo conventions to preserve
-- failures:
-- boundary parsing:
-- dependency seams / adapters:
-- tests:
-
-Contract changes
-```txt
-boundary input -> domain value -> result/failure
-caller -> seam -> dependency
-```
-
-Adapter / service audit
-- candidates checked:
-- reuse / extend / new:
-- ADR needed:
-
-Boundaries
-- entrypoint / caller:
-- domain:
-- state / persistence:
-- runtime / external:
-- tests:
-
-State
-- changes:
-- unchanged:
-
-Final call graph
-Production:
-...
-
-Tests:
-...
-
-Implementation chunks
-1. files/symbols:
-   change:
-   contract touched:
-   boundary/schema touched:
-   expected failures:
-   state/persistence impact:
-   verify:
-   do-not-change:
-   risk:
-
-Verification matrix
-- static:
-- behavior:
-- runtime:
-
-Open risks / blockers
-- ...
-````
-
-## Rules
-
-- Do not restart research unless the plan has a real gap.
-- Do not reopen architecture; only plan the chosen direction.
-- If prefactors were chosen during architecture, place them before behavior changes.
-- Each chunk must name files/symbols and verification.
-- Do not add speculative nice-to-haves.
-- Preserve the user's chosen shape even if another option is tempting; mention major risk tersely.
-- Use one recommended sequence unless the user asked for options.
-- Do not fill template slots with generic prose; write `unchanged`, `not applicable`, or omit optional sections.
-- Every substantive bullet should name a file, symbol, boundary, invariant, type, command, or say `unknown`.
-- Plan tests through real seams where possible. Avoid module mocks/spies unless the repo already uses them.
+Complete the packet when an executor can begin every chunk from the stated decisions, locations, dependencies, boundary changes, and proof.

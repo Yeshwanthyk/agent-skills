@@ -1,4 +1,0 @@
-interface:
-  display_name: "Status"
-  short_description: "Check live repo and runtime truth."
-  default_prompt: "Check branch, processes, tmux, ports, logs, browser, and tests as relevant."

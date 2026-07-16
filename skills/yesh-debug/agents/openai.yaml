@@ -1,4 +1,6 @@
 interface:
   display_name: "Debug"
-  short_description: "Understand behavior and find root cause."
-  default_prompt: "Investigate this from evidence, separate facts from inference, name the root cause or rationale, affected files/state, fix path, and verification."
+  short_description: "Diagnose failures from causal evidence"
+  default_prompt: "Use $yesh-debug to build a red-capable loop, find the first contract divergence, and prove the correction."
+policy:
+  allow_implicit_invocation: true

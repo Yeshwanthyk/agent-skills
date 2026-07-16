@@ -1,4 +1,6 @@
 interface:
   display_name: "Plan"
-  short_description: "Capture finalized decisions as a plan."
-  default_prompt: "Turn finalized discussion into a concise implementation-shaped plan."
+  short_description: "Create a human-readable implementation packet"
+  default_prompt: "Use $yesh-plan to turn the settled approach into a human-readable, implementation-ready packet."
+policy:
+  allow_implicit_invocation: false

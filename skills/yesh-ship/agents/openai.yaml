@@ -1,4 +1,0 @@
-interface:
-  display_name: "Ship"
-  short_description: "Implement shaped work through review."
-  default_prompt: "Finish the shaped work, verify it, review for blockers, and stop before commit."

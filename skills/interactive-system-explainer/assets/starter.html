@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System explainer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #17191c;
+      --surface: #202328;
+      --surface-active: #272d36;
+      --text: #f1f3f5;
+      --muted: #a7afb9;
+      --line: #343a43;
+      --accent: #75a7ff;
+      --accent-strong: #9bc0ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      width: min(920px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 56px 0 72px;
+    }
+    header { max-width: 720px; margin-bottom: 32px; }
+    h1 { margin: 0 0 10px; font-size: clamp(2rem, 6vw, 4.5rem); line-height: 1; letter-spacing: -0.04em; font-weight: 600; }
+    p { margin: 0; }
+    .lede { color: var(--muted); font-size: 1.08rem; }
+    code, .eyebrow, button, dt {
+      font-family: "Berkeley Mono", "BerkeleyMono Nerd Font", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .eyebrow { color: var(--accent); margin-bottom: 12px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      padding: 9px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover { color: var(--text); border-color: var(--accent); }
+    button[aria-pressed="true"] { color: var(--text); background: var(--surface-active); border-color: var(--accent); }
+    button:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+    .view { border-top: 1px solid var(--line); padding-top: 26px; }
+    .path { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .node { min-height: 124px; padding: 16px; background: var(--surface); border-radius: 8px; }
+    .node strong { display: block; margin-bottom: 8px; font-weight: 600; }
+    .node span { color: var(--muted); }
+    .node[data-active="true"] { box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-active); }
+    dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 18px; margin: 0; }
+    dt { color: var(--muted); }
+    dd { margin: 0; }
+    .source { margin-top: 24px; color: var(--muted); }
+    .source code { color: var(--accent-strong); }
+    @media (max-width: 680px) {
+      main { padding-top: 32px; }
+      .path { grid-template-columns: 1fr; }
+      dl { grid-template-columns: 1fr; gap: 2px; }
+      dd { margin-bottom: 10px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .node, button { transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Inspectable model</p>
+      <h1>Follow the behavior.</h1>
+      <p class="lede">Choose a scenario to see the execution path, state transition, and boundary contract change together.</p>
+    </header>
+
+    <div class="controls" aria-label="Scenarios">
+      <button type="button" aria-controls="scenario-view" aria-pressed="true" data-scenario="success">Successful request</button>
+      <button type="button" aria-controls="scenario-view" aria-pressed="false" data-scenario="recovery">Recovery path</button>
+    </div>
+
+    <section class="view" id="scenario-view" aria-live="polite">
+      <div class="path" id="execution-path"></div>
+      <dl>
+        <dt>Authoritative state</dt><dd id="state-value"></dd>
+        <dt>Boundary contract</dt><dd id="contract-value"></dd>
+        <dt>Proof</dt><dd id="proof-value"></dd>
+      </dl>
+      <p class="source">Source: <code id="source-value"></code></p>
+    </section>
+  </main>
+
+  <script>
+    const scenarios = {
+      success: {
+        path: [
+          ['Entrypoint', 'Parses the request'],
+          ['Domain', 'Applies the transition'],
+          ['Store', 'Commits authoritative state']
+        ],
+        active: 2,
+        state: 'pending → active',
+        contract: 'ActivateCommand → ActivationResult',
+        proof: 'Focused command test and persisted row',
+        source: 'src/system.ts:42'
+      },
+      recovery: {
+        path: [
+          ['Entrypoint', 'Replays the request'],
+          ['Domain', 'Recognizes the idempotency key'],
+          ['Store', 'Returns the committed result']
+        ],
+        active: 1,
+        state: 'active → active',
+        contract: 'Repeated command → existing result',
+        proof: 'Replay test and stable version',
+        source: 'src/system.ts:87'
+      }
+    };
+
+    const controls = [...document.querySelectorAll('[data-scenario]')];
+    const path = document.getElementById('execution-path');
+
+    function renderScenario(id) {
+      const scenario = scenarios[id];
+      path.replaceChildren(...scenario.path.map(([name, detail], index) => {
+        const node = document.createElement('div');
+        node.className = 'node';
+        node.dataset.active = String(index === scenario.active);
+        node.innerHTML = `<strong>${name}</strong><span>${detail}</span>`;
+        return node;
+      }));
+      document.getElementById('state-value').textContent = scenario.state;
+      document.getElementById('contract-value').textContent = scenario.contract;
+      document.getElementById('proof-value').textContent = scenario.proof;
+      document.getElementById('source-value').textContent = scenario.source;
+      controls.forEach((control) => control.setAttribute('aria-pressed', String(control.dataset.scenario === id)));
+    }
+
+    controls.forEach((control) => control.addEventListener('click', () => renderScenario(control.dataset.scenario)));
+    renderScenario('success');
+  </script>
+</body>
+</html>

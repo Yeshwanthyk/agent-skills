@@ -1,4 +1,0 @@
-interface:
-  display_name: "Commit"
-  short_description: "Group finished work into clean commits."
-  default_prompt: "Inspect git state, group logical changes, commit, and prepare PR text if needed."

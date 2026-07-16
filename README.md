@@ -2,6 +2,8 @@
 
 Installable Agent Skills for Claude Code, Codex, and Pi.
 
+The portfolio focuses on reusable reasoning that changes agent behavior. Routine execution, status checks, commits, and coordination stay with the agent's built-in capabilities.
+
 ## Install With gitgud
 
 Track this repo, select the skills you want, then materialize and sync them into agent-specific skill directories.
@@ -34,40 +36,20 @@ mkdir -p "$HOME/.codex/skills"
 cp -R skills/stateful-systems "$HOME/.codex/skills/"
 ```
 
-Each installable skill is a directory under `skills/` containing `SKILL.md`. Some skills also include supporting agents, scripts, references, templates, or fonts; copy the whole skill directory.
+Copy the complete skill directory so its agents, scripts, references, and assets travel together.
 
-## Yesh Workflows
+## Model-Invoked Disciplines
 
-| Situation | Flow |
-| --- | --- |
-| Current-system understanding | `/how` |
-| Bug, regression, runtime symptom | `/status` -> `/debug` -> `/ship` -> `/commit` |
-| Architecture before implementation | `/how` -> `/architect` -> `/plan` -> `/ship` -> `/commit` |
-| Finalized work plan | `/plan` -> `/ship` -> `/commit` |
-| Post-feature cleanup pass | `/structure` after behavior works |
+- [`interactive-system-explainer`](./skills/interactive-system-explainer) — Build source-grounded interactive HTML explainers as inspectable models.
+- [`stateful-systems`](./skills/stateful-systems) — Model authoritative state, lifecycle transitions, invariants, concurrency, freshness, replay, and recovery.
+- [`yesh-debug`](./skills/yesh-debug) — Diagnose failures through a red-capable loop and the first contract divergence.
+- [`yesh-how`](./skills/yesh-how) — Explain current systems through execution paths, state ownership, boundaries, and proof.
 
-Removed older slate skills are folded into the current flow:
+## Explicit Workflows
 
-- `/interrogate` review behavior lives in `yesh-ship` blocker-first review.
-- `/show-work` reconstruction is handled by explicit reporting in `/ship` and `/commit`.
-- `/arena` is no longer an active skill.
-
-## Skills
-
-| Skill | Use |
-| --- | --- |
-| [`interactive-system-explainer`](./skills/interactive-system-explainer) | Generate polished self-contained HTML explainers for technical systems with tabs, scenario simulators, diagrams, source citations, and invariant checks. |
-| [`orchestrator-core`](./skills/orchestrator-core) | Coordinate workers, threads, decisions, and a central task ledger across active workstreams. |
-| [`review-export`](./skills/review-export) | Generate shareable HTML code review documents from git diffs. |
-| [`stateful-systems`](./skills/stateful-systems) | Model and build stateful systems with lifecycle states, transitions, events, projections, read models, jobs, backfills, and freshness contracts. |
-| [`yesh-architect`](./skills/yesh-architect) | Shape architecture before implementation with boundary inputs, failure channels, state transitions, dependency seams, and call graphs. |
-| [`yesh-commit`](./skills/yesh-commit) | Group shipped changes into logical commits with PR summaries, dirty-tree review, and practical pre-commit verification. |
-| [`yesh-debug`](./skills/yesh-debug) | Debug symptoms, regressions, logs, screenshots, or failing tests from evidence to root cause and minimal fix path. |
-| [`yesh-how`](./skills/yesh-how) | Explain how an existing subsystem works: source of truth, boundaries, production/test flows, conventions, and gotchas. |
-| [`yesh-plan`](./skills/yesh-plan) | Convert finalized discussion into an implementation-shaped plan with locked decisions, contracts, files, chunks, and verification. |
-| [`yesh-ship`](./skills/yesh-ship) | Implement already-shaped work through scoped edits, real-seam verification, blocker review, fixes, and second-pass validation. |
-| [`yesh-status`](./skills/yesh-status) | Check live repo, runtime, process, port, log, browser, and test state before reporting status or claiming work is done. |
-| [`yesh-structure-review`](./skills/yesh-structure-review) | Post-feature structure review: state machines, typed objects, registries, reducers - act-now/defer/leave findings after behavior works. |
+- [`yesh-architect`](./skills/yesh-architect) — Design a concrete target architecture from live contracts and constraints.
+- [`yesh-plan`](./skills/yesh-plan) — Turn a settled approach into a human-readable implementation packet.
+- [`yesh-structure-review`](./skills/yesh-structure-review) — Produce a clean engineering audit with evidence-backed corrections.
 
 ## License
 

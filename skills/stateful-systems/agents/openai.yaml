@@ -1,4 +1,6 @@
 interface:
   display_name: "Stateful Systems"
-  short_description: "Model lifecycles, commands, events, projections."
-  default_prompt: "Model this stateful system: lifecycle states, transitions, invariants, commands/events, projections, and the tests that pin them."
+  short_description: "Model stateful systems and lifecycle behavior"
+  default_prompt: "Use $stateful-systems to model the authoritative state, transitions, invariants, and proof for this workflow."
+policy:
+  allow_implicit_invocation: true

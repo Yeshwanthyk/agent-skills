@@ -1,4 +1,6 @@
 interface:
   display_name: "System Explainer"
-  short_description: "Interactive HTML explainer for a system, source-cited."
-  default_prompt: "Build a self-contained interactive HTML explainer for this system with source-cited behavior, simulators, and light/dark themes."
+  short_description: "Build source-grounded interactive explainers"
+  default_prompt: "Use $interactive-system-explainer to build a source-grounded interactive HTML model of this system."
+policy:
+  allow_implicit_invocation: true

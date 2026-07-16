@@ -1,4 +1,6 @@
 interface:
   display_name: "Architect"
-  short_description: "Shape future code with contracts first."
-  default_prompt: "Design the future shape with types, interfaces, boundaries, state, and prod/test call graphs."
+  short_description: "Design a concrete target architecture"
+  default_prompt: "Use $yesh-architect to design the target shape, contracts, state ownership, and production and test wiring."
+policy:
+  allow_implicit_invocation: false
