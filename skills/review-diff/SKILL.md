@@ -1,27 +1,33 @@
 ---
 name: review-diff
-description: Open Plannotator's browser-based code review for the current worktree or a supplied pull request or merge request URL. Use when the user explicitly asks to review a diff with Plannotator.
-compatibility: Requires the plannotator executable on PATH and a supported VCS or pull request URL.
+description: Open current worktree changes or a supplied GitHub pull request or GitLab merge request in a local annotation workspace. Use when the user asks to review a diff and copy structured feedback back into chat.
+compatibility: Requires Node.js 18+ and Git for local reviews. Remote URLs require the existing authenticated gh or glab CLI. Uses Glimpse when already installed in Pi; otherwise opens the system browser.
 ---
 
 # Review Diff
 
-Open the requested code diff in Plannotator.
+Open a code diff in the bundled, read-only review workspace.
 
 ## Run
 
-For current worktree changes, run in the foreground from the repository being reviewed:
+Resolve `scripts/review-workspace.mjs` relative to this `SKILL.md`.
+
+For current worktree changes, run from the repository being reviewed in the foreground without a short timeout:
 
 ```bash
-plannotator review
+node "/absolute/path/to/review-diff/scripts/review-workspace.mjs" diff
 ```
 
-If the user supplied a GitHub pull request or GitLab merge request URL, pass only that URL:
+This captures tracked changes against `HEAD` plus untracked files without staging, committing, checking out, fetching, or modifying the worktree.
+
+For a supplied GitHub pull request or GitLab merge request, pass only the full HTTPS URL:
 
 ```bash
-plannotator review <pr-or-mr-url>
+node "/absolute/path/to/review-diff/scripts/review-workspace.mjs" diff <pr-or-mr-url>
 ```
 
-Wait for the process to exit. Do not install Plannotator, add hooks, or create an asynchronous feedback path. If the command fails, report the exact error.
+Remote acquisition uses the existing authenticated `gh` or `glab` CLI. It never clones, checks out, posts a review, or mutates remote state.
 
-The user may copy and paste annotation feedback back as a normal message.
+The workspace is local and self-contained. It uses bundled `@pierre/diffs` 1.2.8, supports line-range comments, edit/delete/undo, file and comment navigation, keyboard review, and deterministic `Copy feedback`. It never installs Plannotator or creates an asynchronous feedback path.
+
+Wait for the foreground command to exit. Report exact errors. The user copies the generated Markdown and pastes it back as a normal message.

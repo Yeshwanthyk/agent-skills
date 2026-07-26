@@ -1,6 +1,6 @@
 interface:
   display_name: "Review Last"
-  short_description: "Annotate the last response in Plannotator"
-  default_prompt: "Use $review-last to open the latest assistant response in Plannotator for manual annotation."
+  short_description: "Annotate the previous assistant response"
+  default_prompt: "Use $review-last to open the previous assistant response in the bundled local annotation workspace, then let me copy the feedback back into chat."
 policy:
   allow_implicit_invocation: true

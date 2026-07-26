@@ -1,0 +1,18 @@
+{
+  "name": "agent-skills",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:reviewer": "node tools/build-reviewer.mjs",
+    "test": "npm run build:reviewer && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@pierre/diffs": "1.2.8",
+    "markdown-it": "14.3.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "14.1.2",
+    "esbuild": "0.28.1",
+    "typescript": "7.0.2"
+  }
+}
