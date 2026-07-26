@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Diff"
+  short_description: "Review a diff in Plannotator"
+  default_prompt: "Use $review-diff to open the current worktree or a supplied PR or MR in Plannotator for manual review."
+policy:
+  allow_implicit_invocation: true
