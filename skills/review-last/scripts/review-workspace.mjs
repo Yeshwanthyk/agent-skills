@@ -3,7 +3,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { createReadStream, realpathSync } from "node:fs";
-import { lstat, readFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { homedir } from "node:os";
 import { dirname, join, resolve, sep } from "node:path";
@@ -20,6 +20,65 @@ const COMMAND_TIMEOUT_MS = 60_000;
 const RUNTIME_DIRECTORY = dirname(fileURLToPath(import.meta.url));
 const SKILL_DIRECTORY = resolve(RUNTIME_DIRECTORY, "..");
 const ASSET_DIRECTORY = join(SKILL_DIRECTORY, "assets");
+export const DEFAULT_REVIEW_PREFERENCES = Object.freeze({
+  version: 1,
+  diffStyle: "unified",
+  codeFontSize: 13,
+});
+const CODE_FONT_SIZES = new Set([12, 13, 14, 16]);
+
+export function isReviewPreferences(value) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
+  const keys = Object.keys(value).sort();
+  return (
+    keys.length === 3 &&
+    keys[0] === "codeFontSize" &&
+    keys[1] === "diffStyle" &&
+    keys[2] === "version" &&
+    value.version === 1 &&
+    (value.diffStyle === "unified" || value.diffStyle === "split") &&
+    CODE_FONT_SIZES.has(value.codeFontSize)
+  );
+}
+
+export function parseReviewPreferences(value) {
+  return isReviewPreferences(value)
+    ? { version: 1, diffStyle: value.diffStyle, codeFontSize: value.codeFontSize }
+    : { ...DEFAULT_REVIEW_PREFERENCES };
+}
+
+export function reviewStateDirectory(env = process.env, platform = process.platform) {
+  if (env.REVIEW_WORKSPACE_STATE_DIRECTORY) return resolve(env.REVIEW_WORKSPACE_STATE_DIRECTORY);
+  const home = env.HOME || env.USERPROFILE || homedir();
+  if (platform === "darwin") return join(home, "Library", "Application Support", "review-workspace");
+  if (platform === "win32") return join(env.LOCALAPPDATA || join(home, "AppData", "Local"), "review-workspace");
+  return join(env.XDG_CONFIG_HOME || join(home, ".config"), "review-workspace");
+}
+
+export async function readReviewPreferences(env = process.env) {
+  try {
+    const raw = await readFile(join(reviewStateDirectory(env), "preferences.json"), "utf8");
+    return parseReviewPreferences(JSON.parse(raw));
+  } catch {
+    return { ...DEFAULT_REVIEW_PREFERENCES };
+  }
+}
+
+export async function writeReviewPreferences(value, env = process.env) {
+  if (!isReviewPreferences(value)) throw new Error("Invalid review display preferences.");
+  const directory = reviewStateDirectory(env);
+  const destination = join(directory, "preferences.json");
+  const temporary = join(directory, `.preferences-${process.pid}-${randomBytes(8).toString("hex")}.tmp`);
+  await mkdir(directory, { recursive: true, mode: 0o700 });
+  try {
+    await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, { encoding: "utf8", flag: "wx", mode: 0o600 });
+    await rename(temporary, destination);
+  } catch (error) {
+    await rm(temporary, { force: true }).catch(() => {});
+    throw error;
+  }
+  return parseReviewPreferences(value);
+}
 
 function assistantText(message) {
   if (message?.role !== "assistant" || !Array.isArray(message.content)) return null;
@@ -348,14 +407,17 @@ function securityHeaders(contentType) {
 function readSmallRequest(request) {
   return new Promise((resolveRequest, rejectRequest) => {
     let size = 0;
+    const chunks = [];
     request.on("data", (chunk) => {
       size += chunk.length;
       if (size > MAX_REQUEST_BYTES) {
         rejectRequest(new Error("Request body is too large."));
         request.destroy();
+        return;
       }
+      chunks.push(chunk);
     });
-    request.on("end", resolveRequest);
+    request.on("end", () => resolveRequest(Buffer.concat(chunks)));
     request.on("error", rejectRequest);
   });
 }
@@ -368,6 +430,11 @@ export async function startWorkspaceServer(session, options = {}) {
     style: await readFile(join(ASSET_DIRECTORY, "app.css")),
   };
   const sessionPayload = Buffer.from(JSON.stringify(session));
+  const preferenceStore = options.preferenceStore ?? {
+    read: () => readReviewPreferences(options.env),
+    write: (value) => writeReviewPreferences(value, options.env),
+  };
+  let preferences = parseReviewPreferences(await preferenceStore.read());
   let finish;
   let finished = false;
   const startedAt = Date.now();
@@ -399,7 +466,7 @@ export async function startWorkspaceServer(session, options = {}) {
     };
 
     try {
-      if (request.method === "POST" && request.headers.origin !== `http://${expectedHost}`) {
+      if ((request.method === "POST" || request.method === "PUT") && request.headers.origin !== `http://${expectedHost}`) {
         send(403, "text/plain; charset=utf-8", "Cross-origin request denied");
       } else if (request.method === "GET" && path === base) {
         send(200, "text/html; charset=utf-8", assets.index);
@@ -409,6 +476,25 @@ export async function startWorkspaceServer(session, options = {}) {
         send(200, "text/css; charset=utf-8", assets.style);
       } else if (request.method === "GET" && path === `${base}api/session`) {
         send(200, "application/json; charset=utf-8", sessionPayload);
+      } else if (request.method === "GET" && path === `${base}api/preferences`) {
+        send(200, "application/json; charset=utf-8", JSON.stringify(preferences));
+      } else if (request.method === "PUT" && path === `${base}api/preferences`) {
+        if ((request.headers["content-type"] ?? "").split(";", 1)[0].trim() !== "application/json") {
+          send(415, "text/plain; charset=utf-8", "Expected application/json");
+        } else {
+          const body = await readSmallRequest(request);
+          let nextPreferences;
+          try {
+            nextPreferences = JSON.parse(body.toString("utf8"));
+          } catch {
+            throw new Error("Invalid preferences JSON.");
+          }
+          if (!isReviewPreferences(nextPreferences)) throw new Error("Invalid review display preferences.");
+          const normalizedPreferences = parseReviewPreferences(nextPreferences);
+          await preferenceStore.write(normalizedPreferences);
+          preferences = normalizedPreferences;
+          send(200, "application/json; charset=utf-8", JSON.stringify(preferences));
+        }
       } else if (request.method === "POST" && path === `${base}api/heartbeat`) {
         await readSmallRequest(request);
         receivedHeartbeat = true;
@@ -544,7 +630,7 @@ export async function openWorkspaceSurface(url, title, env = process.env) {
 export async function runReview(mode, args, options = {}) {
   const env = options.env ?? process.env;
   const session = await createReviewSession(mode, args, env, options.cwd ?? process.cwd());
-  const workspace = await startWorkspaceServer(session, options.serverOptions);
+  const workspace = await startWorkspaceServer(session, { ...options.serverOptions, env });
   let surface;
   try {
     surface = await openWorkspaceSurface(workspace.url, session.title, env);

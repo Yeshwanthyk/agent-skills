@@ -28,6 +28,22 @@ import {
 } from "./core";
 import "./app.css";
 
+type ReviewDiffStyle = "unified" | "split";
+type ReviewCodeFontSize = 12 | 13 | 14 | 16;
+
+interface ReviewPreferences {
+  version: 1;
+  diffStyle: ReviewDiffStyle;
+  codeFontSize: ReviewCodeFontSize;
+}
+
+const DEFAULT_REVIEW_PREFERENCES: ReviewPreferences = {
+  version: 1,
+  diffStyle: "unified",
+  codeFontSize: 13,
+};
+const CODE_FONT_SIZES = new Set<ReviewCodeFontSize>([12, 13, 14, 16]);
+
 const md = new MarkdownIt({
   html: false,
   linkify: true,
@@ -103,6 +119,21 @@ app.innerHTML = `
         <div class="reader-location" id="reader-location">Preparing review…</div>
         <select class="file-select" id="file-select" aria-label="Reviewed file"></select>
         <div class="reader-actions">
+          <div class="display-controls" aria-label="Reading display">
+            <div class="diff-layout-control" id="diff-layout-control" role="group" aria-label="Diff layout">
+              <button class="display-option" id="diff-unified" type="button" aria-pressed="true" title="Unified diff (saved on this computer)">Unified</button>
+              <button class="display-option" id="diff-split" type="button" aria-pressed="false" title="Split diff (saved on this computer)">Split</button>
+            </div>
+            <label class="code-size-control" title="Code font size (saved on this computer)">
+              <span>Code</span>
+              <select id="code-size" aria-label="Code font size">
+                <option value="12">12 px</option>
+                <option value="13" selected>13 px</option>
+                <option value="14">14 px</option>
+                <option value="16">16 px</option>
+              </select>
+            </label>
+          </div>
           <span class="reader-hint" id="reader-hint">Select text to comment</span>
           <button class="reader-action" id="copy-source" type="button">
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-6 12h8a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2Z"/></svg>
@@ -232,6 +263,9 @@ const elements = {
   reader: requiredElement<HTMLElement>("#review-reader"),
   readerLocation: requiredElement<HTMLElement>("#reader-location"),
   fileSelect: requiredElement<HTMLSelectElement>("#file-select"),
+  diffUnified: requiredElement<HTMLButtonElement>("#diff-unified"),
+  diffSplit: requiredElement<HTMLButtonElement>("#diff-split"),
+  codeSize: requiredElement<HTMLSelectElement>("#code-size"),
   readerHint: requiredElement<HTMLElement>("#reader-hint"),
   loading: requiredElement<HTMLElement>("#reader-loading"),
   markdown: requiredElement<HTMLElement>("#markdown-content"),
@@ -277,6 +311,73 @@ let deleteTimer: number | null = null;
 let statusTimer: number | null = null;
 let pendingG = false;
 let pendingGTimer: number | null = null;
+let preferences: ReviewPreferences = { ...DEFAULT_REVIEW_PREFERENCES };
+let preferenceWrite: Promise<void> = Promise.resolve();
+
+function normalizePreferences(value: unknown): ReviewPreferences {
+  if (!value || typeof value !== "object") return { ...DEFAULT_REVIEW_PREFERENCES };
+  const candidate = value as Partial<ReviewPreferences>;
+  const codeFontSize = Number(candidate.codeFontSize);
+  return {
+    version: 1,
+    diffStyle: candidate.diffStyle === "split" ? "split" : "unified",
+    codeFontSize: CODE_FONT_SIZES.has(codeFontSize as ReviewCodeFontSize)
+      ? codeFontSize as ReviewCodeFontSize
+      : DEFAULT_REVIEW_PREFERENCES.codeFontSize,
+  };
+}
+
+function applyPreferences(): void {
+  const root = document.documentElement;
+  root.style.setProperty("--review-code-font-size", `${preferences.codeFontSize}px`);
+  root.style.setProperty("--review-code-meta-size", `${preferences.codeFontSize}px`);
+  elements.diffUnified.setAttribute("aria-pressed", String(preferences.diffStyle === "unified"));
+  elements.diffSplit.setAttribute("aria-pressed", String(preferences.diffStyle === "split"));
+  elements.codeSize.value = String(preferences.codeFontSize);
+}
+
+async function loadPreferences(): Promise<void> {
+  try {
+    const response = await fetch("./api/preferences", { cache: "no-store" });
+    if (response.ok) preferences = normalizePreferences(await response.json());
+  } catch {
+    // Display defaults remain usable when local preference storage is unavailable.
+  }
+  applyPreferences();
+}
+
+function persistPreferences(): void {
+  const snapshot = JSON.stringify(preferences);
+  preferenceWrite = preferenceWrite
+    .catch(() => {})
+    .then(async () => {
+      const response = await fetch("./api/preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: snapshot,
+      });
+      if (!response.ok) throw new Error(`Preference save failed with HTTP ${response.status}.`);
+    })
+    .catch(() => {
+      showStatus("Display preference could not be saved on this computer.", "error");
+    });
+}
+
+function setDiffStyle(diffStyle: ReviewDiffStyle): void {
+  if (preferences.diffStyle === diffStyle) return;
+  preferences = { ...preferences, diffStyle };
+  applyPreferences();
+  if (session?.mode === "diff") renderDiff();
+  persistPreferences();
+}
+
+function setCodeFontSize(value: number): void {
+  if (!CODE_FONT_SIZES.has(value as ReviewCodeFontSize) || preferences.codeFontSize === value) return;
+  preferences = { ...preferences, codeFontSize: value as ReviewCodeFontSize };
+  applyPreferences();
+  positionComposer();
+  persistPreferences();
+}
 
 function storageKey(): string | null {
   return session ? `embedded-review:draft:${session.id}` : null;
@@ -710,8 +811,8 @@ function createInlineAnnotation(annotation: DiffLineAnnotation<ReviewAnnotation>
 
 const pierreUnsafeCss = `
   :host {
-    --diffs-font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-    --diffs-font-size: 0.8125rem;
+    --diffs-font-family: "BerkeleyMono Nerd Font", "BerkeleyMonoNF-Regular", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    --diffs-font-size: var(--review-code-font-size, 13px);
     --diffs-line-height: 1.55;
     --diffs-bg-separator-override: light-dark(oklch(0.94 0.006 260), oklch(0.225 0.018 260));
   }
@@ -721,7 +822,7 @@ const pierreUnsafeCss = `
     outline-offset: -1px;
     box-shadow: inset 3px 0 0 light-dark(oklch(0.50 0.25 280), oklch(0.75 0.18 280));
   }
-  [data-separator-content] { font-size: 0.75rem !important; opacity: .72; }
+  [data-separator-content] { font-size: var(--review-code-meta-size, 13px) !important; opacity: .72; }
   pre, code { font-variant-ligatures: none; font-variant-numeric: tabular-nums; }
 `;
 
@@ -746,7 +847,7 @@ function renderDiff(): void {
   diffView = new FileDiff<ReviewAnnotation>({
     theme: { dark: "github-dark", light: "github-light" },
     themeType: "system",
-    diffStyle: "unified",
+    diffStyle: preferences.diffStyle,
     overflow: "scroll",
     lineDiffType: "word-alt",
     diffIndicators: "bars",
@@ -771,7 +872,18 @@ function renderDiff(): void {
     lineAnnotations: diffLineAnnotations(),
     containerWrapper: elements.diff,
   });
+  const selectedAnchor = pendingAnchor?.kind === "diff"
+    ? pendingAnchor
+    : annotations.find((annotation) => annotation.id === selectedAnnotationId)?.anchor;
+  if (selectedAnchor?.kind === "diff" && selectedAnchor.file === file.name) {
+    diffView.setSelectedLines({
+      side: selectedAnchor.side,
+      start: selectedAnchor.start,
+      end: selectedAnchor.end,
+    }, { notify: false });
+  }
   renderFileList();
+  positionComposer();
 }
 
 function refreshDiffAnnotations(): void {
@@ -1244,7 +1356,10 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
 
 async function initialize(): Promise<void> {
   try {
-    const response = await fetch("./api/session", { cache: "no-store" });
+    const [response] = await Promise.all([
+      fetch("./api/session", { cache: "no-store" }),
+      loadPreferences(),
+    ]);
     if (!response.ok) throw new Error(`Session request failed with HTTP ${response.status}.`);
     session = await response.json() as ReviewSession;
     loadAnnotations();
@@ -1332,6 +1447,9 @@ elements.copy.addEventListener("click", () => void copyFeedback());
 elements.railCopy.addEventListener("click", () => void copyFeedback());
 elements.copySource.addEventListener("click", () => void copyReviewedSource());
 elements.fileSelect.addEventListener("change", () => switchFile(Number(elements.fileSelect.value)));
+elements.diffUnified.addEventListener("click", () => setDiffStyle("unified"));
+elements.diffSplit.addEventListener("click", () => setDiffStyle("split"));
+elements.codeSize.addEventListener("change", () => setCodeFontSize(Number(elements.codeSize.value)));
 elements.toolbarComment.addEventListener("click", annotateCurrentTarget);
 elements.toolHelp.addEventListener("click", () => elements.shortcutDialog.showModal());
 elements.close.addEventListener("click", () => void closeReview());

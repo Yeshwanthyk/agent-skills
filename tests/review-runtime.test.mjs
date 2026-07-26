@@ -11,6 +11,7 @@ import {
   createReviewSession,
   extractPreviousAssistantText,
   readPiPreviousAssistantText,
+  readReviewPreferences,
   startWorkspaceServer,
 } from "../skills/review-last/scripts/review-workspace.mjs";
 
@@ -205,6 +206,68 @@ test("serves one tokenized local workspace with strict no-store headers", async 
   } finally {
     await workspace.close("test-cleanup");
   }
+});
+
+test("persists validated display preferences on this computer across workspaces", async () => {
+  await withTempDirectory(async (directory) => {
+    const env = { REVIEW_WORKSPACE_STATE_DIRECTORY: directory };
+    const session = {
+      version: 1,
+      id: "b".repeat(64),
+      mode: "diff",
+      title: "Review diff",
+      sourceLabel: "test",
+      content: "diff --git a/a.txt b/a.txt\n",
+      createdAt: "2026-07-26T12:00:00.000Z",
+    };
+    const assets = {
+      index: Buffer.from("<!doctype html><div id=app></div>"),
+      script: Buffer.from("export {};"),
+      style: Buffer.from("body{}"),
+    };
+    const first = await startWorkspaceServer(session, { token: "preferences-one", assets, env });
+    try {
+      const origin = new URL(first.url).origin;
+      const saved = { version: 1, diffStyle: "split", codeFontSize: 16 };
+      const response = await fetch(`${first.url}api/preferences`, {
+        method: "PUT",
+        headers: { Origin: origin, "Content-Type": "application/json" },
+        body: JSON.stringify(saved),
+      });
+      assert.equal(response.status, 200);
+      assert.deepEqual(await response.json(), saved);
+
+      const invalid = await fetch(`${first.url}api/preferences`, {
+        method: "PUT",
+        headers: { Origin: origin, "Content-Type": "application/json" },
+        body: JSON.stringify({ version: 1, diffStyle: "sideways", codeFontSize: 48 }),
+      });
+      assert.equal(invalid.status, 400);
+      const unknownKey = await fetch(`${first.url}api/preferences`, {
+        method: "PUT",
+        headers: { Origin: origin, "Content-Type": "application/json" },
+        body: JSON.stringify({ ...saved, extra: true }),
+      });
+      assert.equal(unknownKey.status, 400);
+      const crossOrigin = await fetch(`${first.url}api/preferences`, {
+        method: "PUT",
+        headers: { Origin: "https://attacker.invalid", "Content-Type": "application/json" },
+        body: JSON.stringify(saved),
+      });
+      assert.equal(crossOrigin.status, 403);
+      assert.deepEqual(await readReviewPreferences(env), saved);
+    } finally {
+      await first.close("test-cleanup");
+    }
+
+    const second = await startWorkspaceServer(session, { token: "preferences-two", assets, env });
+    try {
+      const loaded = await (await fetch(`${second.url}api/preferences`)).json();
+      assert.deepEqual(loaded, { version: 1, diffStyle: "split", codeFontSize: 16 });
+    } finally {
+      await second.close("test-cleanup");
+    }
+  });
 });
 
 test("both independently synced skills carry identical runtime assets and notices", async () => {
