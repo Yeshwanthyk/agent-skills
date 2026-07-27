@@ -4,14 +4,14 @@ shaping: true
 
 # Embedded Review Workspace — Slices
 
-## V1: Review-last annotation loop
+## V1: Review-annotate document loop
 
-**Demo:** invoke `review-last` in Pi, select rendered Markdown text, add/edit/delete a comment, press `y`, and paste structured feedback.
+**Demo:** invoke `/skill:review-annotate last` or `/skill:review-annotate <path>`, switch lazily loaded files when applicable, annotate Markdown/plain/HTML transcript text, press `y`, and paste file-grouped feedback.
 
 | Affordances | Scope |
 | --- | --- |
-| N1, N2, N3 | Pi active-branch input, browser surface, local tokenized server |
-| U1, U2, U3, U5, U6, U7, U8, U9 | Markdown reader, text anchors, comments, keyboard loop, copy and close |
+| N1, N2, N3 | Pi active-branch or exact local path input, browser surface, tokenized lazy document server |
+| U1, U2, U3, U4, U5, U6, U7, U8, U9 | Document browser, safe readers, document-aware anchors, comments, keyboard loop, copy and close |
 | N4, N5, N6, N7, N8 | Draft state, formatter, clipboard fallback, bundled assets |
 
 ## V2: Review-diff annotation loop
@@ -26,12 +26,12 @@ shaping: true
 
 ## V3: Native Pi surface and portability
 
-**Demo:** the same built skills open in Glimpse when detected, fall back to a browser when absent, and accept explicit last-response input outside Pi.
+**Demo:** the same built skills open in Glimpse when detected and fall back to a browser when absent; explicit local paths remain available without stdin or URL ingestion.
 
 | Affordances | Scope |
 | --- | --- |
 | N2 | Optional Glimpse module discovery and native lifecycle |
-| N1 | Explicit file/stdin fallback for non-Pi harnesses |
+| N1 | Exact local file/folder path input for non-Pi harnesses; `last` remains Pi-only |
 | N8 | Identical self-contained runtime in both skill directories |
 
 ## V4: Production hardening
@@ -47,7 +47,7 @@ shaping: true
 
 ```mermaid
 flowchart LR
-  V1["V1 · Markdown annotate + copy"] --> V2["V2 · Pierre diff review"]
+  V1["V1 · Document annotate + copy"] --> V2["V2 · Pierre diff review"]
   V2 --> V3["V3 · Glimpse + portability"]
   V3 --> V4["V4 · Hardening"]
 ```

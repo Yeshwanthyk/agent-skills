@@ -8,7 +8,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const sourceDirectory = join(root, "src", "embedded-review");
 const outputDirectory = join(root, ".build", "embedded-review");
 const skillDirectories = [
-  join(root, "skills", "review-last"),
+  join(root, "skills", "review-annotate"),
   join(root, "skills", "review-diff"),
 ];
 

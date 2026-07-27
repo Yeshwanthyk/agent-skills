@@ -19,10 +19,13 @@ import {
   normalizeComment,
   parseDraft,
   summarizeAnchor,
+  validateTextAnchor,
   type DiffAnchor,
   type DiffSide,
   type ReviewAnchor,
   type ReviewAnnotation,
+  type HtmlAnchor,
+  type ReviewDocument,
   type ReviewSession,
   type TextAnchor,
 } from "./core";
@@ -148,6 +151,7 @@ app.innerHTML = `
           <span class="loading-line"></span>
           <span class="loading-line loading-line-short"></span>
         </div>
+        <iframe class="html-preview" id="html-preview" title="HTML document preview" sandbox hidden></iframe>
         <article class="markdown-content" id="markdown-content" hidden></article>
         <div class="diff-content" id="diff-content" hidden></div>
         <div class="reader-empty" id="reader-empty" hidden>
@@ -269,6 +273,7 @@ const elements = {
   codeSize: requiredElement<HTMLSelectElement>("#code-size"),
   readerHint: requiredElement<HTMLElement>("#reader-hint"),
   loading: requiredElement<HTMLElement>("#reader-loading"),
+  htmlPreview: requiredElement<HTMLIFrameElement>("#html-preview"),
   markdown: requiredElement<HTMLElement>("#markdown-content"),
   diff: requiredElement<HTMLElement>("#diff-content"),
   empty: requiredElement<HTMLElement>("#reader-empty"),
@@ -301,6 +306,9 @@ let selectedAnnotationId: string | null = null;
 let editingAnnotationId: string | null = null;
 let parsedFiles: FileDiffMetadata[] = [];
 let activeFileIndex = 0;
+let activeDocumentIndex = 0;
+let activeDocumentContent = "";
+let documentLoadVersion = 0;
 let diffView: FileDiff<ReviewAnnotation> | null = null;
 let markdownBlocks: HTMLElement[] = [];
 let markdownCursor = -1;
@@ -332,7 +340,6 @@ function normalizePreferences(value: unknown): ReviewPreferences {
 function applyPreferences(): void {
   const root = document.documentElement;
   root.style.setProperty("--review-code-font-size", `${preferences.codeFontSize}px`);
-  root.style.setProperty("--review-code-meta-size", `${preferences.codeFontSize}px`);
   elements.diffUnified.setAttribute("aria-pressed", String(preferences.diffStyle === "unified"));
   elements.diffSplit.setAttribute("aria-pressed", String(preferences.diffStyle === "split"));
   elements.codeSize.value = String(preferences.codeFontSize);
@@ -397,9 +404,15 @@ function persistAnnotations(): void {
 
 function loadAnnotations(): void {
   const key = storageKey();
-  if (!key) return;
+  if (!key || !session) return;
   try {
-    annotations = parseDraft(localStorage.getItem(key)).annotations;
+    const loaded = parseDraft(localStorage.getItem(key)).annotations;
+    if (session.mode === "document") {
+      const documentIds = new Set(session.documents.map((document) => document.id));
+      annotations = loaded.filter((annotation) => annotation.anchor.kind !== "diff" && documentIds.has(annotation.anchor.documentId));
+    } else {
+      annotations = loaded.filter((annotation) => annotation.anchor.kind === "diff");
+    }
   } catch {
     annotations = [];
   }
@@ -494,7 +507,7 @@ function renderAnnotationRail(): void {
   elements.railCount.hidden = count === 0;
   elements.railFooter.hidden = count === 0;
   elements.copy.disabled = count === 0;
-  if (session?.mode === "markdown") renderMarkdownToc();
+  if (session?.mode === "document") renderDocumentList();
 }
 
 function renderFileList(): void {
@@ -534,32 +547,105 @@ function renderFileList(): void {
   elements.fileSelect.value = String(activeFileIndex);
 }
 
-function renderMarkdownToc(): void {
-  elements.sourceNavTitle.textContent = "Contents";
+function activeDocument(): ReviewDocument | null {
+  return session?.mode === "document" ? session.documents[activeDocumentIndex] ?? null : null;
+}
+
+function renderDocumentList(): void {
+  if (session?.mode !== "document") return;
+  elements.sourceNavTitle.textContent = session.documents.length === 1 ? "Document" : "Documents";
   elements.fileList.replaceChildren();
-  const headings = Array.from(elements.markdown.querySelectorAll<HTMLElement>("h1, h2, h3"));
-  elements.fileCount.textContent = "";
-  headings.forEach((heading, index) => {
+  elements.fileSelect.replaceChildren();
+  elements.fileCount.textContent = String(session.documents.length);
+  session.documents.forEach((descriptor, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = descriptor.relativePath;
+    elements.fileSelect.append(option);
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "toc-button";
-    button.dataset.depth = heading.tagName.slice(1);
-    button.dataset.active = String(index === 0);
-    button.textContent = heading.textContent?.trim() || `Section ${index + 1}`;
-    const count = annotations.filter((annotation) => annotation.anchor.kind === "text" && annotation.anchor.section === heading.textContent?.trim()).length;
-    if (count > 0) {
-      const badge = document.createElement("span");
-      badge.className = "toc-count";
-      badge.textContent = String(count);
-      button.append(badge);
-    }
-    button.addEventListener("click", () => {
-      elements.fileList.querySelectorAll<HTMLElement>("[data-active]").forEach((item) => { item.dataset.active = "false"; });
-      button.dataset.active = "true";
-      heading.scrollIntoView({ block: "start", behavior: prefersReducedMotion() ? "auto" : "smooth" });
-    });
+    button.className = "file-button";
+    button.dataset.active = String(index === activeDocumentIndex);
+    button.setAttribute("aria-current", index === activeDocumentIndex ? "true" : "false");
+    const kind = document.createElement("span");
+    kind.className = "file-status file-status-document";
+    kind.textContent = descriptor.kind === "markdown" ? "M" : descriptor.kind === "html" ? "H" : "T";
+    const path = document.createElement("span");
+    path.className = "file-path";
+    path.textContent = descriptor.relativePath;
+    const count = annotations.filter((annotation) => annotation.anchor.kind !== "diff" && annotation.anchor.documentId === descriptor.id).length;
+    const badge = document.createElement("span");
+    badge.className = "file-comment-count";
+    badge.textContent = count ? String(count) : "";
+    button.append(kind, path, badge);
+    button.addEventListener("click", () => void switchDocument(index));
     elements.fileList.append(button);
   });
+  elements.fileSelect.value = String(activeDocumentIndex);
+}
+
+async function switchDocument(index: number): Promise<boolean> {
+  if (session?.mode !== "document" || index < 0 || index >= session.documents.length) return false;
+  const version = ++documentLoadVersion;
+  closeComposer();
+  activeDocumentIndex = index;
+  elements.loading.hidden = false;
+  elements.empty.hidden = true;
+  elements.markdown.hidden = true;
+  elements.htmlPreview.hidden = true;
+  elements.htmlPreview.removeAttribute("src");
+  renderDocumentList();
+  const descriptor = session.documents[index];
+  try {
+    const response = await fetch(`./api/document/${encodeURIComponent(descriptor.id)}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Document request failed with HTTP ${response.status}.`);
+    const payload: unknown = await response.json();
+    if (version !== documentLoadVersion || !payload || typeof payload !== "object") return false;
+    const candidate = payload as { content?: unknown; frameUrl?: unknown };
+    if (typeof candidate.content !== "string") throw new Error("Document response is malformed.");
+    activeDocumentContent = candidate.content;
+    elements.markdown.replaceChildren();
+    elements.markdown.classList.toggle("plain-text-content", descriptor.kind !== "markdown");
+    if (descriptor.kind === "markdown") {
+      elements.markdown.innerHTML = md.render(candidate.content);
+      await highlightMarkdownCode(elements.markdown);
+    } else {
+      const pre = document.createElement("pre");
+      pre.textContent = candidate.content;
+      elements.markdown.append(pre);
+    }
+    if (version !== documentLoadVersion) return false;
+    if (descriptor.kind === "html" && typeof candidate.frameUrl === "string") {
+      elements.htmlPreview.src = candidate.frameUrl;
+      elements.htmlPreview.hidden = false;
+    }
+    const displayedText = elements.markdown.textContent ?? "";
+    const invalidIds = new Set(annotations
+      .filter((annotation) => annotation.anchor.kind !== "diff" && annotation.anchor.documentId === descriptor.id)
+      .filter((annotation) => annotation.anchor.kind !== "diff" && !validateTextAnchor(displayedText, annotation.anchor))
+      .map((annotation) => annotation.id));
+    if (invalidIds.size > 0) {
+      annotations = annotations.filter((annotation) => !invalidIds.has(annotation.id));
+      if (selectedAnnotationId && invalidIds.has(selectedAnnotationId)) selectedAnnotationId = null;
+      persistAnnotations();
+      renderAnnotationRail();
+      showStatus(`${invalidIds.size} stale comment${invalidIds.size === 1 ? " was" : "s were"} discarded.`, "error");
+    }
+    elements.readerLocation.textContent = descriptor.relativePath;
+    elements.copySource.querySelector("span")?.replaceChildren(document.createTextNode("Copy document"));
+    elements.loading.hidden = true;
+    elements.empty.hidden = candidate.content.trim().length > 0;
+    elements.markdown.hidden = candidate.content.trim().length === 0;
+    collectMarkdownBlocks();
+    applyTextHighlights();
+    return true;
+  } catch (error) {
+    if (version === documentLoadVersion) {
+      elements.loading.hidden = true;
+      elements.empty.hidden = false;
+    }
+    throw error;
+  }
 }
 
 async function highlightMarkdownCode(root: HTMLElement): Promise<void> {
@@ -604,7 +690,9 @@ function nearestSection(node: Node): string | undefined {
   return section;
 }
 
-function textAnchorFromRange(range: Range): TextAnchor | null {
+function textAnchorFromRange(range: Range): TextAnchor | HtmlAnchor | null {
+  const descriptor = activeDocument();
+  if (!descriptor) return null;
   const rawQuote = range.toString();
   const quote = rawQuote.trim();
   if (!quote) return null;
@@ -618,18 +706,20 @@ function textAnchorFromRange(range: Range): TextAnchor | null {
   const start = rawStart + leadingWhitespace;
   const end = start + quote.length;
   const fullText = elements.markdown.textContent ?? "";
-  return {
-    kind: "text",
+  const context = {
+    documentId: descriptor.id,
     start,
     end,
     quote,
-    section: nearestSection(range.startContainer),
     before: fullText.slice(Math.max(0, start - 48), start),
     after: fullText.slice(end, end + 48),
   };
+  return descriptor.kind === "html"
+    ? { kind: "html", domPath: "text-transcript", ...context }
+    : { kind: "text", section: nearestSection(range.startContainer), ...context };
 }
 
-function textAnchorFromElement(element: HTMLElement): TextAnchor | null {
+function textAnchorFromElement(element: HTMLElement): TextAnchor | HtmlAnchor | null {
   const range = document.createRange();
   range.selectNodeContents(element);
   return textAnchorFromRange(range);
@@ -642,7 +732,7 @@ function unwrapTextHighlights(): void {
   elements.markdown.normalize();
 }
 
-function wrapTextRange(anchor: TextAnchor, id: string, state: "saved" | "pending"): void {
+function wrapTextRange(anchor: TextAnchor | HtmlAnchor, id: string, state: "saved" | "pending"): void {
   const walker = document.createTreeWalker(elements.markdown, NodeFilter.SHOW_TEXT);
   const nodes: Array<{ node: Text; start: number; end: number }> = [];
   let position = 0;
@@ -682,13 +772,17 @@ function wrapTextRange(anchor: TextAnchor, id: string, state: "saved" | "pending
 }
 
 function applyTextHighlights(): void {
-  if (session?.mode !== "markdown") return;
+  if (session?.mode !== "document") return;
   unwrapTextHighlights();
+  const descriptor = activeDocument();
+  if (!descriptor) return;
   const textAnnotations = annotations
-    .filter((annotation): annotation is ReviewAnnotation & { anchor: TextAnchor } => annotation.anchor.kind === "text")
+    .filter((annotation): annotation is ReviewAnnotation & { anchor: TextAnchor | HtmlAnchor } => (
+      annotation.anchor.kind !== "diff" && annotation.anchor.documentId === descriptor.id
+    ))
     .sort((left, right) => right.anchor.start - left.anchor.start);
   for (const annotation of textAnnotations) wrapTextRange(annotation.anchor, annotation.id, "saved");
-  if (pendingAnchor?.kind === "text") wrapTextRange(pendingAnchor, "pending", "pending");
+  if (pendingAnchor?.kind !== "diff" && pendingAnchor?.documentId === descriptor.id) wrapTextRange(pendingAnchor, "pending", "pending");
 }
 
 function collectMarkdownBlocks(): void {
@@ -906,6 +1000,10 @@ function refreshDiffAnnotations(): void {
 }
 
 function switchFile(index: number): void {
+  if (session?.mode === "document") {
+    if (index !== activeDocumentIndex) void switchDocument(index).catch((error) => showStatus(error instanceof Error ? error.message : String(error), "error"));
+    return;
+  }
   if (index < 0 || index >= parsedFiles.length || index === activeFileIndex) return;
   activeFileIndex = index;
   pendingAnchor = null;
@@ -947,7 +1045,7 @@ function unionRects(rects: readonly DOMRect[]): DOMRect | null {
 }
 
 function currentAnchorRect(): DOMRect | null {
-  if (pendingAnchor?.kind === "text") {
+  if (pendingAnchor?.kind !== "diff") {
     const marks = Array.from(elements.markdown.querySelectorAll<HTMLElement>('mark[data-review-highlight="pending"]'));
     return unionRects(marks.map((mark) => mark.getBoundingClientRect()));
   }
@@ -994,7 +1092,7 @@ function openComposer(anchor: ReviewAnchor, annotation?: ReviewAnnotation, ancho
   elements.composerAnchor.textContent = summarizeAnchor(anchor);
   elements.commentInput.value = annotation?.comment ?? "";
   elements.saveComment.textContent = annotation ? "Update Comment" : "Add Comment";
-  if (session?.mode === "markdown") applyTextHighlights();
+  if (session?.mode === "document") applyTextHighlights();
   if (session?.mode === "diff" && diffView && anchor.kind === "diff") {
     diffView.setSelectedLines({
       side: anchor.side,
@@ -1013,7 +1111,7 @@ function closeComposer(): void {
   pendingAnchorRect = null;
   editingAnnotationId = null;
   elements.commentInput.value = "";
-  if (session?.mode === "markdown") applyTextHighlights();
+  if (session?.mode === "document") applyTextHighlights();
   else if (!selectedAnnotationId) diffView?.setSelectedLines(null, { notify: false });
 }
 
@@ -1051,7 +1149,7 @@ function saveComment(): void {
   persistAnnotations();
   closeComposer();
   renderAnnotationRail();
-  if (session?.mode === "markdown") applyTextHighlights();
+  if (session?.mode === "document") applyTextHighlights();
   else refreshDiffAnnotations();
 }
 
@@ -1065,10 +1163,23 @@ function editAnnotation(id: string): void {
       activeFileIndex = fileIndex;
       renderDiff();
     }
+    selectedAnnotationId = id;
+    renderAnnotationRail();
+    openComposer(annotation.anchor, annotation);
+    return;
   }
-  selectedAnnotationId = id;
-  renderAnnotationRail();
-  openComposer(annotation.anchor, annotation);
+  const anchor = annotation.anchor;
+  const documentIndex = session?.mode === "document"
+    ? session.documents.findIndex((document) => document.id === anchor.documentId)
+    : -1;
+  const open = async (): Promise<void> => {
+    if (documentIndex < 0) return;
+    if (documentIndex !== activeDocumentIndex && !await switchDocument(documentIndex)) return;
+    selectedAnnotationId = id;
+    renderAnnotationRail();
+    openComposer(anchor, annotation);
+  };
+  void open().catch((error) => showStatus(error instanceof Error ? error.message : String(error), "error"));
 }
 
 function deleteAnnotation(id: string): void {
@@ -1079,7 +1190,7 @@ function deleteAnnotation(id: string): void {
   if (selectedAnnotationId === id) selectedAnnotationId = null;
   persistAnnotations();
   renderAnnotationRail();
-  if (session?.mode === "markdown") applyTextHighlights();
+  if (session?.mode === "document") applyTextHighlights();
   else refreshDiffAnnotations();
   elements.undo.hidden = false;
   if (deleteTimer !== null) window.clearTimeout(deleteTimer);
@@ -1102,7 +1213,7 @@ function undoDelete(): void {
   elements.undo.hidden = true;
   persistAnnotations();
   renderAnnotationRail();
-  if (session?.mode === "markdown") applyTextHighlights();
+  if (session?.mode === "document") applyTextHighlights();
   else refreshDiffAnnotations();
   showStatus("Comment restored.", "success");
 }
@@ -1113,14 +1224,23 @@ function selectAnnotation(id: string): void {
   selectedAnnotationId = id;
   renderAnnotationRail();
   setRailOpen(true);
-  if (annotation.anchor.kind === "text") {
-    applyTextHighlights();
-    window.requestAnimationFrame(() => {
-      elements.markdown.querySelector<HTMLElement>(`mark[data-review-highlight="${CSS.escape(id)}"]`)?.scrollIntoView({
-        block: "center",
-        behavior: prefersReducedMotion() ? "auto" : "smooth",
+  if (annotation.anchor.kind !== "diff") {
+    const anchor = annotation.anchor;
+    const documentIndex = session?.mode === "document"
+      ? session.documents.findIndex((document) => document.id === anchor.documentId)
+      : -1;
+    const reveal = async (): Promise<void> => {
+      if (documentIndex < 0) return;
+      if (documentIndex !== activeDocumentIndex && !await switchDocument(documentIndex)) return;
+      applyTextHighlights();
+      window.requestAnimationFrame(() => {
+        elements.markdown.querySelector<HTMLElement>(`mark[data-review-highlight="${CSS.escape(id)}"]`)?.scrollIntoView({
+          block: "center",
+          behavior: prefersReducedMotion() ? "auto" : "smooth",
+        });
       });
-    });
+    };
+    void reveal().catch((error) => showStatus(error instanceof Error ? error.message : String(error), "error"));
     return;
   }
 
@@ -1182,11 +1302,12 @@ async function writeClipboard(text: string): Promise<boolean> {
 
 async function copyReviewedSource(): Promise<void> {
   if (!session) return;
-  if (await writeClipboard(session.content)) {
-    showStatus(session.mode === "diff" ? "Diff copied." : "Response copied.", "success");
+  const content = session.mode === "diff" ? session.content : activeDocumentContent;
+  if (await writeClipboard(content)) {
+    showStatus(session.mode === "diff" ? "Diff copied." : "Document copied.", "success");
     return;
   }
-  elements.manualCopyOutput.value = session.content;
+  elements.manualCopyOutput.value = content;
   elements.manualCopyDialog.showModal();
   window.requestAnimationFrame(() => {
     elements.manualCopyOutput.focus();
@@ -1195,7 +1316,7 @@ async function copyReviewedSource(): Promise<void> {
 }
 
 async function copyFeedback(): Promise<void> {
-  const feedback = formatFeedback(annotations);
+  const feedback = formatFeedback(annotations, session?.mode === "document" ? session.documents : []);
   if (!feedback) {
     showStatus("Add at least one comment before copying feedback.", "error");
     return;
@@ -1232,7 +1353,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
 }
 
 function jumpToBoundary(last: boolean): void {
-  if (session?.mode === "markdown") {
+  if (session?.mode === "document") {
     updateMarkdownCursor(last ? markdownBlocks.length - 1 : 0);
     return;
   }
@@ -1247,7 +1368,7 @@ function annotateCurrentTarget(): void {
     openComposer(pendingAnchor);
     return;
   }
-  if (session?.mode === "markdown") {
+  if (session?.mode === "document") {
     if (markdownCursor < 0) updateMarkdownCursor(0);
     const block = markdownBlocks[markdownCursor];
     const anchor = block ? textAnchorFromElement(block) : null;
@@ -1275,34 +1396,34 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
       break;
     case "j":
       event.preventDefault();
-      if (session?.mode === "markdown") updateMarkdownCursor(markdownCursor < 0 ? 0 : markdownCursor + 1);
+      if (session?.mode === "document") updateMarkdownCursor(markdownCursor < 0 ? 0 : markdownCursor + 1);
       else moveDiffCursor(1, false);
       break;
     case "J":
       event.preventDefault();
-      if (session?.mode === "markdown") updateMarkdownCursor(markdownCursor < 0 ? 0 : markdownCursor + 1);
+      if (session?.mode === "document") updateMarkdownCursor(markdownCursor < 0 ? 0 : markdownCursor + 1);
       else moveDiffCursor(1, true);
       break;
     case "k":
       event.preventDefault();
-      if (session?.mode === "markdown") updateMarkdownCursor(markdownCursor < 0 ? markdownBlocks.length - 1 : markdownCursor - 1);
+      if (session?.mode === "document") updateMarkdownCursor(markdownCursor < 0 ? markdownBlocks.length - 1 : markdownCursor - 1);
       else moveDiffCursor(-1, false);
       break;
     case "K":
       event.preventDefault();
-      if (session?.mode === "markdown") updateMarkdownCursor(markdownCursor < 0 ? markdownBlocks.length - 1 : markdownCursor - 1);
+      if (session?.mode === "document") updateMarkdownCursor(markdownCursor < 0 ? markdownBlocks.length - 1 : markdownCursor - 1);
       else moveDiffCursor(-1, true);
       break;
     case "h":
-      if (session?.mode === "diff") {
+      if (session) {
         event.preventDefault();
-        switchFile(Math.max(0, activeFileIndex - 1));
+        switchFile(session.mode === "diff" ? Math.max(0, activeFileIndex - 1) : Math.max(0, activeDocumentIndex - 1));
       }
       break;
     case "l":
-      if (session?.mode === "diff") {
+      if (session) {
         event.preventDefault();
-        switchFile(Math.min(parsedFiles.length - 1, activeFileIndex + 1));
+        switchFile(session.mode === "diff" ? Math.min(parsedFiles.length - 1, activeFileIndex + 1) : Math.min(session.documents.length - 1, activeDocumentIndex + 1));
       }
       break;
     case "g":
@@ -1369,13 +1490,16 @@ async function refreshSession(): Promise<void> {
     if (response.status === 204) return;
     if (!response.ok) throw new Error(`Session refresh failed with HTTP ${response.status}.`);
     const nextSession = await response.json() as ReviewSession;
+    if (nextSession.mode !== "diff") throw new Error("Refreshed diff session is malformed.");
     if (nextSession.id === session.id) return;
 
     const activeFile = parsedFiles[activeFileIndex]?.name;
     const scrollTop = elements.reader.scrollTop;
     closeComposer();
     session = nextSession;
-    parsedFiles = processPatch(session.content, session.id, true).files;
+    loadAnnotations();
+    selectedAnnotationId = null;
+    parsedFiles = processPatch(nextSession.content, nextSession.id, true).files;
     activeFileIndex = Math.max(0, activeFile ? parsedFiles.findIndex((file) => file.name === activeFile) : 0);
     elements.sourceLabel.textContent = session.sourceLabel;
     elements.loading.hidden = true;
@@ -1390,9 +1514,8 @@ async function refreshSession(): Promise<void> {
       diffView = null;
       elements.diff.replaceChildren();
     }
-    persistAnnotations();
     renderAnnotationRail();
-    showStatus("Diff updated to the latest worktree files.", "success");
+    showStatus("Diff updated to the latest worktree snapshot.", "success");
   } catch (error) {
     showStatus(error instanceof Error ? error.message : String(error), "error");
   } finally {
@@ -1407,10 +1530,11 @@ async function initialize(): Promise<void> {
       loadPreferences(),
     ]);
     if (!response.ok) throw new Error(`Session request failed with HTTP ${response.status}.`);
-    session = await response.json() as ReviewSession;
+    const loadedSession = await response.json() as ReviewSession;
+    session = loadedSession;
     loadAnnotations();
 
-    document.title = session.title;
+    document.title = loadedSession.title;
     document.body.dataset.mode = session.mode;
     elements.title.textContent = session.title;
     elements.sourceLabel.textContent = session.sourceLabel;
@@ -1418,23 +1542,16 @@ async function initialize(): Promise<void> {
     elements.readerHint.textContent = session.mode === "diff"
       ? "j/k move · ⇧j/⇧k extend"
       : "j/k move · a annotate";
-    elements.copySource.querySelector("span")!.textContent = session.mode === "diff" ? "Copy diff" : "Copy response";
+    const copySourceLabel = elements.copySource.querySelector("span");
+    if (copySourceLabel) copySourceLabel.textContent = session.mode === "diff" ? "Copy diff" : "Copy document";
     elements.sourceNav.hidden = false;
 
-    if (session.mode === "markdown") {
-      elements.markdown.innerHTML = md.render(session.content);
-      await highlightMarkdownCode(elements.markdown);
-      elements.loading.hidden = true;
-      if (session.content.trim()) {
-        elements.markdown.hidden = false;
-        collectMarkdownBlocks();
-        renderMarkdownToc();
-        applyTextHighlights();
-      } else {
-        elements.empty.hidden = false;
-      }
+    if (loadedSession.mode === "document") {
+      activeDocumentIndex = Math.max(0, loadedSession.documents.findIndex((document) => document.id === loadedSession.initialDocumentId));
+      renderDocumentList();
+      await switchDocument(activeDocumentIndex);
     } else {
-      const patch = processPatch(session.content, session.id, true);
+      const patch = processPatch(loadedSession.content, loadedSession.id, true);
       parsedFiles = patch.files;
       elements.sourceNav.hidden = false;
       elements.loading.hidden = true;
@@ -1452,8 +1569,10 @@ async function initialize(): Promise<void> {
   } catch (error) {
     elements.loading.hidden = true;
     elements.empty.hidden = false;
-    elements.empty.querySelector("h2")!.textContent = "Review could not open";
-    elements.empty.querySelector("p")!.textContent = error instanceof Error ? error.message : String(error);
+    const heading = elements.empty.querySelector("h2");
+    const copy = elements.empty.querySelector("p");
+    if (heading) heading.textContent = "Review could not open";
+    if (copy) copy.textContent = error instanceof Error ? error.message : String(error);
     elements.workspace.setAttribute("aria-busy", "false");
   }
 }

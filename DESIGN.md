@@ -28,7 +28,7 @@ Diff addition/deletion colors remain owned by pinned `@pierre/diffs` 1.2.8.
 - Flexible reader using a maximum 832px prose measure; diffs use the full center pane.
 - 256–288px Annotations rail, collapsible and rendered as an overlay below 1088px.
 - 40px reader toolbar aligned with the source and annotation panel headers; coarse-pointer devices expand it to 52px for 44px targets.
-- At narrow widths, rails leave the document flow and the reader becomes single-column.
+- At narrow widths, rails leave the document flow and the reader becomes single-column; help and shortcut hints yield first based on reader-pane width.
 - Diffs default to unified layout, with an explicit Unified/Split control in the reader toolbar.
 
 The reviewed material remains the largest and highest-contrast surface. Empty rails stay visually quiet.
@@ -37,9 +37,9 @@ The reviewed material remains the largest and highest-contrast surface. Empty ra
 
 - UI: `-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`.
 - Code, paths, and anchors: local `BerkeleyMono Nerd Font` when installed, then `ui-monospace, SFMono-Regular, Consolas, monospace`; the font is never bundled.
-- Prose: 16px / 1.65. Code, diff, path, and anchor sizing offers 12/13/14/16px presets; 13px is the default.
+- Prose: 16px / 1.65. Code and diff sizing offers 14/15/16/18px presets; 15px is the default.
 - Diff layout and code-size preferences persist in the user-local review workspace state on this computer.
-- Compact chrome: 10–13px with weight and contrast used deliberately.
+- Paths, anchors, and compact chrome stay fixed at 10–13px so code-size preferences cannot crowd controls.
 - Disable code ligatures; use tabular numerals for line numbers and counts.
 - Truncate only source paths and anchors; comments and inline annotations wrap fully.
 

@@ -1,6 +1,0 @@
-interface:
-  display_name: "Review Last"
-  short_description: "Annotate the previous assistant response"
-  default_prompt: "Use $review-last to open the previous assistant response in the bundled local annotation workspace, then let me copy the feedback back into chat."
-policy:
-  allow_implicit_invocation: true

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, symlink, truncate, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -10,12 +10,15 @@ import {
   collectLocalDiff,
   collectRevisionDiff,
   collectWorktreeFingerprint,
+  createDocumentSession,
   createReviewSession,
   extractPreviousAssistantText,
   readPiPreviousAssistantText,
+  MAX_DOCUMENT_BYTES,
+  main as annotateMain,
   readReviewPreferences,
   startWorkspaceServer,
-} from "../skills/review-last/scripts/review-workspace.mjs";
+} from "../skills/review-annotate/scripts/review-workspace.mjs";
 
 function textMessage(id, parentId, role, text) {
   return {
@@ -80,7 +83,7 @@ test("fails closed when the current Pi tool invocation cannot be proven", () => 
   );
 });
 
-test("reads Pi JSONL and creates a stable review-last session", async () => {
+test("reads Pi JSONL and creates a stable review-annotate session", async () => {
   await withTempDirectory(async (directory) => {
     const sessionFile = join(directory, "session.jsonl");
     const entries = [
@@ -93,9 +96,11 @@ test("reads Pi JSONL and creates a stable review-last session", async () => {
     await writeFile(sessionFile, `${entries.map((entry) => JSON.stringify(entry)).join("\n")}\n`);
 
     assert.equal(await readPiPreviousAssistantText(sessionFile), "# Answer\n\nExact response.");
-    const review = await createReviewSession("markdown", [], { PI_SESSION_FILE: sessionFile }, directory);
-    assert.equal(review.mode, "markdown");
-    assert.equal(review.content, "# Answer\n\nExact response.");
+    const review = await createReviewSession("document", ["last"], { PI_SESSION_FILE: sessionFile }, directory);
+    assert.equal(review.mode, "document");
+    assert.equal(review.documents.length, 1);
+    assert.equal(review.documents[0].relativePath, "Assistant response");
+    assert.equal("content" in review, false);
     assert.equal(review.id.length, 64);
   });
 });
@@ -116,11 +121,135 @@ test("rejects mismatched and duplicate Pi session identity", async () => {
   });
 });
 
-test("requires explicit input outside Pi", async () => {
-  await assert.rejects(
-    createReviewSession("markdown", [], {}, process.cwd()),
-    /requires --file <path> or --stdin/,
-  );
+test("requires exact annotate input and active Pi state for last", async () => {
+  await assert.rejects(createReviewSession("document", [], {}, process.cwd()), /exactly/);
+  await assert.rejects(createReviewSession("document", ["last"], {}, process.cwd()), /active Pi session/);
+  await assert.rejects(createReviewSession("document", ["--stdin"], {}, process.cwd()), /exactly/);
+  await assert.rejects(createReviewSession("document", ["https://example.com/x.md"], {}, process.cwd()), /exactly/);
+  await assert.rejects(createReviewSession("document", ["a.md", "b.md"], {}, process.cwd()), /exactly/);
+});
+
+test("keeps annotate and diff package dispatchers separate", async () => {
+  await assert.rejects(annotateMain(["diff"], { env: { REVIEW_WORKSPACE_SURFACE: "none" } }), /annotate <last\|file\|folder>/);
+  const { main: diffMain } = await import("../skills/review-diff/scripts/review-workspace.mjs");
+  await assert.rejects(diffMain(["annotate", "last"], { env: { REVIEW_WORKSPACE_SURFACE: "none" } }), /diff \[/);
+});
+
+test("classifies supported files and deterministic bounded folders without eager content", async () => {
+  await withTempDirectory(async (directory) => {
+    await mkdir(join(directory, "docs", "nested"), { recursive: true });
+    await mkdir(join(directory, "node_modules", "hidden"), { recursive: true });
+    await writeFile(join(directory, "docs", "z.txt"), "zeta\n");
+    await writeFile(join(directory, "docs", "a.md"), "# Alpha\n");
+    await writeFile(join(directory, "docs", "nested", "data.json"), "{\"ok\":true}\n");
+    await writeFile(join(directory, "docs", "code.ts"), "export {};\n");
+    await writeFile(join(directory, "docs", ".env"), "SECRET=x\n");
+    await writeFile(join(directory, "docs", ".env.example"), "SECRET=\n");
+    await writeFile(join(directory, "node_modules", "hidden", "vendor.md"), "hidden\n");
+    await symlink(join(directory, "docs", "a.md"), join(directory, "docs", "linked.md"));
+
+    const review = await createDocumentSession(join(directory, "docs"));
+    assert.deepEqual(review.documents.map((document) => document.relativePath), [
+      ".env.example", "a.md", "nested/data.json", "z.txt",
+    ]);
+    assert.equal(JSON.stringify(review).includes("# Alpha"), false);
+    assert.equal(review.documents.every((document) => !document.relativePath.includes("linked")), true);
+    await assert.rejects(createDocumentSession(join(directory, "docs", "linked.md")), /Symbolic links/);
+    await assert.rejects(createDocumentSession(join(directory, "docs", "code.ts")), /not supported/);
+    await assert.rejects(createDocumentSession(join(directory, "docs", ".env")), /not supported/);
+
+    const invalid = join(directory, "invalid.txt");
+    await writeFile(invalid, Buffer.from([0xff, 0xfe]));
+    await assert.rejects(createDocumentSession(invalid), /UTF-8/);
+    const binary = join(directory, "binary.txt");
+    await writeFile(binary, Buffer.from([0x41, 0, 0x42]));
+    await assert.rejects(createDocumentSession(binary), /binary/);
+  });
+});
+
+test("enforces missing, empty, depth, count, and size limits", async () => {
+  await withTempDirectory(async (directory) => {
+    await assert.rejects(createDocumentSession(join(directory, "missing.md")), /does not exist/);
+    const empty = join(directory, "empty");
+    await mkdir(empty);
+    await assert.rejects(createDocumentSession(empty), /no supported documents/);
+
+    const deep = join(directory, "deep");
+    let cursor = deep;
+    for (let index = 0; index < 14; index += 1) {
+      cursor = join(cursor, `d${index}`);
+      await mkdir(cursor, { recursive: true });
+    }
+    await writeFile(join(cursor, "deep.txt"), "deep\n");
+    await assert.rejects(createDocumentSession(deep), /maximum review depth/);
+
+    const many = join(directory, "many");
+    await mkdir(many);
+    await Promise.all(Array.from({ length: 501 }, (_, index) => writeFile(join(many, `${String(index).padStart(3, "0")}.txt`), "")));
+    await assert.rejects(createDocumentSession(many), /500-document/);
+
+    const large = join(directory, "large.txt");
+    await writeFile(large, "");
+    await truncate(large, MAX_DOCUMENT_BYTES + 1);
+    await assert.rejects(createDocumentSession(large), /per-file safety limit/);
+  });
+});
+
+test("serves lazy documents and sandbox HTML assets through confined routes", async () => {
+  await withTempDirectory(async (directory) => {
+    await mkdir(join(directory, "site", "assets"), { recursive: true });
+    await writeFile(join(directory, "site", "index.html"), `<!doctype html><link rel="stylesheet" href="assets/site.css"><script>globalThis.pwned=true</script><h1 onclick="globalThis.pwned=true">Hello</h1><img src="assets/pixel.png"><img src="../outside.png">`);
+    await writeFile(join(directory, "site", "assets", "site.css"), `body{background-image:url("pixel.png")} @import "https://attacker.invalid/x.css";`);
+    await writeFile(join(directory, "site", "assets", "pixel.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+    await writeFile(join(directory, "outside.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+    await writeFile(join(directory, "site", "other.md"), "# Other\n");
+    const session = await createDocumentSession(join(directory, "site"));
+    const workspace = await startWorkspaceServer(session, {
+      token: "documents-token",
+      assets: {
+        index: Buffer.from("<!doctype html><div id=app></div>"),
+        script: Buffer.from("export {};"),
+        style: Buffer.from("body{}"),
+      },
+    });
+    try {
+      const manifestResponse = await fetch(`${workspace.url}api/session`);
+      const manifest = await manifestResponse.json();
+      assert.equal(manifest.documents.length, 2);
+      assert.equal(JSON.stringify(manifest).includes("globalThis.pwned"), false);
+      const html = manifest.documents.find((document) => document.kind === "html");
+      assert.ok(html);
+      const loaded = await (await fetch(`${workspace.url}api/document/${html.id}`)).json();
+      assert.equal(loaded.kind, "html");
+      assert.match(loaded.content, /Hello/);
+      assert.doesNotMatch(loaded.content, /globalThis\.pwned/);
+      assert.equal((await fetch(`${workspace.url}api/document/unknown`)).status, 404);
+      const markdown = manifest.documents.find((document) => document.kind === "markdown");
+      assert.ok(markdown);
+      await writeFile(join(directory, "site", "other.md"), "# Changed\n");
+      const changed = await fetch(`${workspace.url}api/document/${markdown.id}`);
+      assert.equal(changed.status, 400);
+      assert.doesNotMatch(await changed.text(), new RegExp(directory.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+
+      const frame = await fetch(new URL(loaded.frameUrl, workspace.url));
+      assert.equal(frame.status, 200);
+      assert.equal(frame.headers.get("x-content-type-options"), "nosniff");
+      assert.equal(frame.headers.get("cache-control"), "no-store");
+      assert.match(frame.headers.get("content-security-policy"), /script-src 'none'/);
+      const frameBody = await frame.text();
+      assert.match(frameBody, /api\/asset/);
+      assert.match(frameBody, /about:blank#blocked/);
+      assert.doesNotMatch(frameBody, /https:\/\/attacker/);
+      const assetPath = frameBody.match(/\/documents-token\/api\/asset\/[^"']+/)?.[0];
+      assert.ok(assetPath);
+      const asset = await fetch(new URL(assetPath, workspace.url));
+      assert.equal(asset.status, 200);
+      assert.equal(asset.headers.get("content-type"), "text/css; charset=utf-8");
+      assert.match(await asset.text(), /api\/asset/);
+    } finally {
+      await workspace.close("test-cleanup");
+    }
+  });
 });
 
 test("classifies only HTTPS GitHub PR and GitLab MR URLs", () => {
@@ -220,8 +349,8 @@ test("serves one tokenized local workspace with strict no-store headers", async 
   const session = {
     version: 1,
     id: "a".repeat(64),
-    mode: "markdown",
-    title: "Review last response",
+    mode: "diff",
+    title: "Review diff",
     sourceLabel: "test",
     content: "# Test",
     createdAt: "2026-07-26T12:00:00.000Z",
@@ -239,6 +368,7 @@ test("serves one tokenized local workspace with strict no-store headers", async 
     assert.equal(page.status, 200);
     assert.equal(page.headers.get("cache-control"), "no-store");
     assert.match(page.headers.get("content-security-policy"), /default-src 'none'/);
+    assert.match(page.headers.get("content-security-policy"), /frame-src 'self'/);
     assert.equal(page.headers.get("x-frame-options"), null);
 
     const loadedSession = await (await fetch(`${workspace.url}api/session`)).json();
@@ -358,6 +488,17 @@ test("persists validated display preferences on this computer across workspaces"
   });
 });
 
+test("packages the renamed skill without an unsafe HTML sandbox capability", async () => {
+  await assert.rejects(access(join("skills", "review-last")), /ENOENT/);
+  const skill = await readFile(join("skills", "review-annotate", "SKILL.md"), "utf8");
+  const appSource = await readFile(join("src", "embedded-review", "app.ts"), "utf8");
+  assert.match(skill, /^name: review-annotate$/m);
+  assert.match(skill, /\/skill:review-annotate/);
+  assert.match(skill, /bare `\/review-annotate`/);
+  assert.match(appSource, /<iframe[^>]+sandbox hidden/);
+  assert.doesNotMatch(appSource, /sandbox=["'][^"']*allow-same-origin/);
+});
+
 test("both independently synced skills carry identical runtime assets and notices", async () => {
   const files = [
     "assets/app.js",
@@ -371,8 +512,8 @@ test("both independently synced skills carry identical runtime assets and notice
     "licenses/THIRD_PARTY_NOTICES.md",
   ];
   for (const file of files) {
-    const last = await readFile(join("skills", "review-last", file));
+    const annotate = await readFile(join("skills", "review-annotate", file));
     const diff = await readFile(join("skills", "review-diff", file));
-    assert.deepEqual(diff, last, file);
+    assert.deepEqual(diff, annotate, file);
   }
 });

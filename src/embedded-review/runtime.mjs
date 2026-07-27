@@ -2,17 +2,37 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { createReadStream, lstatSync, readFileSync, readlinkSync, realpathSync } from "node:fs";
-import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { constants, createReadStream, lstatSync, readFileSync, readlinkSync, realpathSync } from "node:fs";
+import { lstat, mkdir, open, readFile, readdir, realpath, rename, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { homedir } from "node:os";
-import { dirname, join, resolve, sep } from "node:path";
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { createInterface } from "node:readline";
 import { pathToFileURL, fileURLToPath } from "node:url";
 
 export const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
+export const MAX_DOCUMENT_BYTES = 5 * 1024 * 1024;
+export const MAX_DOCUMENT_FILES = 500;
+export const MAX_DOCUMENT_DEPTH = 12;
+export const MAX_DOCUMENT_AGGREGATE_BYTES = 25 * 1024 * 1024;
 export const MAX_UNTRACKED_FILES = 500;
 export const MAX_SESSION_BYTES = 100 * 1024 * 1024;
+export const SUPPORTED_DOCUMENT_EXTENSIONS = Object.freeze([
+  ".md", ".mdx", ".txt", ".html", ".htm", ".yaml", ".yml", ".json", ".jsonc", ".json5",
+  ".toml", ".ini", ".cfg", ".conf", ".properties", ".csv", ".tsv", ".log", ".xml", ".env.example",
+]);
+const SUPPORTED_EXTENSION_SET = new Set(SUPPORTED_DOCUMENT_EXTENSIONS);
+const SKIPPED_DIRECTORY_NAMES = new Set([
+  ".git", ".hg", ".svn", ".cache", ".next", ".nuxt", ".turbo", ".venv", "__pycache__", "build", "coverage",
+  "dist", "node_modules", "target", "vendor",
+]);
+const ALLOWED_ASSET_MIME = new Map([
+  [".css", "text/css; charset=utf-8"], [".png", "image/png"], [".jpg", "image/jpeg"], [".jpeg", "image/jpeg"],
+  [".gif", "image/gif"], [".webp", "image/webp"], [".bmp", "image/bmp"], [".ico", "image/x-icon"],
+  [".woff", "font/woff"], [".woff2", "font/woff2"], [".ttf", "font/ttf"], [".otf", "font/otf"],
+]);
+const DOCUMENT_SOURCES = Symbol("reviewDocumentSources");
+const HTML_CSP = "default-src 'none'; script-src 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; navigate-to 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'none'; worker-src 'none'";
 const HEARTBEAT_TIMEOUT_MS = 30_000;
 const ACTIVATION_TIMEOUT_MS = 60_000;
 const MAX_REQUEST_BYTES = 1_024;
@@ -201,7 +221,7 @@ export async function readPiPreviousAssistantText(sessionFile, expectedSessionId
   if (!header) throw new Error(`Pi session file is empty: ${sessionFile}`);
   const after = await lstat(sessionFile);
   if (after.size !== before.size || after.mtimeMs !== before.mtimeMs) {
-    throw new Error("Pi session changed while review-last was reading it; run the skill again.");
+    throw new Error("Pi session changed while review-annotate was reading it; run the skill again.");
   }
   return extractPreviousAssistantText(entries);
 }
@@ -226,6 +246,191 @@ function enforceSourceSize(content) {
     throw new Error(`Review source is ${(size / 1024 / 1024).toFixed(1)} MiB; limit is ${MAX_SOURCE_BYTES / 1024 / 1024} MiB.`);
   }
   return content;
+}
+
+function documentKind(path) {
+  const lower = basename(path).toLowerCase();
+  const extension = lower.endsWith(".env.example") ? ".env.example" : extname(lower);
+  if (!SUPPORTED_EXTENSION_SET.has(extension)) return null;
+  if (extension === ".html" || extension === ".htm") return "html";
+  if (extension === ".md" || extension === ".mdx") return "markdown";
+  return "text";
+}
+
+function normalizedRelative(path) {
+  return path.split(sep).join("/");
+}
+
+function isContained(root, candidate) {
+  const child = relative(root, candidate);
+  return child === "" || (!child.startsWith(`..${sep}`) && child !== ".." && !isAbsolute(child));
+}
+
+function documentId(relativePath, stats) {
+  return createHash("sha256")
+    .update(relativePath)
+    .update("\0")
+    .update(String(stats.dev))
+    .update("\0")
+    .update(String(stats.ino))
+    .update("\0")
+    .update(String(stats.size))
+    .update("\0")
+    .update(String(stats.mtimeMs))
+    .update("\0")
+    .update(String(stats.ctimeMs))
+    .digest("base64url");
+}
+
+function snapshotSource(path, root, relativePath, kind, stats) {
+  return {
+    path,
+    root,
+    relativePath,
+    kind,
+    size: stats.size,
+    mtimeMs: stats.mtimeMs,
+    ctimeMs: stats.ctimeMs,
+    dev: stats.dev,
+    ino: stats.ino,
+  };
+}
+
+async function enumerateDocumentSources(path, root, depth = 0, sources = []) {
+  if (depth > MAX_DOCUMENT_DEPTH) throw new Error(`Folder exceeds the maximum review depth of ${MAX_DOCUMENT_DEPTH}.`);
+  const entries = await readdir(path, { withFileTypes: true });
+  entries.sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0);
+  for (const entry of entries) {
+    if (entry.isSymbolicLink() || (!entry.isFile() && !entry.isDirectory())) continue;
+    if (entry.isDirectory() && SKIPPED_DIRECTORY_NAMES.has(entry.name.toLowerCase())) continue;
+    const child = join(path, entry.name);
+    if (entry.isDirectory()) {
+      await enumerateDocumentSources(child, root, depth + 1, sources);
+      continue;
+    }
+    const kind = documentKind(entry.name);
+    if (!kind) continue;
+    const stats = await lstat(child);
+    if (!stats.isFile() || stats.isSymbolicLink()) continue;
+    if (stats.size > MAX_DOCUMENT_BYTES) throw new Error("A supported document exceeds the per-file safety limit.");
+    if (sources.length >= MAX_DOCUMENT_FILES) throw new Error(`Folder exceeds the ${MAX_DOCUMENT_FILES}-document safety limit.`);
+    const aggregate = sources.reduce((sum, source) => sum + source.size, 0) + stats.size;
+    if (aggregate > MAX_DOCUMENT_AGGREGATE_BYTES) throw new Error("Folder exceeds the aggregate document safety limit.");
+    const canonical = await realpath(child);
+    if (!isContained(root, canonical)) throw new Error("A document escapes the selected folder.");
+    sources.push(snapshotSource(canonical, root, normalizedRelative(relative(root, canonical)), kind, stats));
+  }
+  return sources;
+}
+
+function publicDocument(source) {
+  return {
+    id: documentId(source.relativePath, source),
+    relativePath: source.relativePath,
+    kind: source.kind,
+    size: source.size,
+  };
+}
+
+async function readDocumentSource(source) {
+  if (source.path === null && typeof source.content === "string") return source.content;
+  let handle;
+  try {
+    handle = await open(source.path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    const before = await handle.stat();
+    if (
+      !before.isFile() || before.size !== source.size || before.mtimeMs !== source.mtimeMs ||
+      before.ctimeMs !== source.ctimeMs || before.dev !== source.dev || before.ino !== source.ino
+    ) throw new Error("The selected document changed; restart the review.");
+    const buffer = await handle.readFile();
+    const after = await handle.stat();
+    if (
+      after.size !== before.size || after.mtimeMs !== before.mtimeMs || after.ctimeMs !== before.ctimeMs ||
+      after.dev !== before.dev || after.ino !== before.ino
+    ) {
+      throw new Error("The selected document changed while it was being read; restart the review.");
+    }
+    if (buffer.includes(0)) throw new Error("The selected document is binary.");
+    let content;
+    try {
+      content = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+    } catch {
+      throw new Error("The selected document is not valid UTF-8 text.");
+    }
+    return content;
+  } finally {
+    await handle?.close();
+  }
+}
+
+function attachDocumentSources(session, sources) {
+  Object.defineProperty(session, DOCUMENT_SOURCES, { value: sources, enumerable: false });
+  return session;
+}
+
+export async function createDocumentSession(argument, env = process.env, cwd = process.cwd()) {
+  if (typeof argument !== "string" || !argument || argument.startsWith("-") || /^[a-z][a-z\d+.-]*:/i.test(argument) || argument.startsWith("//")) {
+    throw new Error("review-annotate requires exactly `last` or one local file/folder path.");
+  }
+  if (argument === "last") {
+    if (!env.PI_SESSION_FILE) throw new Error("`last` requires the active Pi session; refusing to guess from unrelated transcripts.");
+    const content = enforceSourceSize(await readPiPreviousAssistantText(env.PI_SESSION_FILE, env.PI_SESSION_ID));
+    const buffer = Buffer.from(content);
+    const source = {
+      path: null, root: null, relativePath: "Assistant response", kind: "markdown", size: buffer.length,
+      mtimeMs: 0, ctimeMs: 0, dev: 0, ino: 0, content,
+    };
+    const document = publicDocument(source);
+    return attachDocumentSources({
+      version: 2,
+      id: createHash("sha256").update("document\0last\0").update(content).digest("hex"),
+      mode: "document",
+      title: "Review last response",
+      sourceLabel: "latest assistant response · active Pi branch",
+      rootLabel: "Assistant response",
+      documents: [document],
+      initialDocumentId: document.id,
+      createdAt: new Date().toISOString(),
+    }, [source]);
+  }
+
+  const absolute = resolve(cwd, argument);
+  const stats = await lstat(absolute).catch((error) => {
+    if (error?.code === "ENOENT") throw new Error("The selected review source does not exist.");
+    throw error;
+  });
+  if (stats.isSymbolicLink()) throw new Error("Symbolic links are not accepted as review sources.");
+  const canonical = await realpath(absolute);
+  let sources;
+  let root;
+  if (stats.isFile()) {
+    const kind = documentKind(canonical);
+    if (!kind) throw new Error("The selected file type is not supported for review.");
+    if (stats.size > MAX_DOCUMENT_BYTES) throw new Error("The selected document exceeds the per-file safety limit.");
+    root = dirname(canonical);
+    sources = [snapshotSource(canonical, root, basename(canonical), kind, stats)];
+    await readDocumentSource(sources[0]);
+  } else if (stats.isDirectory()) {
+    root = canonical;
+    sources = await enumerateDocumentSources(canonical, canonical);
+    if (sources.length === 0) throw new Error("The selected folder contains no supported documents.");
+  } else {
+    throw new Error("The selected review source is not a regular file or folder.");
+  }
+  const documents = sources.map(publicDocument);
+  const idHash = createHash("sha256").update("document\0").update(canonical);
+  for (const document of documents) idHash.update("\0").update(document.id);
+  return attachDocumentSources({
+    version: 2,
+    id: idHash.digest("hex"),
+    mode: "document",
+    title: "Review documents",
+    sourceLabel: basename(canonical),
+    rootLabel: basename(canonical),
+    documents,
+    initialDocumentId: documents[0].id,
+    createdAt: new Date().toISOString(),
+  }, sources);
 }
 
 function commandResult(command, args, options = {}) {
@@ -418,49 +623,13 @@ export function collectRemoteDiff(value) {
   return { content: enforceSourceSize(content), sourceLabel: target.url };
 }
 
-export async function resolveLastSource(args, env = process.env) {
-  let file = null;
-  let useStdin = false;
-  for (let index = 0; index < args.length; index += 1) {
-    const argument = args[index];
-    if (argument === "--stdin") {
-      useStdin = true;
-    } else if (argument === "--file") {
-      file = args[index + 1];
-      if (!file) throw new Error("--file requires a path.");
-      index += 1;
-    } else {
-      throw new Error(`Unknown review-last argument: ${argument}`);
-    }
-  }
-  if (file && useStdin) throw new Error("Use either --file or --stdin, not both.");
-
-  let content;
-  let sourceLabel;
-  if (file) {
-    const absolutePath = resolve(file);
-    const stats = await lstat(absolutePath);
-    if (!stats.isFile()) throw new Error(`Review source is not a regular file: ${absolutePath}`);
-    if (stats.size > MAX_SOURCE_BYTES) throw new Error(`Review source exceeds the ${MAX_SOURCE_BYTES / 1024 / 1024} MiB limit.`);
-    content = await readFile(absolutePath, "utf8");
-    sourceLabel = absolutePath;
-  } else if (useStdin) {
-    content = await readStdin();
-    sourceLabel = "assistant response from stdin";
-  } else if (env.PI_SESSION_FILE) {
-    content = await readPiPreviousAssistantText(env.PI_SESSION_FILE, env.PI_SESSION_ID);
-    sourceLabel = "latest assistant response · active Pi branch";
-  } else {
-    throw new Error("Outside Pi, review-last requires --file <path> or --stdin; refusing to guess from unrelated transcripts.");
-  }
-  return { content: enforceSourceSize(content), sourceLabel };
-}
-
 export async function createReviewSession(mode, args, env = process.env, cwd = process.cwd()) {
+  if (mode === "document") {
+    if (args.length !== 1) throw new Error("review-annotate requires exactly `last` or one local file/folder path.");
+    return createDocumentSession(args[0], env, cwd);
+  }
   let source;
-  if (mode === "markdown") {
-    source = await resolveLastSource(args, env);
-  } else if (args.length === 0) {
+  if (mode === "diff" && args.length === 0) {
     source = collectLocalDiff(cwd);
   } else if (args.length === 1) {
     source = /^[a-z][a-z\d+.-]*:\/\//i.test(args[0])
@@ -475,22 +644,137 @@ export async function createReviewSession(mode, args, env = process.env, cwd = p
   return {
     version: 1,
     id,
-    mode,
-    title: mode === "markdown" ? "Review last response" : "Review diff",
+    mode: "diff",
+    title: "Review diff",
     sourceLabel: source.sourceLabel,
     content: source.content,
     createdAt: new Date().toISOString(),
   };
 }
 
-function securityHeaders(contentType) {
+function securityHeaders(contentType, csp = null) {
   return {
     "Cache-Control": "no-store",
-    "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'",
+    "Content-Security-Policy": csp ?? "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'",
     "Content-Type": contentType,
     "Referrer-Policy": "no-referrer",
     "X-Content-Type-Options": "nosniff",
   };
+}
+
+function sourceMap(session) {
+  const sources = session[DOCUMENT_SOURCES];
+  if (!Array.isArray(sources)) return new Map();
+  return new Map(sources.map((source) => [documentId(source.relativePath, source), source]));
+}
+
+function htmlText(content) {
+  return content
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&amp;/gi, "&")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function safeRelativeAsset(value) {
+  const clean = value.trim();
+  if (!clean || clean.startsWith("#") || clean.startsWith("/") || clean.startsWith("\\") || clean.includes("?") || clean.includes("#")) return null;
+  if (/^[a-z][a-z\d+.-]*:/i.test(clean) || clean.startsWith("//")) return null;
+  const parts = clean.replaceAll("\\", "/").split("/");
+  if (parts.some((part) => !part || part === "." || part === "..")) return null;
+  return parts.join("/");
+}
+
+function assetUrl(base, documentIdValue, value, relativeDirectory = "") {
+  const relativeAsset = safeRelativeAsset(value);
+  if (!relativeAsset) return null;
+  const resolvedAsset = safeRelativeAsset(relativeDirectory ? join(relativeDirectory, relativeAsset) : relativeAsset);
+  if (!resolvedAsset || !ALLOWED_ASSET_MIME.has(extname(resolvedAsset).toLowerCase())) return null;
+  return `${base}api/asset/${documentIdValue}/${Buffer.from(resolvedAsset).toString("base64url")}`;
+}
+
+function rewriteHtml(content, base, documentIdValue) {
+  const withoutRefresh = content.replace(/<meta\b(?=[^>]*\bhttp-equiv\s*=\s*(?:["']?refresh\b))[^>]*>/gi, "");
+  return withoutRefresh.replace(
+    /\b(src|href)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'`=<>]+))/gi,
+    (_match, attribute, doubleQuoted, singleQuoted, unquoted) => {
+      const value = doubleQuoted ?? singleQuoted ?? unquoted ?? "";
+      if (/^(?:data:image\/(?:png|jpeg|gif|webp);base64,)/i.test(value)) return `${attribute}="${value}"`;
+      const rewritten = assetUrl(base, documentIdValue, value);
+      return `${attribute}="${rewritten ?? "about:blank#blocked"}"`;
+    },
+  );
+}
+
+function rewriteCss(content, base, documentIdValue, relativeDirectory = "") {
+  const importsRewritten = content.replace(/@import\s*(["'])([^"']+)\1/gi, (_match, _quote, value) => {
+    const rewritten = assetUrl(base, documentIdValue, value, relativeDirectory);
+    return `@import url("${rewritten ?? "about:blank#blocked"}")`;
+  });
+  return importsRewritten.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/gi, (_match, _quote, value) => {
+    if (value.startsWith(base)) return `url("${value}")`;
+    const rewritten = assetUrl(base, documentIdValue, value, relativeDirectory);
+    return rewritten ? `url("${rewritten}")` : "url(\"about:blank#blocked\")";
+  });
+}
+
+async function resolveAssetSource(source, encoded) {
+  if (!source.path || !source.root || !/^[A-Za-z0-9_-]+$/.test(encoded)) return null;
+  let requested;
+  try {
+    requested = Buffer.from(encoded, "base64url").toString("utf8");
+  } catch {
+    return null;
+  }
+  const safe = safeRelativeAsset(requested);
+  if (!safe) return null;
+  const candidate = resolve(dirname(source.path), safe);
+  const stats = await lstat(candidate).catch(() => null);
+  if (!stats?.isFile() || stats.isSymbolicLink() || stats.size > MAX_DOCUMENT_BYTES) return null;
+  const canonical = await realpath(candidate);
+  if (!isContained(source.root, canonical) || !isContained(dirname(source.path), canonical)) return null;
+  const mime = ALLOWED_ASSET_MIME.get(extname(canonical).toLowerCase());
+  return mime ? {
+    path: canonical,
+    relativePath: safe,
+    mime,
+    size: stats.size,
+    mtimeMs: stats.mtimeMs,
+    ctimeMs: stats.ctimeMs,
+    dev: stats.dev,
+    ino: stats.ino,
+  } : null;
+}
+
+async function readAsset(asset) {
+  let handle;
+  try {
+    handle = await open(asset.path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    const before = await handle.stat();
+    if (
+      !before.isFile() || before.size !== asset.size || before.mtimeMs !== asset.mtimeMs ||
+      before.ctimeMs !== asset.ctimeMs || before.dev !== asset.dev || before.ino !== asset.ino
+    ) throw new Error("The local asset changed; restart the review.");
+    const body = await handle.readFile();
+    const after = await handle.stat();
+    if (
+      after.size !== before.size || after.mtimeMs !== before.mtimeMs || after.ctimeMs !== before.ctimeMs ||
+      after.dev !== before.dev || after.ino !== before.ino
+    ) {
+      throw new Error("The local asset changed while it was being read; restart the review.");
+    }
+    return body;
+  } finally {
+    await handle?.close();
+  }
 }
 
 function readSmallRequest(request) {
@@ -519,6 +803,7 @@ export async function startWorkspaceServer(session, options = {}) {
     style: await readFile(join(ASSET_DIRECTORY, "app.css")),
   };
   let currentSession = session;
+  let documentsById = sourceMap(session);
   const preferenceStore = options.preferenceStore ?? {
     read: () => readReviewPreferences(options.env),
     write: (value) => writeReviewPreferences(value, options.env),
@@ -549,8 +834,8 @@ export async function startWorkspaceServer(session, options = {}) {
     const requestUrl = new URL(request.url ?? "/", `http://${host}`);
     const base = `/${token}/`;
     const path = requestUrl.pathname;
-    const send = (status, contentType, body) => {
-      response.writeHead(status, securityHeaders(contentType));
+    const send = (status, contentType, body, csp = null) => {
+      response.writeHead(status, securityHeaders(contentType, csp));
       response.end(body);
     };
 
@@ -566,12 +851,52 @@ export async function startWorkspaceServer(session, options = {}) {
       } else if (request.method === "GET" && path === `${base}api/session`) {
         if (options.refreshSession) {
           const refreshed = await options.refreshSession();
-          if (refreshed.id !== currentSession.id) currentSession = refreshed;
+          if (refreshed.id !== currentSession.id) {
+            currentSession = refreshed;
+            documentsById = sourceMap(refreshed);
+          }
         }
         if (requestUrl.searchParams.get("after") === currentSession.id) {
           send(204, "application/json; charset=utf-8", "");
         } else {
           send(200, "application/json; charset=utf-8", JSON.stringify(currentSession));
+        }
+      } else if (request.method === "GET" && path.startsWith(`${base}api/document/`)) {
+        const id = path.slice(`${base}api/document/`.length);
+        const source = documentsById.get(id);
+        if (!source || id.includes("/")) {
+          send(404, "text/plain; charset=utf-8", "Document not found");
+        } else {
+          const content = await readDocumentSource(source);
+          send(200, "application/json; charset=utf-8", JSON.stringify({
+            id,
+            kind: source.kind,
+            content: source.kind === "html" ? htmlText(content) : content,
+            frameUrl: source.kind === "html" ? `./api/html/${id}` : undefined,
+          }));
+        }
+      } else if (request.method === "GET" && path.startsWith(`${base}api/html/`)) {
+        const id = path.slice(`${base}api/html/`.length);
+        const source = documentsById.get(id);
+        if (!source || source.kind !== "html" || id.includes("/")) {
+          send(404, "text/plain; charset=utf-8", "Document not found", HTML_CSP);
+        } else {
+          const content = await readDocumentSource(source);
+          send(200, "text/html; charset=utf-8", rewriteHtml(content, base, id), HTML_CSP);
+        }
+      } else if (request.method === "GET" && path.startsWith(`${base}api/asset/`)) {
+        const parts = path.slice(`${base}api/asset/`.length).split("/");
+        const source = parts.length === 2 ? documentsById.get(parts[0]) : null;
+        const asset = source ? await resolveAssetSource(source, parts[1]) : null;
+        if (!source || !asset) {
+          send(404, "text/plain; charset=utf-8", "Asset not found", HTML_CSP);
+        } else {
+          let body = await readAsset(asset);
+          if (asset.mime.startsWith("text/css")) {
+            const css = new TextDecoder("utf-8", { fatal: true }).decode(body);
+            body = Buffer.from(rewriteCss(css, base, parts[0], dirname(asset.relativePath)));
+          }
+          send(200, asset.mime, body, HTML_CSP);
         }
       } else if (request.method === "GET" && path === `${base}api/preferences`) {
         send(200, "application/json; charset=utf-8", JSON.stringify(preferences));
@@ -759,9 +1084,15 @@ export async function runReview(mode, args, options = {}) {
 
 export async function main(args = process.argv.slice(2), options = {}) {
   const [command, ...rest] = args;
-  if (command === "last") return runReview("markdown", rest, options);
-  if (command === "diff") return runReview("diff", rest, options);
-  throw new Error("Usage: review-workspace.mjs <last [--file path|--stdin] | diff [pr-or-mr-url|commit|base..head|--commit commit|--range base..head]>");
+  const packageName = basename(SKILL_DIRECTORY);
+  if (command === "annotate" && packageName !== "review-diff") return runReview("document", rest, options);
+  if (command === "diff" && packageName !== "review-annotate") return runReview("diff", rest, options);
+  const usage = packageName === "review-annotate"
+    ? "review-workspace.mjs annotate <last|file|folder>"
+    : packageName === "review-diff"
+      ? "review-workspace.mjs diff [pr-or-mr-url|commit|base..head|--commit commit|--range base..head]"
+      : "review-workspace.mjs <annotate <last|file|folder> | diff [source]>";
+  throw new Error(`Usage: ${usage}`);
 }
 
 function isDirectInvocation(argvPath) {

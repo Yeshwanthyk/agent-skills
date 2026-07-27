@@ -16,7 +16,7 @@ Secondary users are developers who install the same portable skills in Pi, Claud
 
 ## Product Purpose
 
-Provide a focused, local review workspace embedded in two agent skills: `review-last` for the latest assistant response and `review-diff` for worktree or pull-request diffs. Success means the user can select text or lines, write comments, and copy a complete structured feedback block back into chat with no asynchronous handoff.
+Provide a focused, local review workspace embedded in two agent skills: `review-annotate` for the latest assistant response or supported local documents/folders, and `review-diff` for worktree, historical, or pull-request diffs. Success means the user can select text or lines, write comments, and copy a complete structured feedback block back into chat with no asynchronous handoff.
 
 ## Positioning
 
