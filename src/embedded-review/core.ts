@@ -158,6 +158,25 @@ export function parseDraft(raw: string | null): ReviewDraft {
   }
 }
 
+export function matchesFileSearch(path: string, query: string): boolean {
+  const normalizedPath = path.toLocaleLowerCase();
+  const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  return terms.every((term) => normalizedPath.includes(term));
+}
+
+export function reconcileReviewedFileRevisions(
+  reviewed: ReadonlyMap<string, string>,
+  current: ReadonlyMap<string, string>,
+): { reviewed: Map<string, string>; invalidated: number } {
+  const reconciled = new Map<string, string>();
+  let invalidated = 0;
+  for (const [name, revision] of reviewed) {
+    if (current.get(name) === revision) reconciled.set(name, revision);
+    else invalidated += 1;
+  }
+  return { reviewed: reconciled, invalidated };
+}
+
 export function validateTextAnchor(content: string, anchor: TextAnchor | HtmlAnchor): boolean {
   if (content.slice(anchor.start, anchor.end) !== anchor.quote) return false;
   const before = content.slice(Math.max(0, anchor.start - anchor.before.length), anchor.start);

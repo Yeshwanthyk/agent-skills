@@ -56,7 +56,7 @@ The composer never becomes a bottom-wide modal on desktop. It remains inside the
 ## Interaction
 
 - Pointer selection and full keyboard operation are equivalent.
-- Vi movement outside editable controls: `j/k`, `gg/G`, `h/l`, `n/N`, `a`, `e`, `d`, `y`, `?`, `Esc`.
+- Vi movement outside editable controls: `j/k` between changes, `J/K` between files, `gg/G`, `n/N`, `a`, `e`, `d`, `y`, `/` for file search, `?`, `Esc`.
 - Standard Tab, arrows, Enter, Space, Escape, and Mod+Enter remain available.
 - Never intercept shortcuts from editable controls.
 - Selection always has a non-color outline or inset edge.

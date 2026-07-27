@@ -5,7 +5,9 @@ import {
   formatFeedback,
   formatLineRange,
   lineExcerpt,
+  matchesFileSearch,
   parseDraft,
+  reconcileReviewedFileRevisions,
   summarizeAnchor,
   validateTextAnchor,
 } from "../skills/review-annotate/assets/core.mjs";
@@ -96,6 +98,22 @@ test("accepts only valid v2 document-aware drafts", () => {
   assert.deepEqual(parseDraft("not-json").annotations, []);
   assert.deepEqual(parseDraft(JSON.stringify({ version: 1, annotations: [valid] })).annotations, []);
   assert.deepEqual(parseDraft(JSON.stringify({ version: 2, annotations: [{ ...valid, comment: "x".repeat(10_001) }] })).annotations, []);
+});
+
+test("matches file search case-insensitively across path terms", () => {
+  assert.equal(matchesFileSearch("src/embedded-review/app.ts", "APP"), true);
+  assert.equal(matchesFileSearch("src/embedded-review/app.ts", "src review"), true);
+  assert.equal(matchesFileSearch("src/embedded-review/app.ts", "src css"), false);
+  assert.equal(matchesFileSearch("src/embedded-review/app.ts", "   "), true);
+});
+
+test("keeps reviewed files only while their exact revisions remain current", () => {
+  const result = reconcileReviewedFileRevisions(
+    new Map([["same.ts", "revision-a"], ["changed.ts", "revision-b"], ["removed.ts", "revision-c"]]),
+    new Map([["same.ts", "revision-a"], ["changed.ts", "revision-new"], ["added.ts", "revision-d"]]),
+  );
+  assert.deepEqual([...result.reviewed], [["same.ts", "revision-a"]]);
+  assert.equal(result.invalidated, 2);
 });
 
 test("validates text anchors fail-closed and summarizes bounded excerpts", () => {

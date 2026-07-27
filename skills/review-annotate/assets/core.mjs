@@ -42,6 +42,20 @@ function parseDraft(raw) {
     return { version: DRAFT_VERSION, annotations: [] };
   }
 }
+function matchesFileSearch(path, query) {
+  const normalizedPath = path.toLocaleLowerCase();
+  const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  return terms.every((term) => normalizedPath.includes(term));
+}
+function reconcileReviewedFileRevisions(reviewed, current) {
+  const reconciled = /* @__PURE__ */ new Map();
+  let invalidated = 0;
+  for (const [name, revision] of reviewed) {
+    if (current.get(name) === revision) reconciled.set(name, revision);
+    else invalidated += 1;
+  }
+  return { reviewed: reconciled, invalidated };
+}
 function validateTextAnchor(content, anchor) {
   if (content.slice(anchor.start, anchor.end) !== anchor.quote) return false;
   const before = content.slice(Math.max(0, anchor.start - anchor.before.length), anchor.start);
@@ -151,8 +165,10 @@ export {
   formatLineRange,
   isReviewAnnotation,
   lineExcerpt,
+  matchesFileSearch,
   normalizeComment,
   parseDraft,
+  reconcileReviewedFileRevisions,
   summarizeAnchor,
   validateTextAnchor
 };

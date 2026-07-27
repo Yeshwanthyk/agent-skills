@@ -16,8 +16,10 @@ import {
   formatFeedback,
   formatLineRange,
   lineExcerpt,
+  matchesFileSearch,
   normalizeComment,
   parseDraft,
+  reconcileReviewedFileRevisions,
   summarizeAnchor,
   validateTextAnchor,
   type DiffAnchor,
@@ -83,7 +85,8 @@ app.innerHTML = `
     </div>
     <div class="command-actions">
       <button class="button button-quiet" id="close-review" type="button">Close</button>
-      <button class="button button-primary" id="copy-feedback" type="button" disabled>
+      <button class="button button-primary" id="copy-feedback" type="button" title="Copy feedback (y)" disabled>
+        <kbd class="shortcut-key">y</kbd>
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-6 12h8a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2Z"/></svg>
         Copy feedback
       </button>
@@ -101,7 +104,14 @@ app.innerHTML = `
         <span id="source-nav-title">Contents</span>
         <span id="file-count">0</span>
       </div>
-      <div class="file-list" id="file-list"></div>
+      <label class="file-search" id="file-search-control">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+        <span class="sr-only">Search files</span>
+        <input id="file-search" type="search" placeholder="Search files" autocomplete="off" spellcheck="false">
+        <kbd>/</kbd>
+      </label>
+      <div class="file-list" id="file-list" role="tree"></div>
+      <p class="file-search-empty" id="file-search-empty" hidden>No matching files</p>
     </nav>
     <section class="reader-pane" aria-label="Reviewed content">
       <div class="reader-toolbar">
@@ -114,6 +124,7 @@ app.innerHTML = `
           </div>
           <div class="tool-group">
             <button class="tool-button is-active" id="toolbar-comment" type="button" aria-label="Annotate current target" title="Annotate current target (a)">
+              <kbd class="shortcut-key">a</kbd>
               <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 8h10M7 12h4m1 8-4-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3l-4 4Z"/></svg>
               Comment
             </button>
@@ -123,6 +134,10 @@ app.innerHTML = `
         <div class="reader-location" id="reader-location">Preparing review…</div>
         <select class="file-select" id="file-select" aria-label="Reviewed file"></select>
         <div class="reader-actions">
+          <button class="reader-action reviewed-toggle" id="toggle-reviewed" type="button" aria-pressed="false" hidden>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>
+            <span>Mark reviewed</span>
+          </button>
           <div class="display-controls" aria-label="Reading display">
             <div class="diff-layout-control" id="diff-layout-control" role="group" aria-label="Diff layout">
               <button class="display-option" id="diff-unified" type="button" aria-pressed="true" title="Unified diff (saved on this computer)">Unified</button>
@@ -207,14 +222,14 @@ app.innerHTML = `
         <button class="icon-button" value="close" aria-label="Close keyboard shortcuts">×</button>
       </div>
       <dl class="shortcut-grid">
-        <div><dt><kbd>j</kbd> / <kbd>k</kbd></dt><dd>Move through blocks or changed lines</dd></div>
-        <div><dt><kbd>⇧j</kbd> / <kbd>⇧k</kbd></dt><dd>Extend a diff line selection</dd></div>
-        <div><dt><kbd>g g</kbd> / <kbd>G</kbd></dt><dd>Jump to first or last review target</dd></div>
-        <div><dt><kbd>h</kbd> / <kbd>l</kbd></dt><dd>Previous or next file</dd></div>
         <div><dt><kbd>a</kbd></dt><dd>Annotate the current selection or target</dd></div>
+        <div><dt><kbd>y</kbd></dt><dd>Copy all feedback</dd></div>
+        <div><dt><kbd>j</kbd> / <kbd>k</kbd></dt><dd>Next or previous change</dd></div>
+        <div><dt><kbd>J</kbd> / <kbd>K</kbd></dt><dd>Next or previous file</dd></div>
+        <div><dt><kbd>/</kbd></dt><dd>Search files</dd></div>
+        <div><dt><kbd>g g</kbd> / <kbd>G</kbd></dt><dd>Jump to first or last review target</dd></div>
         <div><dt><kbd>n</kbd> / <kbd>N</kbd></dt><dd>Next or previous comment</dd></div>
         <div><dt><kbd>e</kbd> / <kbd>d</kbd></dt><dd>Edit or delete the selected comment</dd></div>
-        <div><dt><kbd>y</kbd></dt><dd>Copy all feedback</dd></div>
         <div><dt><kbd>Esc</kbd></dt><dd>Close the active transient surface</dd></div>
       </dl>
       <button class="button button-primary dialog-done" value="close">Return to review</button>
@@ -261,10 +276,14 @@ const elements = {
   sourceNav: requiredElement<HTMLElement>("#source-nav"),
   sourceNavTitle: requiredElement<HTMLElement>("#source-nav-title"),
   fileCount: requiredElement<HTMLElement>("#file-count"),
+  fileSearchControl: requiredElement<HTMLElement>("#file-search-control"),
+  fileSearch: requiredElement<HTMLInputElement>("#file-search"),
+  fileSearchEmpty: requiredElement<HTMLElement>("#file-search-empty"),
   fileList: requiredElement<HTMLElement>("#file-list"),
   toolbarComment: requiredElement<HTMLButtonElement>("#toolbar-comment"),
   toolHelp: requiredElement<HTMLButtonElement>("#tool-help"),
   copySource: requiredElement<HTMLButtonElement>("#copy-source"),
+  toggleReviewed: requiredElement<HTMLButtonElement>("#toggle-reviewed"),
   reader: requiredElement<HTMLElement>("#review-reader"),
   readerLocation: requiredElement<HTMLElement>("#reader-location"),
   fileSelect: requiredElement<HTMLSelectElement>("#file-select"),
@@ -312,9 +331,11 @@ let documentLoadVersion = 0;
 let diffView: FileDiff<ReviewAnnotation> | null = null;
 let markdownBlocks: HTMLElement[] = [];
 let markdownCursor = -1;
-let diffTargets: Array<{ side: DiffSide; line: number }> = [];
+let diffTargets: Array<{ side: DiffSide; start: number; end: number }> = [];
 let diffCursor = -1;
-let diffSelectionOrigin: { side: DiffSide; line: number } | null = null;
+let reviewedFileRevisions = new Map<string, string>();
+const collapsedDirectories = new Set<string>();
+let fileSearchQuery = "";
 let deletedSnapshot: { annotation: ReviewAnnotation; index: number } | null = null;
 let deleteTimer: number | null = null;
 let statusTimer: number | null = null;
@@ -510,41 +531,156 @@ function renderAnnotationRail(): void {
   if (session?.mode === "document") renderDocumentList();
 }
 
+function fileRevision(file: FileDiffMetadata): string {
+  const { cacheKey: _renderCacheKey, ...revision } = file;
+  return JSON.stringify(revision);
+}
+
+function activeFileIsReviewed(): boolean {
+  const file = parsedFiles[activeFileIndex];
+  return Boolean(file && reviewedFileRevisions.get(file.name) === fileRevision(file));
+}
+
+function updateReviewedToggle(): void {
+  const file = session?.mode === "diff" ? parsedFiles[activeFileIndex] : null;
+  elements.toggleReviewed.hidden = !file;
+  const reviewed = activeFileIsReviewed();
+  elements.toggleReviewed.setAttribute("aria-pressed", String(reviewed));
+  elements.toggleReviewed.querySelector("span")?.replaceChildren(document.createTextNode(reviewed ? "Reviewed" : "Mark reviewed"));
+  elements.toggleReviewed.title = reviewed ? "Mark this file unreviewed" : "Mark this file reviewed";
+}
+
+function toggleActiveFileReviewed(): void {
+  const file = parsedFiles[activeFileIndex];
+  if (!file) return;
+  if (activeFileIsReviewed()) {
+    reviewedFileRevisions.delete(file.name);
+    showStatus("File marked unreviewed.");
+  } else {
+    reviewedFileRevisions.set(file.name, fileRevision(file));
+    showStatus("File marked reviewed.", "success");
+  }
+  renderFileList();
+}
+
+function invalidateChangedReviewedFiles(files: readonly FileDiffMetadata[]): number {
+  const revisions = new Map(files.map((file) => [file.name, fileRevision(file)]));
+  const reconciled = reconcileReviewedFileRevisions(reviewedFileRevisions, revisions);
+  reviewedFileRevisions = reconciled.reviewed;
+  return reconciled.invalidated;
+}
+
+interface FileTreeNode {
+  directories: Map<string, FileTreeNode>;
+  files: Array<{ file: FileDiffMetadata; index: number }>;
+}
+
+function buildFileTree(entries: Array<{ file: FileDiffMetadata; index: number }>): FileTreeNode {
+  const root: FileTreeNode = { directories: new Map(), files: [] };
+  for (const entry of entries) {
+    const segments = entry.file.name.split("/").filter(Boolean);
+    let node = root;
+    for (const directory of segments.slice(0, -1)) {
+      let child = node.directories.get(directory);
+      if (!child) {
+        child = { directories: new Map(), files: [] };
+        node.directories.set(directory, child);
+      }
+      node = child;
+    }
+    node.files.push(entry);
+  }
+  return root;
+}
+
+function renderFileTreeEntry(file: FileDiffMetadata, index: number, depth: number): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "file-button file-tree-item";
+  button.style.setProperty("--tree-depth", String(depth));
+  button.dataset.active = String(index === activeFileIndex);
+  button.setAttribute("role", "treeitem");
+  button.setAttribute("aria-level", String(depth + 1));
+  button.setAttribute("aria-current", index === activeFileIndex ? "true" : "false");
+  button.setAttribute("aria-label", file.name);
+  button.title = file.name;
+  button.addEventListener("click", () => switchFile(index));
+
+  const status = document.createElement("span");
+  status.className = `file-status file-status-${file.type}`;
+  status.textContent = file.type === "new" ? "A" : file.type === "deleted" ? "D" : file.type.startsWith("rename") ? "R" : "M";
+  status.setAttribute("aria-label", file.type);
+  const path = document.createElement("span");
+  path.className = "file-path";
+  path.textContent = file.name.split("/").at(-1) ?? file.name;
+  const comments = annotations.filter((annotation) => annotation.anchor.kind === "diff" && annotation.anchor.file === file.name).length;
+  const meta = document.createElement("span");
+  meta.className = "file-meta";
+  const reviewed = document.createElement("span");
+  reviewed.className = "file-reviewed";
+  const isReviewed = reviewedFileRevisions.get(file.name) === fileRevision(file);
+  reviewed.textContent = isReviewed ? "✓" : "";
+  reviewed.setAttribute("aria-label", isReviewed ? "Reviewed" : "Not reviewed");
+  const badge = document.createElement("span");
+  badge.className = "file-comment-count";
+  badge.textContent = comments ? String(comments) : "";
+  badge.setAttribute("aria-label", `${comments} comments`);
+  meta.append(reviewed, badge);
+  button.append(status, path, meta);
+  return button;
+}
+
+function renderFileTreeNode(node: FileTreeNode, parent: HTMLElement, depth: number, parentPath: string): void {
+  const directories = [...node.directories.entries()].sort(([left], [right]) => left.localeCompare(right));
+  for (const [name, child] of directories) {
+    const directoryPath = parentPath ? `${parentPath}/${name}` : name;
+    const collapsed = fileSearchQuery.length === 0 && collapsedDirectories.has(directoryPath);
+    const directoryButton = document.createElement("button");
+    directoryButton.type = "button";
+    directoryButton.className = "tree-directory";
+    directoryButton.style.setProperty("--tree-depth", String(depth));
+    directoryButton.setAttribute("role", "treeitem");
+    directoryButton.setAttribute("aria-level", String(depth + 1));
+    directoryButton.setAttribute("aria-expanded", String(!collapsed));
+    directoryButton.innerHTML = `<svg aria-hidden="true" viewBox="0 0 16 16"><path d="m6 4 4 4-4 4"/></svg><span></span>`;
+    directoryButton.querySelector("span")?.append(document.createTextNode(name));
+    directoryButton.addEventListener("click", () => {
+      if (collapsedDirectories.has(directoryPath)) collapsedDirectories.delete(directoryPath);
+      else collapsedDirectories.add(directoryPath);
+      renderFileList();
+    });
+    parent.append(directoryButton);
+    if (collapsed) continue;
+    const group = document.createElement("div");
+    group.className = "tree-group";
+    group.setAttribute("role", "group");
+    renderFileTreeNode(child, group, depth + 1, directoryPath);
+    parent.append(group);
+  }
+  for (const { file, index } of [...node.files].sort((left, right) => left.file.name.localeCompare(right.file.name))) {
+    parent.append(renderFileTreeEntry(file, index, depth));
+  }
+}
+
 function renderFileList(): void {
   elements.sourceNavTitle.textContent = "Files";
+  elements.fileSearchControl.hidden = false;
   elements.fileList.replaceChildren();
   elements.fileSelect.replaceChildren();
-  elements.fileCount.textContent = String(parsedFiles.length);
   parsedFiles.forEach((file, index) => {
     const option = document.createElement("option");
     option.value = String(index);
     option.textContent = file.name;
     elements.fileSelect.append(option);
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "file-button";
-    button.dataset.active = String(index === activeFileIndex);
-    button.setAttribute("aria-current", index === activeFileIndex ? "true" : "false");
-    button.addEventListener("click", () => switchFile(index));
-
-    const status = document.createElement("span");
-    status.className = `file-status file-status-${file.type}`;
-    status.textContent = file.type === "new" ? "A" : file.type === "deleted" ? "D" : file.type.startsWith("rename") ? "R" : "M";
-    status.setAttribute("aria-label", file.type);
-    const path = document.createElement("span");
-    path.className = "file-path";
-    path.textContent = file.name;
-    const comments = annotations.filter((annotation) => annotation.anchor.kind === "diff" && annotation.anchor.file === file.name).length;
-    const badge = document.createElement("span");
-    badge.className = "file-comment-count";
-    badge.textContent = comments ? String(comments) : "";
-    badge.setAttribute("aria-label", `${comments} comments`);
-
-    button.append(status, path, badge);
-    elements.fileList.append(button);
   });
+  const visibleEntries = parsedFiles
+    .map((file, index) => ({ file, index }))
+    .filter(({ file }) => matchesFileSearch(file.name, fileSearchQuery));
+  elements.fileCount.textContent = fileSearchQuery ? `${visibleEntries.length}/${parsedFiles.length}` : String(parsedFiles.length);
+  elements.fileSearchEmpty.hidden = visibleEntries.length > 0;
+  renderFileTreeNode(buildFileTree(visibleEntries), elements.fileList, 0, "");
   elements.fileSelect.value = String(activeFileIndex);
+  updateReviewedToggle();
 }
 
 function activeDocument(): ReviewDocument | null {
@@ -554,6 +690,8 @@ function activeDocument(): ReviewDocument | null {
 function renderDocumentList(): void {
   if (session?.mode !== "document") return;
   elements.sourceNavTitle.textContent = session.documents.length === 1 ? "Document" : "Documents";
+  elements.fileSearchControl.hidden = true;
+  elements.fileSearchEmpty.hidden = true;
   elements.fileList.replaceChildren();
   elements.fileSelect.replaceChildren();
   elements.fileCount.textContent = String(session.documents.length);
@@ -828,8 +966,8 @@ function lineMaps(file: FileDiffMetadata): Record<DiffSide, Map<number, string>>
   return { additions, deletions };
 }
 
-function buildDiffTargets(file: FileDiffMetadata): Array<{ side: DiffSide; line: number }> {
-  const targets: Array<{ side: DiffSide; line: number }> = [];
+function buildDiffTargets(file: FileDiffMetadata): Array<{ side: DiffSide; start: number; end: number }> {
+  const targets: Array<{ side: DiffSide; start: number; end: number }> = [];
   for (const hunk of file.hunks) {
     let additionLine = hunk.additionStart;
     let deletionLine = hunk.deletionStart;
@@ -839,11 +977,11 @@ function buildDiffTargets(file: FileDiffMetadata): Array<{ side: DiffSide; line:
         deletionLine += content.lines;
         continue;
       }
-      for (let index = 0; index < content.deletions; index += 1) {
-        targets.push({ side: "deletions", line: deletionLine + index });
+      if (content.deletions > 0) {
+        targets.push({ side: "deletions", start: deletionLine, end: deletionLine + content.deletions - 1 });
       }
-      for (let index = 0; index < content.additions; index += 1) {
-        targets.push({ side: "additions", line: additionLine + index });
+      if (content.additions > 0) {
+        targets.push({ side: "additions", start: additionLine, end: additionLine + content.additions - 1 });
       }
       deletionLine += content.deletions;
       additionLine += content.additions;
@@ -943,7 +1081,6 @@ function renderDiff(): void {
   elements.readerLocation.textContent = file.prevName ? `${file.prevName} → ${file.name}` : file.name;
   diffTargets = buildDiffTargets(file);
   diffCursor = -1;
-  diffSelectionOrigin = null;
 
   diffView = new FileDiff<ReviewAnnotation>({
     theme: { dark: "github-dark", light: "github-light" },
@@ -999,6 +1136,24 @@ function refreshDiffAnnotations(): void {
   renderFileList();
 }
 
+function moveFile(delta: number): void {
+  if (!session) return;
+  if (session.mode === "document") {
+    switchFile(Math.max(0, Math.min(activeDocumentIndex + delta, session.documents.length - 1)));
+    return;
+  }
+  const visibleIndexes = parsedFiles
+    .map((file, index) => ({ file, index }))
+    .filter(({ file }) => matchesFileSearch(file.name, fileSearchQuery))
+    .map(({ index }) => index);
+  if (visibleIndexes.length === 0) return;
+  const position = visibleIndexes.indexOf(activeFileIndex);
+  const nextPosition = position < 0
+    ? (delta > 0 ? 0 : visibleIndexes.length - 1)
+    : Math.max(0, Math.min(position + delta, visibleIndexes.length - 1));
+  switchFile(visibleIndexes[nextPosition]);
+}
+
 function switchFile(index: number): void {
   if (session?.mode === "document") {
     if (index !== activeDocumentIndex) void switchDocument(index).catch((error) => showStatus(error instanceof Error ? error.message : String(error), "error"));
@@ -1011,18 +1166,15 @@ function switchFile(index: number): void {
   renderDiff();
 }
 
-function moveDiffCursor(delta: number, extend: boolean): void {
+function moveDiffCursor(delta: number): void {
   if (!diffView || diffTargets.length === 0) return;
   if (diffCursor < 0) diffCursor = delta >= 0 ? 0 : diffTargets.length - 1;
   else diffCursor = Math.max(0, Math.min(diffCursor + delta, diffTargets.length - 1));
   const target = diffTargets[diffCursor];
-  if (!extend || !diffSelectionOrigin || diffSelectionOrigin.side !== target.side) {
-    diffSelectionOrigin = target;
-  }
   const range: SelectedLineRange = {
     side: target.side,
-    start: Math.min(diffSelectionOrigin.line, target.line),
-    end: Math.max(diffSelectionOrigin.line, target.line),
+    start: target.start,
+    end: target.end,
   };
   const anchor = diffAnchorFromRange(range);
   if (!anchor) return;
@@ -1359,8 +1511,7 @@ function jumpToBoundary(last: boolean): void {
   }
   if (diffTargets.length === 0) return;
   diffCursor = last ? diffTargets.length - 1 : 0;
-  diffSelectionOrigin = null;
-  moveDiffCursor(0, false);
+  moveDiffCursor(0);
 }
 
 function annotateCurrentTarget(): void {
@@ -1375,7 +1526,7 @@ function annotateCurrentTarget(): void {
     if (anchor) openComposer(anchor);
     return;
   }
-  if (diffCursor < 0) moveDiffCursor(1, false);
+  if (diffCursor < 0) moveDiffCursor(1);
   if (pendingAnchor) openComposer(pendingAnchor);
 }
 
@@ -1394,25 +1545,34 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
       event.preventDefault();
       elements.shortcutDialog.showModal();
       break;
+    case "/":
+      if (session?.mode === "diff") {
+        event.preventDefault();
+        elements.fileSearch.focus();
+        elements.fileSearch.select();
+      }
+      break;
     case "j":
       event.preventDefault();
       if (session?.mode === "document") updateMarkdownCursor(markdownCursor < 0 ? 0 : markdownCursor + 1);
-      else moveDiffCursor(1, false);
+      else moveDiffCursor(1);
       break;
     case "J":
-      event.preventDefault();
-      if (session?.mode === "document") updateMarkdownCursor(markdownCursor < 0 ? 0 : markdownCursor + 1);
-      else moveDiffCursor(1, true);
+      if (session) {
+        event.preventDefault();
+        moveFile(1);
+      }
       break;
     case "k":
       event.preventDefault();
       if (session?.mode === "document") updateMarkdownCursor(markdownCursor < 0 ? markdownBlocks.length - 1 : markdownCursor - 1);
-      else moveDiffCursor(-1, false);
+      else moveDiffCursor(-1);
       break;
     case "K":
-      event.preventDefault();
-      if (session?.mode === "document") updateMarkdownCursor(markdownCursor < 0 ? markdownBlocks.length - 1 : markdownCursor - 1);
-      else moveDiffCursor(-1, true);
+      if (session) {
+        event.preventDefault();
+        moveFile(-1);
+      }
       break;
     case "h":
       if (session) {
@@ -1499,7 +1659,9 @@ async function refreshSession(): Promise<void> {
     session = nextSession;
     loadAnnotations();
     selectedAnnotationId = null;
-    parsedFiles = processPatch(nextSession.content, nextSession.id, true).files;
+    const nextFiles = processPatch(nextSession.content, nextSession.id, true).files;
+    const invalidatedReviewedCount = invalidateChangedReviewedFiles(nextFiles);
+    parsedFiles = nextFiles;
     activeFileIndex = Math.max(0, activeFile ? parsedFiles.findIndex((file) => file.name === activeFile) : 0);
     elements.sourceLabel.textContent = session.sourceLabel;
     elements.loading.hidden = true;
@@ -1515,7 +1677,9 @@ async function refreshSession(): Promise<void> {
       elements.diff.replaceChildren();
     }
     renderAnnotationRail();
-    showStatus("Diff updated to the latest worktree snapshot.", "success");
+    showStatus(invalidatedReviewedCount > 0
+      ? `Diff updated; ${invalidatedReviewedCount} changed reviewed file${invalidatedReviewedCount === 1 ? "" : "s"} marked unreviewed.`
+      : "Diff updated to the latest worktree snapshot.", "success");
   } catch (error) {
     showStatus(error instanceof Error ? error.message : String(error), "error");
   } finally {
@@ -1540,8 +1704,8 @@ async function initialize(): Promise<void> {
     elements.sourceLabel.textContent = session.sourceLabel;
     elements.readerLocation.textContent = session.sourceLabel;
     elements.readerHint.textContent = session.mode === "diff"
-      ? "j/k move · ⇧j/⇧k extend"
-      : "j/k move · a annotate";
+      ? "a annotate · y copy · j/k change"
+      : "a annotate · y copy · j/k move";
     const copySourceLabel = elements.copySource.querySelector("span");
     if (copySourceLabel) copySourceLabel.textContent = session.mode === "diff" ? "Copy diff" : "Copy document";
     elements.sourceNav.hidden = false;
@@ -1611,6 +1775,27 @@ elements.cancelComment.addEventListener("click", () => {
 elements.copy.addEventListener("click", () => void copyFeedback());
 elements.railCopy.addEventListener("click", () => void copyFeedback());
 elements.copySource.addEventListener("click", () => void copyReviewedSource());
+elements.toggleReviewed.addEventListener("click", toggleActiveFileReviewed);
+elements.fileSearch.addEventListener("input", () => {
+  fileSearchQuery = elements.fileSearch.value;
+  renderFileList();
+});
+elements.fileSearch.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    elements.fileSearch.value = "";
+    fileSearchQuery = "";
+    renderFileList();
+    elements.reader.focus();
+  } else if (event.key === "Enter") {
+    const firstMatch = parsedFiles.findIndex((file) => matchesFileSearch(file.name, fileSearchQuery));
+    if (firstMatch >= 0) {
+      event.preventDefault();
+      switchFile(firstMatch);
+      elements.reader.focus();
+    }
+  }
+});
 elements.fileSelect.addEventListener("change", () => switchFile(Number(elements.fileSelect.value)));
 elements.diffUnified.addEventListener("click", () => setDiffStyle("unified"));
 elements.diffSplit.addEventListener("click", () => setDiffStyle("split"));
