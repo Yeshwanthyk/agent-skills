@@ -2,7 +2,7 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { createReadStream, realpathSync } from "node:fs";
+import { createReadStream, lstatSync, readFileSync, readlinkSync, realpathSync } from "node:fs";
 import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { homedir } from "node:os";
@@ -17,15 +17,17 @@ const HEARTBEAT_TIMEOUT_MS = 30_000;
 const ACTIVATION_TIMEOUT_MS = 60_000;
 const MAX_REQUEST_BYTES = 1_024;
 const COMMAND_TIMEOUT_MS = 60_000;
+const MAX_UNTRACKED_FINGERPRINT_FILES = 20;
+const MAX_UNTRACKED_FINGERPRINT_CONTENT_BYTES = 1024 * 1024;
 const RUNTIME_DIRECTORY = dirname(fileURLToPath(import.meta.url));
 const SKILL_DIRECTORY = resolve(RUNTIME_DIRECTORY, "..");
 const ASSET_DIRECTORY = join(SKILL_DIRECTORY, "assets");
 export const DEFAULT_REVIEW_PREFERENCES = Object.freeze({
   version: 1,
   diffStyle: "unified",
-  codeFontSize: 13,
+  codeFontSize: 15,
 });
-const CODE_FONT_SIZES = new Set([12, 13, 14, 16]);
+const CODE_FONT_SIZES = new Set([14, 15, 16, 18]);
 
 export function isReviewPreferences(value) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
@@ -306,6 +308,86 @@ export function collectLocalDiff(cwd = process.cwd()) {
   };
 }
 
+function verifiedCommit(root, revision, label) {
+  if (!revision || revision.startsWith("-")) throw new Error(`${label} must name a commit.`);
+  return commandResult("git", ["rev-parse", "--verify", `${revision}^{commit}`], { cwd: root }).trim();
+}
+
+export function collectRevisionDiff(cwd = process.cwd(), revision, requireRange = false) {
+  const root = commandResult("git", ["rev-parse", "--show-toplevel"], { cwd }).trim();
+  if (!root) throw new Error("Git did not return a worktree root.");
+
+  const range = revision.match(/^(.+?)(\.{2,3})(.+)$/);
+  if (requireRange && !range) throw new Error("--range requires <base>..<head> or <base>...<head>.");
+
+  let content;
+  let sourceLabel;
+  if (range) {
+    const [, base, operator, head] = range;
+    const baseCommit = verifiedCommit(root, base, "Range base");
+    const headCommit = verifiedCommit(root, head, "Range head");
+    content = commandResult(
+      "git",
+      ["diff", "--no-ext-diff", "--find-renames", "--find-copies", `${baseCommit}${operator}${headCommit}`, "--"],
+      { cwd: root },
+    );
+    sourceLabel = `${root} · ${revision}`;
+  } else {
+    const commit = verifiedCommit(root, revision, "Revision");
+    content = commandResult(
+      "git",
+      ["show", "--format=", "--no-ext-diff", "--find-renames", "--find-copies", commit, "--"],
+      { cwd: root },
+    );
+    sourceLabel = `${root} · commit ${revision}`;
+  }
+  return { content: enforceSourceSize(content), sourceLabel };
+}
+
+export function collectWorktreeFingerprint(cwd = process.cwd()) {
+  try {
+    const root = commandResult("git", ["rev-parse", "--show-toplevel"], { cwd }).trim();
+    if (!root) return null;
+    const hash = createHash("sha256");
+    const hasHead = spawnSync("git", ["rev-parse", "--verify", "HEAD"], {
+      cwd: root,
+      stdio: "ignore",
+      windowsHide: true,
+    }).status === 0;
+    const trackedArgs = hasHead
+      ? ["--no-optional-locks", "diff", "--no-ext-diff", "HEAD", "--"]
+      : ["--no-optional-locks", "diff", "--cached", "--no-ext-diff", "--"];
+    hash.update(commandResult("git", trackedArgs, { cwd: root }));
+
+    const status = commandResult(
+      "git",
+      ["--no-optional-locks", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+      { cwd: root },
+    );
+    hash.update("\0status\0").update(status);
+    const untracked = status
+      .split("\0")
+      .filter((entry) => entry.startsWith("?? "))
+      .map((entry) => entry.slice(3))
+      .slice(0, MAX_UNTRACKED_FINGERPRINT_FILES);
+    for (const path of untracked) {
+      const fullPath = resolve(root, path);
+      const stats = lstatSync(fullPath);
+      hash.update("\0untracked\0").update(path);
+      if (stats.isSymbolicLink()) {
+        hash.update(`symlink:${readlinkSync(fullPath)}`);
+      } else if (!stats.isFile() || stats.size > MAX_UNTRACKED_FINGERPRINT_CONTENT_BYTES) {
+        hash.update(`${stats.isFile() ? "large" : "non-file"}:${stats.size}:${stats.mtimeMs}`);
+      } else {
+        hash.update(readFileSync(fullPath));
+      }
+    }
+    return hash.digest("hex");
+  } catch {
+    return null;
+  }
+}
+
 export function classifyReviewUrl(value) {
   let url;
   try {
@@ -375,13 +457,20 @@ export async function resolveLastSource(args, env = process.env) {
 }
 
 export async function createReviewSession(mode, args, env = process.env, cwd = process.cwd()) {
-  const source = mode === "markdown"
-    ? await resolveLastSource(args, env)
-    : args.length > 1
-      ? (() => { throw new Error("review-diff accepts at most one PR or MR URL."); })()
-      : args[0]
-        ? collectRemoteDiff(args[0])
-        : collectLocalDiff(cwd);
+  let source;
+  if (mode === "markdown") {
+    source = await resolveLastSource(args, env);
+  } else if (args.length === 0) {
+    source = collectLocalDiff(cwd);
+  } else if (args.length === 1) {
+    source = /^[a-z][a-z\d+.-]*:\/\//i.test(args[0])
+      ? collectRemoteDiff(args[0])
+      : collectRevisionDiff(cwd, args[0]);
+  } else if (args.length === 2 && (args[0] === "--commit" || args[0] === "--range")) {
+    source = collectRevisionDiff(cwd, args[1], args[0] === "--range");
+  } else {
+    throw new Error("review-diff accepts a PR/MR URL, a commit, or one commit range.");
+  }
   const id = createHash("sha256").update(mode).update("\0").update(source.content).digest("hex");
   return {
     version: 1,
@@ -429,7 +518,7 @@ export async function startWorkspaceServer(session, options = {}) {
     script: await readFile(join(ASSET_DIRECTORY, "app.js")),
     style: await readFile(join(ASSET_DIRECTORY, "app.css")),
   };
-  const sessionPayload = Buffer.from(JSON.stringify(session));
+  let currentSession = session;
   const preferenceStore = options.preferenceStore ?? {
     read: () => readReviewPreferences(options.env),
     write: (value) => writeReviewPreferences(value, options.env),
@@ -475,7 +564,15 @@ export async function startWorkspaceServer(session, options = {}) {
       } else if (request.method === "GET" && path === `${base}app.css`) {
         send(200, "text/css; charset=utf-8", assets.style);
       } else if (request.method === "GET" && path === `${base}api/session`) {
-        send(200, "application/json; charset=utf-8", sessionPayload);
+        if (options.refreshSession) {
+          const refreshed = await options.refreshSession();
+          if (refreshed.id !== currentSession.id) currentSession = refreshed;
+        }
+        if (requestUrl.searchParams.get("after") === currentSession.id) {
+          send(204, "application/json; charset=utf-8", "");
+        } else {
+          send(200, "application/json; charset=utf-8", JSON.stringify(currentSession));
+        }
       } else if (request.method === "GET" && path === `${base}api/preferences`) {
         send(200, "application/json; charset=utf-8", JSON.stringify(preferences));
       } else if (request.method === "PUT" && path === `${base}api/preferences`) {
@@ -629,8 +726,23 @@ export async function openWorkspaceSurface(url, title, env = process.env) {
 
 export async function runReview(mode, args, options = {}) {
   const env = options.env ?? process.env;
-  const session = await createReviewSession(mode, args, env, options.cwd ?? process.cwd());
-  const workspace = await startWorkspaceServer(session, { ...options.serverOptions, env });
+  const cwd = options.cwd ?? process.cwd();
+  let worktreeFingerprint = mode === "diff" && args.length === 0
+    ? collectWorktreeFingerprint(cwd)
+    : null;
+  const session = await createReviewSession(mode, args, env, cwd);
+  let latestSession = session;
+  const refreshSession = mode === "diff" && args.length === 0
+    ? async () => {
+        const nextFingerprint = collectWorktreeFingerprint(cwd);
+        if (nextFingerprint === null || nextFingerprint === worktreeFingerprint) return latestSession;
+        const refreshedSession = await createReviewSession(mode, args, env, cwd);
+        worktreeFingerprint = nextFingerprint;
+        latestSession = refreshedSession;
+        return latestSession;
+      }
+    : undefined;
+  const workspace = await startWorkspaceServer(session, { ...options.serverOptions, env, refreshSession });
   let surface;
   try {
     surface = await openWorkspaceSurface(workspace.url, session.title, env);
@@ -649,7 +761,7 @@ export async function main(args = process.argv.slice(2), options = {}) {
   const [command, ...rest] = args;
   if (command === "last") return runReview("markdown", rest, options);
   if (command === "diff") return runReview("diff", rest, options);
-  throw new Error("Usage: review-workspace.mjs <last [--file path|--stdin] | diff [pr-or-mr-url]>");
+  throw new Error("Usage: review-workspace.mjs <last [--file path|--stdin] | diff [pr-or-mr-url|commit|base..head|--commit commit|--range base..head]>");
 }
 
 function isDirectInvocation(argvPath) {

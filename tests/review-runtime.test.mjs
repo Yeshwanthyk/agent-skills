@@ -8,6 +8,8 @@ import test from "node:test";
 import {
   classifyReviewUrl,
   collectLocalDiff,
+  collectRevisionDiff,
+  collectWorktreeFingerprint,
   createReviewSession,
   extractPreviousAssistantText,
   readPiPreviousAssistantText,
@@ -161,6 +163,59 @@ test("collects tracked, staged, and untracked worktree changes without mutation"
   });
 });
 
+test("fingerprints tracked and untracked content changes without mutating the worktree", async () => {
+  await withTempDirectory(async (directory) => {
+    execFileSync("git", ["init", "-q"], { cwd: directory });
+    execFileSync("git", ["config", "user.email", "test@example.com"], { cwd: directory });
+    execFileSync("git", ["config", "user.name", "Test"], { cwd: directory });
+    await writeFile(join(directory, "tracked.txt"), "base\n");
+    execFileSync("git", ["add", "tracked.txt"], { cwd: directory });
+    execFileSync("git", ["commit", "-qm", "base"], { cwd: directory });
+
+    const clean = collectWorktreeFingerprint(directory);
+    await writeFile(join(directory, "tracked.txt"), "changed once\n");
+    const trackedOnce = collectWorktreeFingerprint(directory);
+    await writeFile(join(directory, "tracked.txt"), "changed twice\n");
+    const trackedTwice = collectWorktreeFingerprint(directory);
+    await writeFile(join(directory, "untracked.txt"), "new once\n");
+    const untrackedOnce = collectWorktreeFingerprint(directory);
+    await writeFile(join(directory, "untracked.txt"), "new twice\n");
+    const untrackedTwice = collectWorktreeFingerprint(directory);
+
+    assert.ok(clean);
+    assert.notEqual(trackedOnce, clean);
+    assert.notEqual(trackedTwice, trackedOnce);
+    assert.notEqual(untrackedOnce, trackedTwice);
+    assert.notEqual(untrackedTwice, untrackedOnce);
+    assert.match(execFileSync("git", ["status", "--short"], { cwd: directory, encoding: "utf8" }), /tracked\.txt/);
+  });
+});
+
+test("collects an older commit or commit range without changing the worktree", async () => {
+  await withTempDirectory(async (directory) => {
+    execFileSync("git", ["init", "-q"], { cwd: directory });
+    execFileSync("git", ["config", "user.email", "test@example.com"], { cwd: directory });
+    execFileSync("git", ["config", "user.name", "Test"], { cwd: directory });
+    await writeFile(join(directory, "history.txt"), "one\n");
+    execFileSync("git", ["add", "history.txt"], { cwd: directory });
+    execFileSync("git", ["commit", "-qm", "one"], { cwd: directory });
+    const first = execFileSync("git", ["rev-parse", "HEAD"], { cwd: directory, encoding: "utf8" }).trim();
+    await writeFile(join(directory, "history.txt"), "two\n");
+    execFileSync("git", ["commit", "-qam", "two"], { cwd: directory });
+    const second = execFileSync("git", ["rev-parse", "HEAD"], { cwd: directory, encoding: "utf8" }).trim();
+    await writeFile(join(directory, "history.txt"), "three\n");
+    execFileSync("git", ["commit", "-qam", "three"], { cwd: directory });
+    const headBefore = execFileSync("git", ["rev-parse", "HEAD"], { cwd: directory, encoding: "utf8" });
+
+    const commitReview = collectRevisionDiff(directory, second);
+    assert.match(commitReview.content, /\+two/);
+    assert.doesNotMatch(commitReview.content, /\+three/);
+    const rangeReview = collectRevisionDiff(directory, `${first}..HEAD`, true);
+    assert.match(rangeReview.content, /\+three/);
+    assert.equal(execFileSync("git", ["rev-parse", "HEAD"], { cwd: directory, encoding: "utf8" }), headBefore);
+  });
+});
+
 test("serves one tokenized local workspace with strict no-store headers", async () => {
   const session = {
     version: 1,
@@ -208,6 +263,39 @@ test("serves one tokenized local workspace with strict no-store headers", async 
   }
 });
 
+test("serves refreshed sessions to an already-open workspace", async () => {
+  const initial = {
+    version: 1,
+    id: "c".repeat(64),
+    mode: "diff",
+    title: "Review diff",
+    sourceLabel: "worktree",
+    content: "diff --git a/a.txt b/a.txt\n",
+    createdAt: "2026-07-26T12:00:00.000Z",
+  };
+  const refreshed = { ...initial, id: "d".repeat(64), content: "diff --git a/b.txt b/b.txt\n" };
+  let current = initial;
+  const workspace = await startWorkspaceServer(initial, {
+    token: "refresh-token",
+    assets: {
+      index: Buffer.from("<!doctype html><div id=app></div>"),
+      script: Buffer.from("export {};"),
+      style: Buffer.from("body{}"),
+    },
+    refreshSession: () => current,
+  });
+  try {
+    assert.equal((await fetch(`${workspace.url}api/session?after=${initial.id}`)).status, 204);
+    current = refreshed;
+    const response = await fetch(`${workspace.url}api/session?after=${initial.id}`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), refreshed);
+    assert.equal((await fetch(`${workspace.url}api/session?after=${refreshed.id}`)).status, 204);
+  } finally {
+    await workspace.close("test-cleanup");
+  }
+});
+
 test("persists validated display preferences on this computer across workspaces", async () => {
   await withTempDirectory(async (directory) => {
     const env = { REVIEW_WORKSPACE_STATE_DIRECTORY: directory };
@@ -228,7 +316,7 @@ test("persists validated display preferences on this computer across workspaces"
     const first = await startWorkspaceServer(session, { token: "preferences-one", assets, env });
     try {
       const origin = new URL(first.url).origin;
-      const saved = { version: 1, diffStyle: "split", codeFontSize: 16 };
+      const saved = { version: 1, diffStyle: "split", codeFontSize: 18 };
       const response = await fetch(`${first.url}api/preferences`, {
         method: "PUT",
         headers: { Origin: origin, "Content-Type": "application/json" },
@@ -263,7 +351,7 @@ test("persists validated display preferences on this computer across workspaces"
     const second = await startWorkspaceServer(session, { token: "preferences-two", assets, env });
     try {
       const loaded = await (await fetch(`${second.url}api/preferences`)).json();
-      assert.deepEqual(loaded, { version: 1, diffStyle: "split", codeFontSize: 16 });
+      assert.deepEqual(loaded, { version: 1, diffStyle: "split", codeFontSize: 18 });
     } finally {
       await second.close("test-cleanup");
     }

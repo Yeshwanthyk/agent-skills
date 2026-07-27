@@ -18,7 +18,7 @@ For current worktree changes, run from the repository being reviewed in the fore
 node "/absolute/path/to/review-diff/scripts/review-workspace.mjs" diff
 ```
 
-This captures tracked changes against `HEAD` plus untracked files without staging, committing, checking out, fetching, or modifying the worktree.
+This captures tracked changes against `HEAD` plus untracked files without staging, committing, checking out, fetching, or modifying the worktree. While the workspace remains open and visible, it checks a worktree fingerprint every five seconds and updates to newer files in place only when that fingerprint changes.
 
 For a supplied GitHub pull request or GitLab merge request, pass only the full HTTPS URL:
 
@@ -27,6 +27,15 @@ node "/absolute/path/to/review-diff/scripts/review-workspace.mjs" diff <pr-or-mr
 ```
 
 Remote acquisition uses the existing authenticated `gh` or `glab` CLI. It never clones, checks out, posts a review, or mutates remote state.
+
+For an older commit on the current branch, or a historical range, pass a Git revision without checking it out:
+
+```bash
+node "/absolute/path/to/review-diff/scripts/review-workspace.mjs" diff HEAD~2
+node "/absolute/path/to/review-diff/scripts/review-workspace.mjs" diff HEAD~5..HEAD~2
+```
+
+The explicit forms `diff --commit <revision>` and `diff --range <base>..<head>` are also supported. Historical and remote reviews are fixed snapshots; live updates apply only to the current worktree form.
 
 The workspace is local and self-contained. It uses bundled `@pierre/diffs` 1.2.8, supports line-range comments, edit/delete/undo, file and comment navigation, keyboard review, and deterministic `Copy feedback`. It never installs Plannotator or creates an asynchronous feedback path.
 

@@ -29,7 +29,7 @@ import {
 import "./app.css";
 
 type ReviewDiffStyle = "unified" | "split";
-type ReviewCodeFontSize = 12 | 13 | 14 | 16;
+type ReviewCodeFontSize = 14 | 15 | 16 | 18;
 
 interface ReviewPreferences {
   version: 1;
@@ -40,9 +40,10 @@ interface ReviewPreferences {
 const DEFAULT_REVIEW_PREFERENCES: ReviewPreferences = {
   version: 1,
   diffStyle: "unified",
-  codeFontSize: 13,
+  codeFontSize: 15,
 };
-const CODE_FONT_SIZES = new Set<ReviewCodeFontSize>([12, 13, 14, 16]);
+const CODE_FONT_SIZES = new Set<ReviewCodeFontSize>([14, 15, 16, 18]);
+const SESSION_POLL_INTERVAL_MS = 5_000;
 
 const md = new MarkdownIt({
   html: false,
@@ -127,10 +128,10 @@ app.innerHTML = `
             <label class="code-size-control" title="Code font size (saved on this computer)">
               <span>Code</span>
               <select id="code-size" aria-label="Code font size">
-                <option value="12">12 px</option>
-                <option value="13" selected>13 px</option>
                 <option value="14">14 px</option>
+                <option value="15" selected>15 px</option>
                 <option value="16">16 px</option>
+                <option value="18">18 px</option>
               </select>
             </label>
           </div>
@@ -313,6 +314,7 @@ let pendingG = false;
 let pendingGTimer: number | null = null;
 let preferences: ReviewPreferences = { ...DEFAULT_REVIEW_PREFERENCES };
 let preferenceWrite: Promise<void> = Promise.resolve();
+let sessionRefreshPending = false;
 
 function normalizePreferences(value: unknown): ReviewPreferences {
   if (!value || typeof value !== "object") return { ...DEFAULT_REVIEW_PREFERENCES };
@@ -787,8 +789,13 @@ function diffAnchorFromRange(range: SelectedLineRange): DiffAnchor | null {
 function diffLineAnnotations(): DiffLineAnnotation<ReviewAnnotation>[] {
   const file = parsedFiles[activeFileIndex];
   if (!file) return [];
+  const maps = lineMaps(file);
   return annotations
-    .filter((annotation): annotation is ReviewAnnotation & { anchor: DiffAnchor } => annotation.anchor.kind === "diff" && annotation.anchor.file === file.name)
+    .filter((annotation): annotation is ReviewAnnotation & { anchor: DiffAnchor } => {
+      if (annotation.anchor.kind !== "diff" || annotation.anchor.file !== file.name) return false;
+      const side = annotation.anchor.endSide ?? annotation.anchor.side;
+      return maps[side].has(annotation.anchor.end);
+    })
     .map((annotation) => ({
       side: annotation.anchor.endSide ?? annotation.anchor.side,
       lineNumber: annotation.anchor.end,
@@ -812,7 +819,7 @@ function createInlineAnnotation(annotation: DiffLineAnnotation<ReviewAnnotation>
 const pierreUnsafeCss = `
   :host {
     --diffs-font-family: "BerkeleyMono Nerd Font", "BerkeleyMonoNF-Regular", ui-monospace, "SFMono-Regular", Consolas, monospace;
-    --diffs-font-size: var(--review-code-font-size, 13px);
+    --diffs-font-size: var(--review-code-font-size, 15px);
     --diffs-line-height: 1.55;
     --diffs-bg-separator-override: light-dark(oklch(0.94 0.006 260), oklch(0.225 0.018 260));
   }
@@ -822,7 +829,7 @@ const pierreUnsafeCss = `
     outline-offset: -1px;
     box-shadow: inset 3px 0 0 light-dark(oklch(0.50 0.25 280), oklch(0.75 0.18 280));
   }
-  [data-separator-content] { font-size: var(--review-code-meta-size, 13px) !important; opacity: .72; }
+  [data-separator-content] { font-size: var(--review-code-meta-size, 15px) !important; opacity: .72; }
   pre, code { font-variant-ligatures: none; font-variant-numeric: tabular-nums; }
 `;
 
@@ -1354,6 +1361,45 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
   }
 }
 
+async function refreshSession(): Promise<void> {
+  if (!session || session.mode !== "diff" || sessionRefreshPending || !elements.composer.hidden) return;
+  sessionRefreshPending = true;
+  try {
+    const response = await fetch(`./api/session?after=${encodeURIComponent(session.id)}`, { cache: "no-store" });
+    if (response.status === 204) return;
+    if (!response.ok) throw new Error(`Session refresh failed with HTTP ${response.status}.`);
+    const nextSession = await response.json() as ReviewSession;
+    if (nextSession.id === session.id) return;
+
+    const activeFile = parsedFiles[activeFileIndex]?.name;
+    const scrollTop = elements.reader.scrollTop;
+    closeComposer();
+    session = nextSession;
+    parsedFiles = processPatch(session.content, session.id, true).files;
+    activeFileIndex = Math.max(0, activeFile ? parsedFiles.findIndex((file) => file.name === activeFile) : 0);
+    elements.sourceLabel.textContent = session.sourceLabel;
+    elements.loading.hidden = true;
+    elements.empty.hidden = parsedFiles.length > 0;
+    elements.diff.hidden = parsedFiles.length === 0;
+    if (parsedFiles.length > 0) {
+      renderFileList();
+      renderDiff();
+      elements.reader.scrollTop = scrollTop;
+    } else {
+      diffView?.cleanUp();
+      diffView = null;
+      elements.diff.replaceChildren();
+    }
+    persistAnnotations();
+    renderAnnotationRail();
+    showStatus("Diff updated to the latest worktree files.", "success");
+  } catch (error) {
+    showStatus(error instanceof Error ? error.message : String(error), "error");
+  } finally {
+    sessionRefreshPending = false;
+  }
+}
+
 async function initialize(): Promise<void> {
   try {
     const [response] = await Promise.all([
@@ -1463,5 +1509,11 @@ document.addEventListener("keydown", handleGlobalKeydown);
 window.setInterval(() => {
   void fetch("./api/heartbeat", { method: "POST", keepalive: true }).catch(() => {});
 }, 5_000);
+function scheduleSessionRefresh(): void {
+  window.setTimeout(async () => {
+    if (!document.hidden) await refreshSession();
+    scheduleSessionRefresh();
+  }, SESSION_POLL_INTERVAL_MS);
+}
 
-void initialize();
+void initialize().finally(scheduleSessionRefresh);
