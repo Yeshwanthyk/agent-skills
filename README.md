@@ -2,6 +2,7 @@
 
 | Skill | What it does |
 | --- | --- |
+| [`codex-orchestrator`](./skills/codex-orchestrator) | Coordinates agents on substantial work with focused delegation, distinct ownership, and user-held approvals. |
 | [`interactive-system-explainer`](./skills/interactive-system-explainer) | Builds source-grounded, self-contained HTML explainers for system behavior, state, sequences, and comparisons. |
 | [`review-annotate`](./skills/review-annotate) | Opens the previous assistant response or supported local documents/folders in a bundled read-only annotation workspace. Invoke as `/skill:review-annotate last` or `/skill:review-annotate <path>`; a bare `/review-annotate` shim is not included. |
 | [`review-diff`](./skills/review-diff) | Opens current worktree changes, a historical revision/range, or a supplied PR/MR in a bundled local diff annotation workspace. |
