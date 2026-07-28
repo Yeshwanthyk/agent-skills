@@ -226,6 +226,151 @@ export async function readPiPreviousAssistantText(sessionFile, expectedSessionId
   return extractPreviousAssistantText(entries);
 }
 
+const CODEX_TURN_START_TYPES = new Set(["task_started", "turn_started"]);
+const CODEX_TURN_COMPLETE_TYPES = new Set(["task_complete", "turn_completed"]);
+const SAFE_CODEX_THREAD_ID = /^[A-Za-z0-9_-]{1,128}$/;
+
+async function codexDirectoryNames(path) {
+  let entries;
+  try {
+    entries = await readdir(path, { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === "ENOENT") return [];
+    throw error;
+  }
+  return entries
+    .filter((entry) => entry.isDirectory() && !entry.isSymbolicLink())
+    .map((entry) => entry.name)
+    .sort()
+    .reverse();
+}
+
+export async function findCodexRolloutFile(threadId, env = process.env) {
+  if (typeof threadId !== "string" || !SAFE_CODEX_THREAD_ID.test(threadId)) {
+    throw new Error("Invalid Codex thread ID.");
+  }
+  const home = env.CODEX_HOME
+    ? resolve(env.CODEX_HOME)
+    : join(resolve(env.HOME || env.USERPROFILE || homedir()), ".codex");
+  const sessionsDirectory = join(home, "sessions");
+  const suffix = `-${threadId}.jsonl`;
+  const matches = [];
+
+  for (const year of await codexDirectoryNames(sessionsDirectory)) {
+    const yearDirectory = join(sessionsDirectory, year);
+    for (const month of await codexDirectoryNames(yearDirectory)) {
+      const monthDirectory = join(yearDirectory, month);
+      for (const day of await codexDirectoryNames(monthDirectory)) {
+        const dayDirectory = join(monthDirectory, day);
+        const entries = await readdir(dayDirectory, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.isFile() && !entry.isSymbolicLink() && entry.name.startsWith("rollout-") && entry.name.endsWith(suffix)) {
+            matches.push(join(dayDirectory, entry.name));
+          }
+        }
+      }
+    }
+  }
+
+  if (matches.length === 0) {
+    throw new Error(`Could not find the active Codex rollout for thread ${threadId}.`);
+  }
+  if (matches.length > 1) {
+    throw new Error(`Found multiple Codex rollouts for active thread ${threadId}; refusing to guess.`);
+  }
+  return matches[0];
+}
+
+function codexAssistantText(entry) {
+  if (entry?.type !== "response_item" || entry.payload?.type !== "message" || entry.payload?.role !== "assistant") {
+    return null;
+  }
+  if (!Array.isArray(entry.payload.content)) return null;
+  const text = entry.payload.content
+    .filter((block) => block?.type === "output_text" && typeof block.text === "string")
+    .map((block) => block.text.trim())
+    .filter(Boolean)
+    .join("\n");
+  return text || null;
+}
+
+export function extractCodexPreviousAssistantText(entries) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    throw new Error("The Codex rollout contains no entries.");
+  }
+
+  let latestTurnStart = -1;
+  let latestTurnComplete = -1;
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
+    if (entry?.type !== "event_msg") continue;
+    if (CODEX_TURN_START_TYPES.has(entry.payload?.type)) latestTurnStart = index;
+    if (CODEX_TURN_COMPLETE_TYPES.has(entry.payload?.type)) latestTurnComplete = index;
+  }
+  const activeTurnStart = latestTurnStart > latestTurnComplete ? latestTurnStart : entries.length;
+
+  for (let index = activeTurnStart - 1; index >= 0; index -= 1) {
+    const text = codexAssistantText(entries[index]);
+    if (text) return text;
+  }
+  throw new Error("No previous assistant text message was found in the active Codex thread.");
+}
+
+export async function readCodexPreviousAssistantText(rolloutFile, expectedThreadId) {
+  let handle;
+  try {
+    handle = await open(rolloutFile, constants.O_RDONLY | constants.O_NOFOLLOW).catch((error) => {
+      if (error?.code === "ENOENT") throw new Error(`Codex rollout file does not exist: ${rolloutFile}`);
+      throw error;
+    });
+    const before = await handle.stat();
+    if (!before.isFile()) throw new Error(`Codex rollout path is not a regular file: ${rolloutFile}`);
+    if (before.size > MAX_SESSION_BYTES) {
+      throw new Error(`Codex rollout exceeds the ${MAX_SESSION_BYTES / 1024 / 1024} MiB safety limit.`);
+    }
+    const buffer = await handle.readFile();
+    const after = await handle.stat();
+    if (
+      after.size !== before.size || after.mtimeMs !== before.mtimeMs || after.ctimeMs !== before.ctimeMs ||
+      after.dev !== before.dev || after.ino !== before.ino
+    ) {
+      throw new Error("Codex rollout changed while review-annotate was reading it; run the skill again.");
+    }
+
+    let content;
+    try {
+      content = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+    } catch {
+      throw new Error("The active Codex rollout is not valid UTF-8 text.");
+    }
+    const entries = [];
+    let lineNumber = 0;
+    for (const line of content.split(/\r?\n/)) {
+      lineNumber += 1;
+      if (!line.trim()) continue;
+      try {
+        entries.push(JSON.parse(line));
+      } catch (error) {
+        throw new Error(`Invalid JSON in Codex rollout ${rolloutFile}:${lineNumber}: ${error.message}`);
+      }
+    }
+
+    const metadata = entries[0];
+    if (metadata?.type !== "session_meta" || typeof metadata.payload?.id !== "string") {
+      throw new Error(`Unsupported Codex rollout header in ${rolloutFile}.`);
+    }
+    if (expectedThreadId && metadata.payload.id !== expectedThreadId) {
+      throw new Error(`Codex thread ID mismatch: expected ${expectedThreadId}, found ${metadata.payload.id}.`);
+    }
+    if (entries.slice(1).some((entry) => entry?.type === "session_meta")) {
+      throw new Error(`Duplicate Codex rollout header in ${rolloutFile}.`);
+    }
+    return extractCodexPreviousAssistantText(entries);
+  } finally {
+    await handle?.close();
+  }
+}
+
 async function readStdin() {
   const chunks = [];
   let size = 0;
@@ -373,8 +518,19 @@ export async function createDocumentSession(argument, env = process.env, cwd = p
     throw new Error("review-annotate requires exactly `last` or one local file/folder path.");
   }
   if (argument === "last") {
-    if (!env.PI_SESSION_FILE) throw new Error("`last` requires the active Pi session; refusing to guess from unrelated transcripts.");
-    const content = enforceSourceSize(await readPiPreviousAssistantText(env.PI_SESSION_FILE, env.PI_SESSION_ID));
+    let content;
+    let sourceLabel;
+    if (env.PI_SESSION_FILE) {
+      content = await readPiPreviousAssistantText(env.PI_SESSION_FILE, env.PI_SESSION_ID);
+      sourceLabel = "latest assistant response · active Pi branch";
+    } else if (env.CODEX_THREAD_ID) {
+      const rolloutFile = await findCodexRolloutFile(env.CODEX_THREAD_ID, env);
+      content = await readCodexPreviousAssistantText(rolloutFile, env.CODEX_THREAD_ID);
+      sourceLabel = "latest assistant response · active Codex thread";
+    } else {
+      throw new Error("`last` requires the active Pi or Codex session; refusing to guess from unrelated transcripts.");
+    }
+    enforceSourceSize(content);
     const buffer = Buffer.from(content);
     const source = {
       path: null, root: null, relativePath: "Assistant response", kind: "markdown", size: buffer.length,
@@ -386,7 +542,7 @@ export async function createDocumentSession(argument, env = process.env, cwd = p
       id: createHash("sha256").update("document\0last\0").update(content).digest("hex"),
       mode: "document",
       title: "Review last response",
-      sourceLabel: "latest assistant response · active Pi branch",
+      sourceLabel,
       rootLabel: "Assistant response",
       documents: [document],
       initialDocumentId: document.id,

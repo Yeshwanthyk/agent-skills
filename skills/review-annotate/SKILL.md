@@ -14,7 +14,7 @@ Do not send a status or commentary message before starting the command.
 
 Resolve `scripts/review-workspace.mjs` relative to this `SKILL.md`, then run it in the foreground without a short timeout.
 
-Previous assistant message from the active Pi branch:
+Previous assistant message from the active Pi branch or Codex thread:
 
 ```bash
 node "/absolute/path/to/review-annotate/scripts/review-workspace.mjs" annotate last
@@ -26,9 +26,9 @@ One supported local file or a folder containing supported documents:
 node "/absolute/path/to/review-annotate/scripts/review-workspace.mjs" annotate "/path/to/source"
 ```
 
-Invoke this skill as `/skill:review-annotate last` or `/skill:review-annotate <path>`. Pi skills do not provide a bare `/review-annotate` command; that alias requires a separate extension or prompt-command shim and is intentionally not included.
+In Pi, invoke this skill as `/skill:review-annotate last` or `/skill:review-annotate <path>`. In Codex, invoke it as `$review-annotate`. Pi skills do not provide a bare `/review-annotate` command; that alias requires a separate extension or prompt-command shim and is intentionally not included.
 
-`last` follows `PI_SESSION_FILE`'s active parent chain, crosses the current skill invocation, and selects the preceding assistant message containing text. It fails closed rather than choosing another transcript or file.
+`last` uses authoritative state from the active harness and never picks the newest unrelated transcript. In Pi, it follows `PI_SESSION_FILE`'s active parent chain across the current skill invocation. In Codex, it resolves `CODEX_THREAD_ID` under `$CODEX_HOME/sessions` (default `~/.codex/sessions`), verifies the rollout's session identity, excludes the active invocation turn, and selects the preceding assistant `output_text`. Missing, ambiguous, malformed, oversized, or changing session state fails closed.
 
 Supported files are `.md`, `.mdx`, `.txt`, `.html`, `.htm`, `.yaml`, `.yml`, `.json`, `.jsonc`, `.json5`, `.toml`, `.ini`, `.cfg`, `.conf`, `.properties`, `.csv`, `.tsv`, `.log`, `.xml`, and `.env.example`. `.env`, source code, binary files, symlinks, URLs, special files, and unsafe/oversized sources are rejected. Folder traversal is deterministic and bounded; generated, vendor, and cache directories are skipped, and only one document is loaded at a time.
 

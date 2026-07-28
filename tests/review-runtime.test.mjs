@@ -12,9 +12,13 @@ import {
   collectWorktreeFingerprint,
   createDocumentSession,
   createReviewSession,
+  extractCodexPreviousAssistantText,
   extractPreviousAssistantText,
+  findCodexRolloutFile,
+  readCodexPreviousAssistantText,
   readPiPreviousAssistantText,
   MAX_DOCUMENT_BYTES,
+  MAX_SESSION_BYTES,
   main as annotateMain,
   readReviewPreferences,
   startWorkspaceServer,
@@ -42,6 +46,22 @@ function invocationMessage(id, parentId, preamble) {
       ],
     },
   };
+}
+
+function codexEntry(type, payload) {
+  return { timestamp: "2026-07-28T00:00:00.000Z", type, payload };
+}
+
+function codexAssistant(text) {
+  return codexEntry("response_item", {
+    type: "message",
+    role: "assistant",
+    content: [{ type: "output_text", text }],
+  });
+}
+
+function codexTurn(type, turnId) {
+  return codexEntry("event_msg", { type, turn_id: turnId });
 }
 
 async function withTempDirectory(run) {
@@ -121,9 +141,99 @@ test("rejects mismatched and duplicate Pi session identity", async () => {
   });
 });
 
-test("requires exact annotate input and active Pi state for last", async () => {
+test("finds the exact active Codex rollout under CODEX_HOME", async () => {
+  await withTempDirectory(async (directory) => {
+    const threadId = "019fa6bb-23ab-7f4d-9f33-4e082658e6d2";
+    const day = join(directory, "sessions", "2026", "07", "28");
+    await mkdir(day, { recursive: true });
+    await writeFile(join(day, `rollout-2026-07-28T00-00-00-${threadId}-other.jsonl`), "");
+    const expected = join(day, `rollout-2026-07-28T00-00-01-${threadId}.jsonl`);
+    await writeFile(expected, "");
+
+    assert.equal(await findCodexRolloutFile(threadId, { CODEX_HOME: directory }), expected);
+    await assert.rejects(findCodexRolloutFile("../escape", { CODEX_HOME: directory }), /thread ID/i);
+    await assert.rejects(findCodexRolloutFile("missing-thread", { CODEX_HOME: directory }), /active Codex rollout/i);
+    await writeFile(join(day, `rollout-2026-07-28T00-00-02-${threadId}.jsonl`), "");
+    await assert.rejects(findCodexRolloutFile(threadId, { CODEX_HOME: directory }), /multiple Codex rollouts/i);
+  });
+});
+
+test("extracts the previous assistant response before the active Codex invocation turn", () => {
+  const entries = [
+    codexEntry("session_meta", { id: "thread-id", cwd: "/tmp/project" }),
+    codexTurn("task_started", "previous"),
+    codexAssistant("# Substantive answer"),
+    codexTurn("task_complete", "previous"),
+    codexTurn("task_started", "active"),
+    codexEntry("response_item", {
+      type: "message",
+      role: "user",
+      content: [{ type: "input_text", text: "[$review-annotate]" }],
+    }),
+    codexAssistant("Opening the annotation workspace."),
+    codexEntry("response_item", { type: "function_call", name: "exec_command" }),
+  ];
+
+  assert.equal(extractCodexPreviousAssistantText(entries), "# Substantive answer");
+});
+
+test("reads a strict Codex rollout and creates a last-response session", async () => {
+  await withTempDirectory(async (directory) => {
+    const threadId = "019fa6bb-23ab-7f4d-9f33-4e082658e6d2";
+    const day = join(directory, "sessions", "2026", "07", "28");
+    await mkdir(day, { recursive: true });
+    const rollout = join(day, `rollout-2026-07-28T00-00-01-${threadId}.jsonl`);
+    const entries = [
+      codexEntry("session_meta", { id: threadId, cwd: directory }),
+      codexTurn("turn_started", "previous"),
+      codexAssistant("First block"),
+      codexEntry("response_item", {
+        type: "message",
+        role: "assistant",
+        content: [
+          { type: "output_text", text: "# Exact response" },
+          { type: "output_text", text: "Second block" },
+        ],
+      }),
+      codexTurn("turn_completed", "previous"),
+      codexTurn("turn_started", "active"),
+    ];
+    await writeFile(rollout, `${entries.map((entry) => JSON.stringify(entry)).join("\n")}\n`);
+
+    assert.equal(
+      await readCodexPreviousAssistantText(rollout, threadId),
+      "# Exact response\nSecond block",
+    );
+    const review = await createReviewSession("document", ["last"], {
+      CODEX_HOME: directory,
+      CODEX_THREAD_ID: threadId,
+    }, directory);
+    assert.equal(review.sourceLabel, "latest assistant response · active Codex thread");
+    assert.equal(review.documents.length, 1);
+  });
+});
+
+test("rejects corrupt, mismatched, and oversized Codex rollouts", async () => {
+  await withTempDirectory(async (directory) => {
+    const rollout = join(directory, "rollout.jsonl");
+    await writeFile(rollout, [
+      codexEntry("session_meta", { id: "other" }),
+      codexAssistant("answer"),
+    ].map((entry) => JSON.stringify(entry)).join("\n"));
+    await assert.rejects(readCodexPreviousAssistantText(rollout, "expected"), /thread ID mismatch/i);
+
+    await writeFile(rollout, `${JSON.stringify(codexEntry("session_meta", { id: "expected" }))}\n{broken\n`);
+    await assert.rejects(readCodexPreviousAssistantText(rollout, "expected"), /Invalid JSON/i);
+
+    await writeFile(rollout, "");
+    await truncate(rollout, MAX_SESSION_BYTES + 1);
+    await assert.rejects(readCodexPreviousAssistantText(rollout, "expected"), /safety limit/i);
+  });
+});
+
+test("requires exact annotate input and active agent state for last", async () => {
   await assert.rejects(createReviewSession("document", [], {}, process.cwd()), /exactly/);
-  await assert.rejects(createReviewSession("document", ["last"], {}, process.cwd()), /active Pi session/);
+  await assert.rejects(createReviewSession("document", ["last"], {}, process.cwd()), /active Pi or Codex session/);
   await assert.rejects(createReviewSession("document", ["--stdin"], {}, process.cwd()), /exactly/);
   await assert.rejects(createReviewSession("document", ["https://example.com/x.md"], {}, process.cwd()), /exactly/);
   await assert.rejects(createReviewSession("document", ["a.md", "b.md"], {}, process.cwd()), /exactly/);
@@ -495,6 +605,7 @@ test("packages the renamed skill without an unsafe HTML sandbox capability", asy
   assert.match(skill, /^name: review-annotate$/m);
   assert.match(skill, /\/skill:review-annotate/);
   assert.match(skill, /bare `\/review-annotate`/);
+  assert.match(skill, /CODEX_THREAD_ID/);
   assert.match(appSource, /<iframe[^>]+sandbox hidden/);
   assert.doesNotMatch(appSource, /sandbox=["'][^"']*allow-same-origin/);
 });
