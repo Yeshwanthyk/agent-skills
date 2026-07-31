@@ -1,0 +1,6 @@
+interface:
+  display_name: "Breadboarding"
+  short_description: "Map workflows into concrete affordances and wiring"
+  default_prompt: "Use $breadboarding to map this workflow into Places, affordances, stores, and explicit control and data wiring."
+policy:
+  allow_implicit_invocation: true
