@@ -5,7 +5,7 @@ description: Design a concrete target architecture from live contracts, executio
 
 # Yesh Architect
 
-Define the **target shape** before implementation.
+Choose and explain the **target architecture** at an unsettled decision seam before implementation planning.
 
 ## Process
 
