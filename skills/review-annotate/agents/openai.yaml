@@ -1,6 +1,0 @@
-interface:
-  display_name: "Review Annotate"
-  short_description: "Annotate the last response or local documents"
-  default_prompt: "Use $review-annotate with `last` or one local file/folder path to open the bundled read-only annotation workspace, then let me copy file-grouped feedback back into chat."
-policy:
-  allow_implicit_invocation: true
