@@ -1,6 +1,6 @@
 ---
 name: bro
-description: Rewrite text in plain, unambiguous English with short sentences, active voice, and no unnecessary jargon.
+description: Switch the rest of the conversation to plain, unambiguous English using ASD-STE100-inspired rules. Manual invocation only.
 disable-model-invocation: true
 ---
 

@@ -1,6 +1,6 @@
 interface:
-  display_name: "Codex Orchestrator"
+  display_name: "Orchestrate"
   short_description: "Coordinate agents on substantial work"
   default_prompt: "Use $orchestrate to delegate substantial work with distinct ownership, then integrate the results while keeping approvals with me."
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

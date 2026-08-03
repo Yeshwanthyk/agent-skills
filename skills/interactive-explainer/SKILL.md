@@ -1,9 +1,9 @@
 ---
-name: interactive-system-explainer
+name: interactive-explainer
 description: Build source-grounded, self-contained interactive HTML explainers as inspectable models. Use when the requested deliverable is an interactive explainer, simulator, state or sequence walkthrough, interactive comparison, or visual review surface.
 ---
 
-# Interactive System Explainer
+# Interactive Explainer
 
 Build an **inspectable model**: every interaction should reveal behavior grounded in the live implementation.
 
@@ -15,7 +15,7 @@ Build an **inspectable model**: every interaction should reveal behavior grounde
 4. Model entities, transitions, and scenarios as data consumed by a shared renderer.
 5. Show source state and derived state as distinct concepts. Mark boundary crossings with their contract, owner, state change, failure behavior, and proof point.
 6. Cite behavioral claims with file paths and line numbers.
-7. Use neutral charcoal surfaces, restrained blue accents, system sans for prose, and Berkeley Mono with system monospace fallbacks for code, paths, hashes, and diffs.
+7. Use the requested visual direction when specified. Otherwise follow the project's visual system when one exists. If neither applies, use neutral charcoal surfaces, restrained blue accents, system sans for prose, and Berkeley Mono with system monospace fallbacks for code, paths, hashes, and diffs.
 8. Keep the HTML self-contained and preserve semantic controls, keyboard access, readable contrast, and reduced-motion behavior.
 9. Save the artifact at the requested or clearly named workspace path, run the validator, open the page, and exercise its primary interaction.
 

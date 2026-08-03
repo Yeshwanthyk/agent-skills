@@ -1,0 +1,6 @@
+interface:
+  display_name: "Interactive Explainer"
+  short_description: "Build source-grounded interactive explainers"
+  default_prompt: "Use $interactive-explainer to build a source-grounded interactive HTML model of this system."
+policy:
+  allow_implicit_invocation: true
