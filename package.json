@@ -1,6 +1,7 @@
 {
   "name": "agent-skills",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build:reviewer": "node tools/build-reviewer.mjs",
