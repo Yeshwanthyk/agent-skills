@@ -7,6 +7,7 @@
 | [`frontend-grilling`](./skills/frontend-grilling) | Resolves frontend design decisions one at a time through concrete, interactive variants. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded, self-contained HTML explainers for system behavior, state, sequences, and comparisons. |
 | [`orchestrate`](./skills/orchestrate) | Coordinates agents on substantial work with focused delegation, distinct ownership, and user-held approvals. |
+| [`show-me`](./skills/show-me) | Explains the current topic visually with diagrams, code-shape sketches, call-stack diffs via calldiff, and focused HTML artifacts. |
 | [`shaping`](./skills/shaping) | Negotiates requirements and competing solution shapes, checks fit, resolves unknowns, and selects a mechanism concrete enough to breadboard. |
 | [`stateful-systems`](./skills/stateful-systems) | Models authoritative state, lifecycle transitions, invariants, concurrency, freshness, replay, and recovery. |
 | [`yesh-architect`](./skills/yesh-architect) | Designs a target architecture from the system’s current contracts, execution paths, state ownership, and constraints. |

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Show Me"
+  short_description: "Visual diagrams and focused HTML for the current topic"
+  default_prompt: "Use $show-me to explain this visually with the smallest view that makes the key point clear."
+policy:
+  allow_implicit_invocation: true
