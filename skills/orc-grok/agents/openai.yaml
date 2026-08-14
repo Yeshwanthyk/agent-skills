@@ -1,0 +1,6 @@
+interface:
+  display_name: "Orc Grok"
+  short_description: "Coordinate scouts and impl workers with fixed pi models"
+  default_prompt: "Use $orc-grok to delegate scouts on deepseek-v4-flash and implementation on grok-4.6 high, then integrate the results while keeping approvals with me."
+policy:
+  allow_implicit_invocation: false
