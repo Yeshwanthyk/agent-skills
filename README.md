@@ -6,6 +6,7 @@
 | [`bro`](./skills/bro) | Switches the rest of a conversation to plain, unambiguous English using ASD-STE100-inspired rules. |
 | [`frontend-grilling`](./skills/frontend-grilling) | Resolves frontend design decisions one at a time through concrete, interactive variants. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded, self-contained HTML explainers for system behavior, state, sequences, and comparisons. |
+| [`isometric`](./skills/isometric) | Maps a repository as a self-contained isometric drafting-paper architecture city sized from measured source facts. |
 | [`orchestrate`](./skills/orchestrate) | Coordinates agents on substantial work with focused delegation, distinct ownership, and user-held approvals. |
 | [`show-me`](./skills/show-me) | Explains the current topic visually with diagrams, code-shape sketches, call-stack diffs via calldiff, and focused HTML artifacts. |
 | [`shaping`](./skills/shaping) | Negotiates requirements and competing solution shapes, checks fit, resolves unknowns, and selects a mechanism concrete enough to breadboard. |
