@@ -3,4 +3,4 @@ interface:
   short_description: "Map repositories as interactive isometric cities"
   default_prompt: "Use $isometric to turn this repository into an interactive isometric codebase map."
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
