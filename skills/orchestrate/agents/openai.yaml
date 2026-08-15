@@ -1,6 +1,6 @@
 interface:
   display_name: "Orchestrate"
-  short_description: "Coordinate agents on substantial work"
-  default_prompt: "Use $orchestrate to delegate substantial work with distinct ownership, then integrate the results while keeping approvals with me."
+  short_description: "Route substantial work through verified agent lanes"
+  default_prompt: "Use $orchestrate to run Luna scouts, implementation, and lint lanes with independent Sol review."
 policy:
   allow_implicit_invocation: false
