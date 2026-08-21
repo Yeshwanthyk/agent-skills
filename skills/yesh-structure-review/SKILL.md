@@ -27,6 +27,7 @@ Produce a **clean audit** of the structure carrying the behavior.
 - Lead files with their significant behavior and keep supporting details close to what they support when language conventions allow it.
 - Derive values from authoritative state instead of passing or storing duplicate state.
 - Reuse an existing abstraction when it already owns the concept. Combine overlapping concepts instead of adding parallel names or paths.
+- Prefer the standard library, a native platform feature, or an installed dependency over hand-rolled equivalents; flag reimplementations of what already ships.
 - Prefer types that make important invariants explicit and make invalid states difficult to represent.
 - Check that state, transitions, cleanup, and recovery have clear owners rather than being coordinated through broad abstractions.
 - Keep the valid path flat with guard clauses when that makes the main behavior easier to follow.
@@ -45,6 +46,6 @@ Lead with the conclusion. Present evidence-backed strengths, ranked actionable f
 
 ## Completion
 
-Complete the audit when the normal path is explained before exceptions, every reviewed area has evidence and consequence, every actionable finding has a correction shape, affected owner or boundary, and verification, each clarity issue is grounded in the codebase's vocabulary, speculative risks are separated from observed strain, and each sound area has an evidence-backed `keep` decision.
+Complete the audit when the normal path is explained before exceptions, every reviewed area has evidence and consequence, every actionable finding has a correction shape, affected owner or boundary, and verification, each clarity issue is grounded in the codebase's vocabulary, every deferred finding names the condition that reopens it, speculative risks are separated from observed strain, and each sound area has an evidence-backed `keep` decision.
 
 For deeper design questions or source attribution, load `references.md`. Do not load it for a normal audit unless a finding requires additional design context.
