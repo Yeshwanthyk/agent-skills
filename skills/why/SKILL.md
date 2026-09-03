@@ -92,7 +92,7 @@ When the managed subagent runtime is available, dispatch one investigator per ca
 
 Each investigator owns one category and one bounded investigation. It must report what it searched, what it opened, direct and indirect evidence, contradictions, gaps, and additional leads without synthesizing the final story. Search broad terms first, then follow relevant links within that category and read candidate records fully.
 
-Load and follow the shared [agent-routing contract](../../references/agent-routing.md). If delegation is unavailable, perform the same category investigations locally, preserve the one-category boundary, and report the limitation.
+Load and follow the shared [agent-routing contract](../poteto-mode/references/agent-routing.md). If delegation is unavailable, perform the same category investigations locally, preserve the one-category boundary, and report the limitation.
 
 **Investigation completion:** every searched category returns findings or a documented null result, every unavailable or out-of-scope category has its reason in the coverage map, and every material cross-category lead is ready for closure.
 

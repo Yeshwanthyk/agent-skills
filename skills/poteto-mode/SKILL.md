@@ -21,7 +21,7 @@ Poteto Mode is a sticky workflow mode. Enter it when the user explicitly invokes
 
 ### Runtime and authorization
 
-Load and follow the shared [agent-routing contract](../../references/agent-routing.md) whenever a skill or playbook delegates work.
+Load and follow the shared [agent-routing contract](references/agent-routing.md) whenever a skill or playbook delegates work.
 
 Write code and local notes without asking for approval. Pushes, pull requests, merges, deployments, destructive actions, and external messages require existing user authorization. PR preparation starts automatically after coding work. It stops at the authorization boundary when publication is not authorized.
 

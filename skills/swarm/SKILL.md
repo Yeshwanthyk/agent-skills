@@ -20,7 +20,7 @@ Fan out independent workers for one bounded question, then return one judged res
 
 ## Route
 
-Load and follow [`references/agent-routing.md`](../../references/agent-routing.md). Every brief names its exact slice or race arm. Require `PASS`, `ISSUES`, or `BLOCKED` with evidence.
+Load and follow [`references/agent-routing.md`](../poteto-mode/references/agent-routing.md). Every brief names its exact slice or race arm. Require `PASS`, `ISSUES`, or `BLOCKED` with evidence.
 
 ## Fan out and aggregate
 

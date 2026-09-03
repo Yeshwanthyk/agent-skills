@@ -21,7 +21,7 @@ Evals test how a change affects agent behavior before promoting it: a new skill 
 3. **Author one organic prompt.** What a user would type. No leakage of what's being measured.
 4. **Spawn N parallel candidates** with independent workers per the **arena** skill's Phase B. Each works in its own sanitized dir; same prompt to each.
 5. **Spawn one blinded judge** on a different worker configuration per the **arena** skill's Phase C. Judge sees outputs by sanitized label and the rubric, never a worker identity.
-6. **Verify the chain from transcripts, not self-report.** Load the shared [session-records contract](../../../references/session-records.md). Read each candidate's local transcript only when the selected runtime exposes it. Do not scan unrelated project histories. Look at which files each candidate actually opened. Citing a principle is not reading its leaf, and reading it is not applying it. If candidate transcripts are unavailable, report the blinding gap and grade only observable outputs.
+6. **Verify the chain from transcripts, not self-report.** Load the shared [session-records contract](../references/session-records.md). Read each candidate's local transcript only when the selected runtime exposes it. Do not scan unrelated project histories. Look at which files each candidate actually opened. Citing a principle is not reading its leaf, and reading it is not applying it. If candidate transcripts are unavailable, report the blinding gap and grade only observable outputs.
 7. **Read every candidate output yourself** end to end. Compare to the judge's verdict. Disagreement means a worker role is biased or the rubric is ambiguous. Synthesize.
 
 ## Completion

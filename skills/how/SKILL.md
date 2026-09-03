@@ -25,7 +25,7 @@ A request may combine a mode and view, such as “trace checkout and critique th
 
 ## Delegate without coupling to a provider
 
-Load and follow the shared [agent-routing contract](../../references/agent-routing.md) when delegation is useful. Request read-only execution when the runtime supports it. Keep delegation optional. If it is unavailable, do the same work directly and report the limitation.
+Load and follow the shared [agent-routing contract](../poteto-mode/references/agent-routing.md) when delegation is useful. Request read-only execution when the runtime supports it. Keep delegation optional. If it is unavailable, do the same work directly and report the limitation.
 
 - **Simple** means one module, utility, symbol, or narrow path. Use one explainer in a single pass, or perform that pass directly.
 - **Complex** means a subsystem spanning multiple files or services, a cross-cutting feature, or a broad map, inventory, or contrast. Split the work into 2–4 distinct exploration angles and run them in parallel when possible, then give all findings to one explainer for synthesis.

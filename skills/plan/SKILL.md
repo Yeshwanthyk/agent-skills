@@ -15,7 +15,7 @@ Own the plan, not the code. Explain the settled approach before listing work. Th
 4. Record the user or system outcome, the settled scope, constraints, contracts, state owners, failure behavior, target production and test paths, and proof boundary.
 5. Choose the change shape. Use [`references/change-shape.md`](references/change-shape.md) for feature and refactoring branches.
 6. If the work spans phases or stacked changes, use [`references/program-template.md`](references/program-template.md). Keep one independently verifiable change per phase or PR.
-7. For a complex plan, load the shared [agent-routing contract](../../references/agent-routing.md) and delegate distinct read-only explorations when that reduces risk. Request file pointers, conventions, test commands, and entry points, then reconcile the reports against the source.
+7. For a complex plan, load the shared [agent-routing contract](../poteto-mode/references/agent-routing.md) and delegate distinct read-only explorations when that reduces risk. Request file pointers, conventions, test commands, and entry points, then reconcile the reports against the source.
 
 Completion means the approach, scope, contracts, ownership, failure behavior, paths, and proof boundary are settled or each remaining decision is named as a gate.
 

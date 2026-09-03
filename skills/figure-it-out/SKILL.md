@@ -13,7 +13,7 @@ This is one bounded run. In Poteto Mode, use the [`orchestrate` playbook](../pot
 
 ## Delegation contract
 
-Load and follow the shared [agent-routing contract](../../references/agent-routing.md). Request isolated ownership for parallel work and read-only execution for investigation or judging when the runtime supports those capabilities. If a capability is unavailable, continue directly or record the limitation. The parent owns the workflow, audits delegated artifacts, and performs final verification.
+Load and follow the shared [agent-routing contract](../poteto-mode/references/agent-routing.md). Request isolated ownership for parallel work and read-only execution for investigation or judging when the runtime supports those capabilities. If a capability is unavailable, continue directly or record the limitation. The parent owns the workflow, audits delegated artifacts, and performs final verification.
 
 ## Start
 

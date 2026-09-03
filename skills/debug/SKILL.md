@@ -45,7 +45,7 @@ Completion means one mechanism survives the hypothesis loop and runtime evidence
 2. Choose the smallest coherent correction at the first divergence. Fix the root cause instead of silencing the symptom with a guard, fallback, or retry that leaves the bad contract intact.
 3. Model repeated shape assumptions with a typed model, state machine, registry, reducer, or boundary object when that structure removes branches or invalid states. Keep local boring code when it already expresses the domain clearly.
 4. Preserve the red signal before the correction when a cheap local test can pin it. Skip a failing test only when the test path is expensive, integration-heavy, or unclear, and record why.
-5. If delegation is useful, load the shared [agent-routing contract](../../references/agent-routing.md), give the worker a precise file and symbol scope, and review the actual diff yourself. If delegation is unavailable, do the work directly.
+5. If delegation is useful, load the shared [agent-routing contract](../poteto-mode/references/agent-routing.md), give the worker a precise file and symbol scope, and review the actual diff yourself. If delegation is unavailable, do the work directly.
 6. Inspect sibling call sites after the correction. Migrate every affected caller together and remove obsolete paths rather than leaving a compatibility branch without a proven need.
 
 Completion means the diff changes the first evidenced divergence, preserves unrelated behavior, covers evidenced siblings, and contains no speculative safeguard.

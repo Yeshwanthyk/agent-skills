@@ -17,7 +17,7 @@ Include application comments, test comments, lint and type suppressions, and com
 
 ## Review
 
-Load the shared [agent-routing contract](../../references/agent-routing.md). Use the current harness's comment-focused reviewer capability when it exposes one. Give it the exact scope and request read-only review. If it is unavailable, perform the same focused pass directly.
+Load the shared [agent-routing contract](../poteto-mode/references/agent-routing.md). Use the current harness's comment-focused reviewer capability when it exposes one. Give it the exact scope and request read-only review. If it is unavailable, perform the same focused pass directly.
 
 For every finding, inspect the surrounding code and callers before acting. Treat correctness and safety suppressions as actionable findings. If a reviewer uses `MUST KILL` or `IMPORTANT`, verify the label and reason against the code before accepting it. Then classify it:
 

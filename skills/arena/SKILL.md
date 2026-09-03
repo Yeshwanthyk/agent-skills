@@ -11,7 +11,7 @@ Arena is a candidate bakeoff. It is distinct from [`swarm`](../swarm/SKILL.md), 
 
 ## Delegation contract
 
-Load and follow the shared [agent-routing contract](../../references/agent-routing.md). Request parallel execution for candidates and a read-only judge when the runtime supports those capabilities. If a capability is unavailable, continue with the closest supported execution and record the limitation. The parent owns selection, grafting, and final verification.
+Load and follow the shared [agent-routing contract](../poteto-mode/references/agent-routing.md). Request parallel execution for candidates and a read-only judge when the runtime supports those capabilities. If a capability is unavailable, continue with the closest supported execution and record the limitation. The parent owns selection, grafting, and final verification.
 
 ## Start
 

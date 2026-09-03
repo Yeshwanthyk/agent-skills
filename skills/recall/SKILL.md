@@ -26,13 +26,13 @@ Before searching, state:
 
 ## Reconcile the records
 
-1. **Session history.** Load the shared [session-records contract](../../references/session-records.md). Locate the active project's saved sessions, then read the header, active branch, and relevant compaction or branch-summary entries.
+1. **Session history.** Load the shared [session-records contract](../poteto-mode/references/session-records.md). Locate the active project's saved sessions, then read the header, active branch, and relevant compaction or branch-summary entries.
 2. **Search.** Order candidate sessions by their actual modification time. Search the topic first. Read only matching sessions and the relevant message regions. For one or two candidates, search them directly. If the harness cannot expose session files or history, report that gap.
 3. **Live state.** Check the current branch, worktree status, recent commits, relevant diffs, and any branches or review records found in the session history. Use the repository's configured forge integration or an installed command discovered from the environment. Do not assume a forge, command, branch naming scheme, or PR provider.
 4. **Cloud receipts.** Inspect cloud-agent receipts only when the session history or live state shows that cloud agents participated. Reconcile every referenced receipt, session, branch, or URL against its current state. If a receipt is missing or inaccessible, report the gap instead of treating a summary as proof.
 5. **Privacy.** Remove secrets and private context that the requested brief does not need before presenting it.
 
-Use a managed worker runtime for parallel history mining only when the corpus warrants it. Load and follow the shared [agent-routing contract](../../references/agent-routing.md). If delegation is unavailable, continue locally and report the gap.
+Use a managed worker runtime for parallel history mining only when the corpus warrants it. Load and follow the shared [agent-routing contract](../poteto-mode/references/agent-routing.md). If delegation is unavailable, continue locally and report the gap.
 
 ## Output
 

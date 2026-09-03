@@ -32,7 +32,7 @@
 | [`why`](./skills/why) | Investigates the evidence behind existing code and shipped technical, product, or operational decisions. |
 | [`yesh-structure-review`](./skills/yesh-structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
 
-Poteto Mode is opt-in and sticky. Its orchestration procedure lives only in [`playbooks/orchestrate.md`](./skills/poteto-mode/playbooks/orchestrate.md). All delegation follows the shared [`agent-routing` contract](./references/agent-routing.md).
+Poteto Mode is opt-in and sticky. Its orchestration procedure lives only in [`playbooks/orchestrate.md`](./skills/poteto-mode/playbooks/orchestrate.md). All delegation follows the shared [`agent-routing` contract](./skills/poteto-mode/references/agent-routing.md).
 
 ## Source snapshot
 

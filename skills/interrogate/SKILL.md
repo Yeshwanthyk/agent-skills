@@ -19,7 +19,7 @@ Package the diff and only the surrounding context needed to understand it. Treat
 
 ## 2. Discover review capacity
 
-Load the shared [agent-routing contract](../../references/agent-routing.md) before dispatch. Discover reviewer slots, read-only support, model-family choice, source-lookup tools, result delivery, and cancellation from live capabilities or documentation.
+Load the shared [agent-routing contract](../poteto-mode/references/agent-routing.md) before dispatch. Discover reviewer slots, read-only support, model-family choice, source-lookup tools, result delivery, and cancellation from live capabilities or documentation.
 
 Run one reviewer per distinct configured reviewer slot. If no slots are configured, run at least two independent passes when capacity permits. Follow the shared routing contract for defaults and overrides.
 
