@@ -1,6 +1,0 @@
-interface:
-  display_name: "Architect"
-  short_description: "Design a concrete target architecture"
-  default_prompt: "Use $yesh-architect to design the target shape, contracts, state ownership, and production and test wiring."
-policy:
-  allow_implicit_invocation: false

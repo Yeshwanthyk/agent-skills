@@ -1,6 +1,0 @@
-interface:
-  display_name: "Plan"
-  short_description: "Create a human-readable implementation packet"
-  default_prompt: "Use $yesh-plan to turn the settled approach into a human-readable, implementation-ready packet."
-policy:
-  allow_implicit_invocation: false

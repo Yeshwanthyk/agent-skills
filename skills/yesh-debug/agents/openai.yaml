@@ -1,6 +1,0 @@
-interface:
-  display_name: "Debug"
-  short_description: "Diagnose failures from causal evidence"
-  default_prompt: "Use $yesh-debug to build a red-capable loop, find the first contract divergence, and prove the correction."
-policy:
-  allow_implicit_invocation: true

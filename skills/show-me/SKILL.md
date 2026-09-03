@@ -1,126 +1,30 @@
 ---
 name: show-me
-description: Help the user understand the current topic visually with concise diagrams, code-shape sketches, and focused HTML artifacts.
+description: Help the user understand the current topic visually with concise diagrams, code-shape sketches, calldiff output, or one focused HTML artifact. Use when a visual would explain structure, flow, state, or change faster than prose.
 ---
 
-Help the user understand the current topic of conversation visually. Skip the preamble and keep prose brief. Pick the smallest view that makes the key point clear.
+# Show me
 
-- Show logic or an algorithm as pseudocode:
+Explain the current topic visually. Skip the preamble. Pick the smallest view that makes the key point clear.
 
-```text
-on(save)
-  if content is unchanged
-    return cached result
-  write new content
-  return fresh result
-```
+## Choose the form
 
-- Show runtime control flow as a call tree:
+- Use pseudocode for logic or an algorithm.
+- Use a call tree for runtime control flow.
+- Use a component tree for UI structure and state ownership.
+- Use a file tree for responsibility or a broad refactor.
+- Use Mermaid for multi-component interaction or data flow.
+- Use a diff when the surrounding shape exists and the point is what changes.
+- Use a whole code block when omitted context would hide ownership or order, or the user needs a copyable target.
+- Use `calldiff` for a changed call tree or stack.
+- Use focused HTML for a visual comparison or concept too dense for Mermaid.
 
-```text
-submitForm
-  createSession
-    persistPrompt
-    launchAgent
-  navigateToSession
-```
+Load [`references/visual-forms.md`](references/visual-forms.md) for text and diagram patterns. Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch.
 
-- Show UI structure as a component tree, including state and module boundaries that matter:
+## Present
 
-```tsx
-<SessionPage> (apps/example/src/routes/session.tsx)
-  useSessionEvents()
-  <SessionToolbar>
-    <RunSkillButton> (packages/ui)
-```
+Place each visual beside the short text it supports. Keep only the calls, files, props, states, and boundaries needed for the current question. Use several forms only when each adds distinct information.
 
-- Show file responsibility or a broad refactor as a shallow file tree:
+## Completion
 
-```text
-src/
-├── commands/       # parses user actions
-├── sessions/       # owns session state
-└── transport/      # sends API requests
-```
-
-- Show component interaction, control flow, or data flow with Mermaid:
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI
-    participant Daemon
-    User->>UI: choose command
-    UI->>Daemon: send expanded prompt
-    Daemon-->>UI: stream result
-```
-
-- Use `diff` when the point is what changes and the surrounding shape already exists. Match the diff shape to the topic.
-
-For a component change:
-
-```diff
- <SessionPage>
-   useSessionEvents()
-   <SessionToolbar>
-+    <RunSkillButton />
-   <SessionTimeline>
-+    <SkillResultCard />
-```
-
-For a file-layout change:
-
-```diff
- src/
- ├── commands/
-+│   └── show-me.ts       # expands the slash command
- ├── sessions/
--└── transport.ts
-+└── transport/
-+    ├── client.ts
-+    └── stream.ts
-```
-
-For a call-tree or call-stack change, run `calldiff` and show its output:
-
-```bash
-calldiff diff                                      # HEAD vs working tree
-calldiff diff main                                 # branch vs working tree
-calldiff diff abc123 def456                        # two commits
-calldiff diff main feature --entry submitForm      # force entrypoint
-calldiff diff main feature --file src/routes.ts    # all exports in a file
-```
-
-For a single tree without diffing, use `calldiff tree --entry <symbol>` or `calldiff tree --file <path>`.
-
-For a state or control-flow change:
-
-```diff
- on(save)
--  write content
-+  if content is unchanged
-+    return cached result
-+  write new content
-+  invalidate cache
-```
-
-- Show the whole block when most of it is new, when omitted context would hide ownership or order, or when the user needs a copyable target shape:
-
-```ts
-function expandSkill(command: string): string {
-  const skillName = command.slice(1)
-  return `use the ${skillName} skill`
-}
-```
-
-- For a visual UI, layout, state comparison, or concept too dense for Mermaid, write one focused HTML file — a diagram, an infographic, or a short slide deck, whichever fits the point. Match the product's colors, type, spacing, and components; use real labels and data; support desktop and mobile. Then open it for the user:
-
-```
-Bash(open path/to/show-me-{description}.html)
-```
-
-### guidance
-
-Place each visual next to the short text it supports. Keep only the calls, files, props, states, and boundaries needed to answer the user's current question or the options to resolve the current discussion point.
-
-You may use one of these, you may use several, it is unlikely you will use all of them. Use your judgement and don't overwhelm the user.
+The explanation is complete when the selected visual answers the named question, every shown path or relationship is grounded in available evidence, the artifact or command output is accessible to the user, and any unverified or unavailable part is stated.

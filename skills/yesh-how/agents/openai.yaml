@@ -1,6 +1,0 @@
-interface:
-  display_name: "How"
-  short_description: "Map current execution paths and boundaries"
-  default_prompt: "Use $yesh-how to explain the current system through execution paths, state ownership, boundaries, and proof."
-policy:
-  allow_implicit_invocation: true

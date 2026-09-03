@@ -5,7 +5,7 @@ description: Converge on a frontend look through rounds of prototypes and grilli
 
 # Frontend Grilling
 
-Use the `grilling` and `prototype` skills together. Ask one design question at a time through concrete prototypes rather than prose alone.
+Use the installed `grilling` and `prototype` skills together. They may be supplied by the current harness rather than this repository. If either is unavailable, run the same loop directly: ask one design question, build concrete variants, record the verdict, and carry accepted choices into the next round.
 
 - For each question, create five meaningfully different variants in one interactive surface.
 - Preserve accepted decisions in later rounds so each question changes only the current design layer.
