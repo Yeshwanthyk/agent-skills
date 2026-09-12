@@ -6,7 +6,7 @@ Code doesn't carry its own motivation. You can read what code does; you can't re
 
 ## Confidence Tiers
 
-Every claim in the final output must sit in one of these tiers. The tier determines which output section the claim goes in and how it's phrased.
+Use these tiers to calibrate consequential claims. Label uncertainty where it matters; separate output sections are optional.
 
 ### 1. Direct
 

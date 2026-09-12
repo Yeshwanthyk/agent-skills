@@ -1,5 +1,9 @@
 # Agent Skills
 
+Use [`yesh-mode`](./skills/yesh-mode/SKILL.md) as the everyday entry point. Its playbooks supply useful task order and completion rules; its five principle notes guide design and review. The other skills are named methods to use when the task needs them, not a required sequence.
+
+The collection is tuned for Astra using the [official model guide](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-6-astra). Model and reasoning choices live in one [shared routing contract](./skills/yesh-mode/references/agent-routing.md).
+
 ## Active skills
 
 | Skill | What it does |
@@ -10,7 +14,7 @@
 | [`blast-radius`](./skills/blast-radius) | Finds what a change could break beyond grep and proves the main safety facts. |
 | [`breadboarding`](./skills/breadboarding) | Maps operator workflows into UI, code, stores, and explicit control and data wiring. |
 | [`bro`](./skills/bro) | Switches the conversation to short, plain, unambiguous English. |
-| [`create-verification-skill`](./skills/create-verification-skill) | Creates and proves a project-local Pi skill that drives one real application surface. |
+| [`create-verification-skill`](./skills/create-verification-skill) | Creates and proves a project-local skill that drives one real application surface. |
 | [`debug`](./skills/debug) | Reproduces failures, finds the first contract divergence, applies the smallest coherent fix, and proves it. |
 | [`figure-it-out`](./skills/figure-it-out) | Designs and runs an auditable custom workflow for a large task that has no focused playbook. |
 | [`frontend-grilling`](./skills/frontend-grilling) | Resolves frontend design choices through concrete prototypes and focused verdicts. |
@@ -20,7 +24,7 @@
 | [`maintain-verification-skill`](./skills/maintain-verification-skill) | Audits and repairs a project-local verification skill against current source and live behavior. |
 | [`no-comments`](./skills/no-comments) | Removes comments that do not record a real constraint, decision, or side effect. |
 | [`plan`](./skills/plan) | Turns a settled approach into an implementation-ready packet with chunks, dependencies, risks, and proof. |
-| [`poteto-mode`](./skills/poteto-mode) | Activates an explicit sticky router with 23 playbooks and 21 internal principles. |
+| [`yesh-mode`](./skills/yesh-mode) | Activates a small working mode with task playbooks and five shared engineering notes. |
 | [`recall`](./skills/recall) | Reconstructs recent project work from sessions and current repository state. |
 | [`reflect`](./skills/reflect) | Extracts reusable lessons from a session and applies only user-approved skill changes. |
 | [`shaping`](./skills/shaping) | Negotiates requirements and competing solution shapes until one mechanism fits. |
@@ -30,9 +34,9 @@
 | [`swarm`](./skills/swarm) | Runs one bounded parallel coverage pass or solution race and synthesizes its evidence. |
 | [`unslop`](./skills/unslop) | Cleans padded or AI-sounding prose without changing its facts or voice. |
 | [`why`](./skills/why) | Investigates the evidence behind existing code and shipped technical, product, or operational decisions. |
-| [`yesh-structure-review`](./skills/yesh-structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
+| [`structure-review`](./skills/structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
 
-Poteto Mode is opt-in and sticky. Its orchestration procedure lives only in [`playbooks/orchestrate.md`](./skills/poteto-mode/playbooks/orchestrate.md). All delegation follows the shared [`agent-routing` contract](./skills/poteto-mode/references/agent-routing.md).
+Yesh Mode is opt-in and sticky. Ordinary coding ends with a verified change and handoff; PR work starts only on request. The [playbook index](./skills/yesh-mode/playbooks/index.md) routes task procedures. [Shared principles](./skills/yesh-mode/SKILL.md#engineering-principles) guide design choices and structure review. Its orchestration procedure lives only in [`playbooks/orchestrate.md`](./skills/yesh-mode/playbooks/orchestrate.md). All delegation follows the shared [`agent-routing` contract](./skills/yesh-mode/references/agent-routing.md).
 
 ## Source snapshot
 
@@ -42,4 +46,4 @@ Poteto Mode is opt-in and sticky. Its orchestration procedure lives only in [`pl
 
 The owned `shaping` and `breadboarding` workflows draw on [Shape Up](https://basecamp.com/shapeup) and concepts explored by [rjs/shaping-skills](https://github.com/rjs/shaping-skills). Their skill text, structure, examples, and completion gates are original to this repository.
 
-The adapted Poteto, playbook, principle, review, and verification workflows preserve useful behavior from the MIT-licensed [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack). Runtime, provider, and model coupling was removed for Pi and other managed agent runtimes. The pinned source and license are retained under [`incoming/pstack`](./incoming/pstack).
+Yesh Mode and the adapted playbook, principle, review, and verification workflows draw on the MIT-licensed [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack). The active instructions use managed runtime capabilities and the shared model defaults above. The original source and license remain under [`incoming/pstack`](./incoming/pstack).

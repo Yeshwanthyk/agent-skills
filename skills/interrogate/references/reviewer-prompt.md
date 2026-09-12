@@ -26,7 +26,7 @@ Review whether the change achieves this intent. Do not replace the requested goa
 
 Use the relevant rubric lenses. Read surrounding callers, callees, types, and tests when a finding depends on them. Trace a reachable execution path before raising a potential bug. Use only read-only source lookups exposed by the current harness.
 
-For each finding, provide:
+For each material finding, provide:
 
 1. **Severity:** `critical`, `warning`, or `nit`.
 2. **Finding:** the concrete problem and location.

@@ -14,7 +14,7 @@ A **vertical slice** is the smallest coherent set of affordances that produces a
 6. Produce a summary and an added-affordances table for each slice.
 7. Check every slice against the selected shape and update shaping artifacts when the ordering exposes a missing mechanism or changed scope.
 
-Keep at most nine slices in one shaped cycle. If more are needed, combine tightly coupled demonstrations or return to shaping and reduce the cycle.
+Keep the slice set small enough to compare and verify. If it grows unwieldy, combine tightly coupled demonstrations or return to shaping and reduce the cycle.
 
 ## Summary
 

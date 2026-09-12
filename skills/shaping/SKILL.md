@@ -1,6 +1,6 @@
 ---
 name: shaping
-description: Shape unsettled product or system work through negotiated requirements, competing solution shapes, fit checks, and a selected mechanism. Use when the user wants to define a problem and explore approaches together, or when a proposed approach still has unresolved needs or mechanisms.
+description: Define an unsettled problem and compare solution shapes with the user.
 ---
 
 # Shaping
@@ -19,8 +19,7 @@ Shape the **problem and solution together**. Keep requirements independent from 
 
 ## Collaboration
 
-- Render complete requirement and shape tables. During comparison, render every live shape in the fit check.
-- Mark added or changed table cells with `🟡` on each rerender so the user can scan the delta.
+- Render complete requirement and shape tables. During comparison, include every live shape in the fit check.
 - When resuming after selection, project every requirement against only the selected shape, then show unresolved requirements first. Preserve the full comparison in the artifact history.
 - Preserve R/S identifiers across revisions so decisions retain an audit trail.
 - Keep the user as the decision owner. Propose requirements and mechanisms explicitly for acceptance or correction.

@@ -8,7 +8,7 @@ State what the work must do and why the existing system or constraints make the 
 
 ## Usage (caller's view)
 
-Write this before the type sketch. Show the consumer-facing quickstart and two or three realistic call sites. Name imports, calls, returned values, and failure handling. The sketch must be derived from this usage.
+Write this before the type sketch. Show consumer-facing usage and the call sites that expose the contract. Name imports, calls, returned values, and failure handling. Derive the sketch from this usage.
 
 ## Shape
 
@@ -24,7 +24,7 @@ List one tradeoff per bullet. Use the form "We accept X in exchange for Y." Incl
 
 ## Alternatives considered
 
-Name each distinct shape that lost and why. State what complexity it exposed to callers and what it hid. Include at least one concrete alternative unless the constraints made the chosen shape the only viable answer.
+Name material alternatives that lost and why. State what complexity each exposed to callers and what it hid. If no meaningful alternative existed, say why.
 
 ## Open questions and risks
 

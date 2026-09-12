@@ -1,20 +1,20 @@
 ---
 name: create-verification-skill
-description: Generate and prove a project-local Pi skill that drives one real application surface. Use when the user requests a verification skill or active Poteto Mode finds no real-surface verifier.
+description: Create and prove a project-local skill for driving a real application surface.
 ---
 
 # Create Verification Skill
 
-Create `.pi/skills/verify-<app>/` so a future agent can launch, inspect, drive, and prove one application surface without prior conversation context.
+Create a project-local `verify-<app>/` skill in the repository's configured skill location so a future agent can launch, inspect, drive, and prove one application surface without prior conversation context.
 
 ## Discover the verification contract
 
 Inspect the repository before asking the user:
 
-1. **Surface.** Identify what the user touches: web UI, CLI or TUI, desktop app, API, mobile app, or library. Generate one skill per independently driven surface.
+1. **Surface.** Identify the independently driven surface the user touches: web UI, CLI or TUI, desktop app, API, mobile app, or library. Generate one skill for that surface when it needs distinct controls.
 2. **Launch.** Find the repository's authoritative start command, prerequisites, readiness signal, and teardown path.
 3. **Doctor.** Define one read-only check that confirms the intended build, process, endpoint, authentication, and isolated state are safe to drive.
-4. **Drive.** Prefer an existing harness. Otherwise use stable semantic controls through Pi's browser/UI tools, exact CLI prompts through a PTY-capable harness, or HTTP requests for a service.
+4. **Drive.** Prefer an existing harness. Otherwise use stable semantic controls through the current harness's browser/UI tools, exact CLI prompts through a PTY-capable harness, or HTTP requests for a service.
 5. **Evidence.** Identify observable proof: actions and resulting UI state, terminal output and exit status, response bodies, logs, or persisted side effects.
 6. **Isolation.** Determine how runs separate ports, profiles, data directories, accounts, and cleanup. State when concurrent driving is unsafe.
 
@@ -22,7 +22,7 @@ If launch or doctor cannot complete, return `blocked` and do not claim the gener
 
 ## Generate
 
-Create a valid Pi skill with a `verify-<app>` name matching its directory and a description that names the app, surface, and invocation condition. Include these sections:
+Create a valid skill with a `verify-<app>` name matching its directory and a description that names the app, surface, and invocation condition. Include these sections:
 
 - **Launch** gives exact startup, readiness, and teardown instructions.
 - **Doctor** gives the read-only preflight.

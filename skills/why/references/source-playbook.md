@@ -1,6 +1,6 @@
 # Source playbooks
 
-The `why` skill runs one bounded investigator per available evidence category. Each investigator reads the single category playbook below, then adapts its query vocabulary and result handling to the evidence tools exposed by the current harness. The named providers are adapter examples, not requirements.
+Choose the evidence categories that can answer the question. A category search may be done directly or delegated as a bounded investigation. Adapt each guide to the tools exposed by the current harness; provider and operation names are examples, not verified callable interfaces. Discover the actual operation and schema before using it.
 
 | Category | Playbook | Adapter example |
 |---|---|---|
@@ -14,4 +14,4 @@ The `why` skill runs one bounded investigator per available evidence category. E
 
 Cross-cutting:
 
-- [`incident-postmortem.md`](./sources/incident-postmortem.md). Add this to the relevant investigator when the target is defensive: null checks, retries, timeouts, rate limits, feature flags, egress guards, or OOM handlers.
+- [`incident-postmortem.md`](./sources/incident-postmortem.md). Consult when the target is defensive: null checks, retries, timeouts, rate limits, feature flags, egress guards, or OOM handlers.

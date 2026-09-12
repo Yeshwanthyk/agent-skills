@@ -1,6 +1,6 @@
 ---
 name: breadboarding
-description: Breadboard an operator workflow into Places, UI and code affordances, stores, and explicit wiring. Use when the user asks for a breadboard or affordance map, wants a shaped solution detailed into control/data wiring, provides a visual breadboard to translate, or wants a complete breadboard sliced into demonstrable increments.
+description: Map a workflow into concrete UI actions, code actions, stores, and their wiring.
 ---
 
 # Breadboarding

@@ -1,6 +1,6 @@
 ---
 name: stateful-systems
-description: Model authoritative state, lifecycle transitions, invariants, freshness, concurrency, replay, and recovery. Use when the task centers on correctness across persisted state, lifecycle transitions, or multiple actors.
+description: Model authority, transitions, concurrency, and recovery for a stateful design.
 ---
 
 # Stateful Systems
@@ -13,9 +13,9 @@ Build the system model around **authoritative state**.
 2. Classify stored, derived, cached, projected, and displayed state.
 3. Map each meaningful transition with trigger, actor, precondition, write, publication, replay, and recovery.
 4. Define invariants and place each enforcement point at the boundary that owns it.
-5. Trace concurrent transitions, retries, ordering, freshness, and lifecycle restoration through representative scenarios.
+5. Trace the relevant concurrent transitions, retries, ordering, freshness, and lifecycle restoration through representative scenarios.
 6. Shape commands around intent and reads around explicit freshness semantics.
-7. Derive boundary tests from transitions, invariants, races, replay, and recovery.
+7. Derive proportionate boundary tests from the transitions, invariants, races, replay, and recovery in scope.
 8. Use [`references/formal-modeling.md`](references/formal-modeling.md) when critical or concurrent behavior remains ambiguous after the transition model.
 
 ## Output

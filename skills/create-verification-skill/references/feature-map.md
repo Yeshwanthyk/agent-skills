@@ -11,7 +11,7 @@ Record:
 - evidence and cleanup rules;
 - every feature recipe and the user-visible behavior it covers.
 
-Derive the initial feature set from registered routes, commands, menus, public APIs, and user documentation. Start with the primary three to five features when the surface is large. Record uncovered features rather than implying complete coverage.
+Derive the initial feature set from registered routes, commands, menus, public APIs, and user documentation. For a large surface, select a bounded feature slice and record uncovered features rather than implying complete coverage.
 
 ## Feature recipe
 

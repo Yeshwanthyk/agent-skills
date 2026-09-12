@@ -18,10 +18,23 @@ class ExplainerParser(HTMLParser):
         self.controls: list[str] = []
         self.interactive_count = 0
         self.external_assets: list[str] = []
+        self.scripts: list[str] = []
+        self.styles: list[str] = []
+        self.body_kind: str | None = None
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         self.tags[tag] = self.tags.get(tag, 0) + 1
         values = dict(attrs)
+        if tag == "script":
+            script_type = (values.get("type") or "").lower().split(";")[0].strip()
+            self.body_kind = "script" if script_type in {"", "module", "text/javascript", "application/javascript"} else None
+        elif tag == "style":
+            self.body_kind = "style"
+        for key, value in attrs:
+            if value and key.startswith("on"):
+                self.scripts.append(value)
+        if values.get("style"):
+            self.styles.append(values["style"])
 
         element_id = values.get("id")
         if element_id:
@@ -37,12 +50,26 @@ class ExplainerParser(HTMLParser):
             self.interactive_count += 1
 
         src = values.get("src")
-        if src and re.match(r"^(?:https?:)?//", src):
+        if src and not embedded(src):
             self.external_assets.append(f"<{tag} src={src!r}>")
 
         href = values.get("href")
-        if tag == "link" and href and re.match(r"^(?:https?:)?//", href):
+        if tag == "link" and href and not embedded(href):
             self.external_assets.append(f"<link href={href!r}>")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in {"script", "style"}:
+            self.body_kind = None
+
+    def handle_data(self, data: str) -> None:
+        if self.body_kind == "script":
+            self.scripts.append(data)
+        elif self.body_kind == "style":
+            self.styles.append(data)
+
+
+def embedded(value: str) -> bool:
+    return value.strip().lower().startswith(("data:", "#"))
 
 
 def validate(path: Path) -> list[str]:
@@ -72,10 +99,18 @@ def validate(path: Path) -> list[str]:
     for asset in parser.external_assets:
         errors.append(f"external asset {asset}")
 
-    if re.search(r"@import\s+url|url\(\s*['\"]?(?:https?:)?//", html, re.IGNORECASE):
-        errors.append("external CSS asset")
+    for css in parser.styles:
+        css = re.sub(r"/\*.*?\*/", "", css, flags=re.DOTALL)
+        urls = re.findall(r"url\(\s*([^)]*)\)", css, re.IGNORECASE)
+        imports = re.findall(r"@import\s+['\"]([^'\"]+)['\"]", css, re.IGNORECASE)
+        if any(not embedded(url.strip().strip("\"'")) for url in urls + imports):
+            errors.append("external CSS asset")
+            break
 
-    if re.search(r"\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(?", html):
+    # A static heuristic, not a JavaScript parser or network sandbox.
+    javascript = "\n".join(parser.scripts)
+    javascript = re.sub(r"'([^'\\]|\\.)*'|\"([^\"\\]|\\.)*\"|//[^\n]*|/\*.*?\*/", " ", javascript, flags=re.DOTALL)
+    if re.search(r"\b(?:fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(", javascript):
         errors.append("runtime network dependency")
 
     return errors

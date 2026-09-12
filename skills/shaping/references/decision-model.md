@@ -13,7 +13,7 @@ Requirements describe outcomes, constraints, and decision criteria without namin
 
 Use statuses that expose the current decision: `Core goal`, `Undecided`, `Leaning yes`, `Leaning no`, `Must-have`, `Nice-to-have`, or `Out`.
 
-Keep at most nine top-level requirements. Beyond that, introduce meaningful parent requirements and move related detail beneath them. Each requirement must make sense without referring to a shape or fit-check cell.
+Group top-level requirements under meaningful parents when the list becomes hard to compare. Each requirement must make sense without referring to a shape or fit-check cell.
 
 ```markdown
 ## Requirements

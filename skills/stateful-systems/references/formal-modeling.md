@@ -22,10 +22,10 @@ When Quint is available, create a `.qnt` model and run:
 ```sh
 quint parse model.qnt
 quint typecheck model.qnt
-quint run model.qnt --init init --step step --max-steps 20 --max-samples 2000 --invariants inv_safety
+quint run model.qnt --init init --step step --invariants inv_safety
 ```
 
-Increase steps and samples when the state space or concurrency surface warrants deeper exploration. Add temporal checks for progress properties supported by the model.
+Set exploration bounds when the model or environment requires them. Add temporal checks for progress properties supported by the model.
 
 ## Structured Machine Spec
 

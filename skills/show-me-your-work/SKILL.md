@@ -1,6 +1,6 @@
 ---
 name: show-me-your-work
-description: Keep an auditable decision trail for long-running, unattended, multi-phase, or later-reviewed work. Use for explicit decision-log requests and work whose proof must be checked after the run.
+description: Keep an evidence-linked decision trail for work that needs later review.
 ---
 
 # Show me your work
@@ -27,24 +27,24 @@ Skip trivial actions. Append a new row when a decision changes. Never rewrite hi
 
 At the end of the run, compare every row with the current session and repository:
 
-1. Load the shared [session-records contract](../poteto-mode/references/session-records.md) and locate the active project session.
+1. Load the shared [session-records contract](../yesh-mode/references/session-records.md) and locate the active project session.
 2. Confirm that every row maps to a real action.
 3. Resolve every evidence pointer and check that it proves the row.
 4. Add a row for any fork, pivot, or abandoned approach that shaped the result.
-5. Remove padding and correct rows that no longer describe the work.
+5. Append corrections for inaccurate rows, preserving the original trail.
 
 If the session cannot be read, use the fallback and evidence limits in the shared session-records contract.
 
 ## Independent review
 
-Before handing back a trail, load the shared [agent-routing contract](../poteto-mode/references/agent-routing.md) and request a read-only reviewer when available. Select a reviewer from a different model family than the worker that produced the trail when the harness exposes model-family choice. Give it the trail, the relevant session, and the scope. Ask it to flag weak evidence, skipped verification, risky choices, and gaps.
+For consequential or later-reviewed work, use the shared [agent-routing contract](../yesh-mode/references/agent-routing.md) to request a read-only reviewer when available. Give it the trail, relevant session, and scope; ask it to flag weak evidence, skipped verification, risky choices, and gaps.
 
-If the harness cannot provide an independent reviewer or model-family distinction, report that limitation. Do not describe self-review as independent review. Never let the reviewer modify files or external state.
+If the harness cannot provide an independent reviewer, report that limitation. Do not describe self-review as independent review. The reviewer remains read-only.
 
-Every response for a run with a trail ends with an `Attention` section. Put the reviewer's model family on its own line when known, then list each flag. `No flags` is valid. If review was unavailable, say so.
+Report any independent review and its flags or unavailability when one was requested.
 
 ## Completion
 
-The trail is complete when its file exists, every material decision or checkpoint has one truthful row, each evidence pointer resolves or is marked unresolved, the trail was checked against the current session and repository, and independent review ran or its absence is reported. Keep the trail local unless the user authorizes publication or a reviewer needs it committed.
+The trail is complete when its file exists, every material decision or checkpoint has one truthful row, each evidence pointer resolves or is marked unresolved, and the trail was checked against the current session and repository. If independent review was requested, record its result or absence. Keep the trail local unless the user authorizes publication or a reviewer needs it committed.
 
 Other skills should link here instead of copying the TSV format or audit rules.

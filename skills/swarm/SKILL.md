@@ -1,11 +1,11 @@
 ---
 name: swarm
-description: Run one bounded parallel coverage pass or solution race and synthesize its evidence. Use when the user asks to swarm or active Poteto Mode selects parallel coverage.
+description: Run a bounded parallel investigation or solution race and reconcile the results.
 ---
 
 # Swarm
 
-Fan out independent workers for one bounded question, then return one judged result. In Poteto Mode, use the [`orchestrate` playbook](../poteto-mode/playbooks/orchestrate.md) instead when the work has dependent implementation stages or requires continuing integration.
+Fan out independent workers for one bounded question, then return one judged result. In Yesh Mode, use the [`orchestrate` playbook](../yesh-mode/playbooks/orchestrate.md) instead when the work has dependent implementation stages or requires continuing integration.
 
 ## Frame
 
@@ -20,7 +20,7 @@ Fan out independent workers for one bounded question, then return one judged res
 
 ## Route
 
-Load and follow [`references/agent-routing.md`](../poteto-mode/references/agent-routing.md). Every brief names its exact slice or race arm. Require `PASS`, `ISSUES`, or `BLOCKED` with evidence.
+Use [`references/agent-routing.md`](../yesh-mode/references/agent-routing.md) when dispatching. Every brief names its exact slice or race arm. Require `PASS`, `ISSUES`, or `BLOCKED` with evidence.
 
 ## Fan out and aggregate
 
@@ -33,4 +33,4 @@ Load and follow [`references/agent-routing.md`](../poteto-mode/references/agent-
 
 ## Completion
 
-Complete the swarm when every required slice has a result or explicit gap and every worker is reconciled. Return one compact result table, the selected or synthesized answer, evidence-backed issues, and coverage gaps rather than raw transcripts.
+Complete the swarm when every selected slice has a result or explicit gap and every worker is reconciled. Return a compact synthesis with evidence-backed issues and coverage gaps; use a table when it improves comparison.

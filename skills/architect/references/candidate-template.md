@@ -8,7 +8,7 @@ Use this structure for one independently produced candidate. Replace every brack
 
 ## Usage
 
-Show the caller-facing quickstart and two or three realistic call sites before the type sketch.
+Show caller-facing usage and realistic call sites before the type sketch when they clarify the boundary.
 
 ## Shape
 

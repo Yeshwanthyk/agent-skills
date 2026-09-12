@@ -1,81 +1,44 @@
 ---
 name: plan
-description: Turn a settled approach into a plain-language, implementation-ready plan with contracts, ownership, ordered vertical chunks, verification, migration, rollout, risks, and open decisions. Use when a change needs an execution packet or when Poteto routes planning work here.
+description: Turn a settled approach into an implementation plan with dependencies and relevant proof.
 ---
 
 # Plan
 
-Own the plan, not the code. Explain the settled approach before listing work. The plan is a checklist an executor can run and a reviewer can audit from evidence.
+Own the plan, not the code. Orient the executor in plain language, name the settled contract and boundaries, then give only the work and proof needed for the requested outcome.
 
-## Settle the shape
+## Settle and orient
 
-1. Confirm that the approach is settled. If the decision seam is still open, route to [`architect`](../architect/SKILL.md) or use the repository's `prototype` playbook for an empirical question before planning.
-2. If the change is one or two files with an obvious approach, say that a formal plan is not needed and stop. Keep this exception out of plans where the user explicitly requires an execution packet.
-3. Read the current implementation and relevant tests when the plan changes an existing system. Use [`how`](../how/SKILL.md) for live contracts and execution paths. Use [`why`](../why/SKILL.md) when history or rationale constrains the work.
-4. Record the user or system outcome, the settled scope, constraints, contracts, state owners, failure behavior, target production and test paths, and proof boundary.
-5. Choose the change shape. Use [`references/change-shape.md`](references/change-shape.md) for feature and refactoring branches.
-6. If the work spans phases or stacked changes, use [`references/program-template.md`](references/program-template.md). Keep one independently verifiable change per phase or PR.
-7. For a complex plan, load the shared [agent-routing contract](../poteto-mode/references/agent-routing.md) and delegate distinct read-only explorations when that reduces risk. Request file pointers, conventions, test commands, and entry points, then reconcile the reports against the source.
+Confirm that the approach is settled. If the decision seam is open, route to [`architect`](../architect/SKILL.md) or an empirical prototype; do not hide an architecture decision inside a checklist. For a tiny change with an obvious shape, say that a formal plan adds no value unless the user asks for one.
 
-Completion means the approach, scope, contracts, ownership, failure behavior, paths, and proof boundary are settled or each remaining decision is named as a gate.
+Read the current implementation and relevant tests when changing an existing system. Use [`how`](../how/SKILL.md) for live paths and [`why`](../why/SKILL.md) for history when they reduce uncertainty. Record the outcome, scope, constraints, contracts, state owners, failure behavior, affected paths, and proof boundary.
 
-## Write the orientation
+Start with what changes, who benefits, why the shape fits, and the tradeoffs that matter. Keep this orientation short.
 
-Begin in plain language.
+## Build the packet
 
-1. Say what changes and who benefits.
-2. Say why the approach fits the current system.
-3. Explain how the major pieces work together.
-4. Name the tradeoffs that shaped the choice.
+1. State settled decisions and explicit exclusions.
+2. Name current files and symbols for each change. Do not invent paths.
+3. Order work into independently verifiable vertical chunks. Put a real prerequisite before its dependent behavior; keep disjoint work parallel only when it helps.
+4. For each chunk, give the behavior, files/symbols, path or state transition touched, dependencies, risk, and proof.
+5. Name the owner of shared mutable state and distinguish persisted, external, cached, derived, and displayed values.
+6. Describe migration, compatibility, rollout, observability, recovery, and rollback only where they affect delivery.
+7. End with open decisions and the chunks or gates they block.
 
-Keep this explanation short enough to orient a new executor before the checklist begins.
+Use [`change-shape.md`](references/change-shape.md) for feature/refactoring guidance. Use [`program-template.md`](references/program-template.md) when the work spans phases, stacked changes, or multiple owners. Delegate distinct read-only exploration through the [shared routing contract](../yesh-mode/references/agent-routing.md) when it reduces risk; reconcile reports against the source.
 
-Completion means a reader can explain the target outcome and the reason for the chosen shape without opening implementation details.
+## Verification matrix
 
-## Build the execution packet
+Match checks to changed behavior. Name a concrete scenario, command or driving procedure, artifact/output, and pass predicate for each applicable lane:
 
-1. State the settled decisions and explicit exclusions.
-2. Name the files and symbols that carry each change. Use current repository paths, not guessed paths.
-3. Break work into ordered vertical chunks. Put preparatory structural work before behavior that depends on it.
-4. For every chunk, state the behavior delivered, files and symbols, execution path, state transition or boundary touched, dependencies, verification, and risk.
-5. Keep shared mutable state under one owner. Parallelize only disjoint files, services, or layers. Record blocking first steps, independent workstreams, shared-state decisions, and the smallest safe decomposition.
-6. Describe migration, rollout, compatibility removal, observability, recovery, and rollback when they affect delivery.
-7. Keep one source of truth for each invariant. Name derived state separately from persisted, external, cached, or displayed state.
-8. End with open decisions and the chunks or rollout gates they block.
-9. Run the repository's documented plan validator when one exists. Discover its current command from the repository rather than caching an environment-specific path.
+- unit or contract;
+- live surface, when runtime behavior changes;
+- integration, when boundaries interact;
+- performance, when a hot path or budget changes;
+- migration/recovery, when state or lifecycle changes.
 
-Completion means an executor can start every chunk from the named decisions, locations, dependencies, boundary changes, and proof.
+Use existing checks first. Add a harness only when repeatability or reliability justifies it. Do not repeat equivalent checks or require an inapplicable lane; record its reason when useful. Discover a repository plan validator from the repository if one exists.
 
-## Build the verification matrix
+## Handoff and completion
 
-Tests alone are not sufficient verification. Choose the proof that matches the changed behavior.
-
-- **Unit or contract.** Name the test, harness, characterization pin, or static check and its pass predicate.
-- **Live.** Exercise the matching production surface when behavior changes. Name the control method, scenario, observable end state, and pass predicate. Record an explicit limitation when the surface cannot be driven.
-- **Integration.** Use this when multiple modules, processes, services, persistence authorities, or external systems interact. Name the communication path and failure cases.
-- **Performance.** Use this when latency, throughput, resource use, or a hot path changes. Name the metric, baseline, interleaved probe, and absolute failure budget. Mark it not applicable with a reason when no performance-sensitive behavior changes.
-- **Migration and recovery.** Check old and new state, retries, restart, rollback, and partial failure when the plan changes them.
-
-Every verification block has a concrete scenario, command or driving procedure, artifact or output, and pass predicate. Prefer a deterministic script or replay when one can prove the comparison.
-
-Completion means every changed contract has at least one direct proof, live behavior is covered when applicable, performance is covered or explicitly not applicable, and recovery or migration risks have checks.
-
-## Handoff
-
-Present the plan in this order.
-
-1. Orientation
-2. Settled decisions
-3. Scope and exclusions
-4. Target flow
-5. Implementation chunks
-6. Verification matrix
-7. Migration and rollout
-8. Risks and mitigations
-9. Open decisions
-
-For a multi-phase plan, state the execution playbook, dependency order, merge or handoff rule, and the condition that starts execution. Do not claim that a plan was executed. Do not require a model, IDE, path convention, or command that the current repository does not expose.
-
-## Completion
-
-The plan is complete only when the orientation, settled scope, contracts, state ownership, failure behavior, files and symbols, ordered vertical chunks, dependencies, verification matrix, migration, rollout, risks, and open decisions are present. Every verification item must name evidence and a pass predicate. The final packet must be usable directly or when routed by Poteto.
+Lead with the approach, then give the work, proof, and open decisions needed to execute it. The plan is complete when an executor can start each chunk and tell success from failure. A planning-only request ends there without claiming execution. If implementation is also requested, continue with the settled work instead of adding a new approval gate.

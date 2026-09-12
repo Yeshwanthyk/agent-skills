@@ -1,6 +1,0 @@
-interface:
-  display_name: "Structure Review"
-  short_description: "Audit engineering structure with evidence"
-  default_prompt: "Use $yesh-structure-review to produce a clean engineering audit with evidence-backed corrections."
-policy:
-  allow_implicit_invocation: false

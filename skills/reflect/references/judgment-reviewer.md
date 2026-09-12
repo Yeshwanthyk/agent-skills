@@ -15,7 +15,7 @@ Find durable learnings from:
 
 Only route findings to skills or tools the session used, or to a skill whose description should have triggered. Do not add guidance to a skill that was neither used nor a missed-trigger candidate.
 
-Return 3 to 5 numbered findings. Each finding contains:
+Return the small set of durable findings that would change future behavior. Each finding contains:
 
 - **Principle.** One sentence stating the rule that generalizes.
 - **Evidence.** An exact turn, quote, artifact, or session entry.

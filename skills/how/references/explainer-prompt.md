@@ -14,11 +14,11 @@ Use this brief for the single explainer pass, whether it is working directly fro
 
 Write for a senior engineer unfamiliar with this area. Use the findings as leads, not as authority: read the implementation to reconcile contradictions, fill material gaps, and verify claims. Do not edit files. Keep the explanation compact but complete enough that a reader can work in the subsystem.
 
-## Required treatment
+## Useful treatment
 
 - Explain the current implementation, not why it was historically chosen.
 - Name state owners and authorities; distinguish derived state from persisted or external truth.
-- Trace representative production and relevant test paths where they exist.
+- Trace production and relevant test paths when they clarify the requested behavior.
 - At every meaningful boundary make the caller, callee, contract, transformation, effect, failure behavior, and proof point clear.
 - For Inventory, enumerate mechanically from the named registrations, route tables, factories, exports, call sites, or other source of truth. Never label a representative sample complete.
 - For Contrast, compare the same dimensions for both live paths.

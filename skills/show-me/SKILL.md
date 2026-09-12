@@ -1,6 +1,6 @@
 ---
 name: show-me
-description: Help the user understand the current topic visually with concise diagrams, code-shape sketches, calldiff output, or one focused HTML artifact. Use when a visual would explain structure, flow, state, or change faster than prose.
+description: Explain the current topic with a focused diagram, code sketch, or visual artifact.
 ---
 
 # Show me
