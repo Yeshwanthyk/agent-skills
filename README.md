@@ -15,6 +15,7 @@ The collection is tuned for Astra using the [official model guide](https://devel
 | [`breadboarding`](./skills/breadboarding) | Maps operator workflows into UI, code, stores, and explicit control and data wiring. |
 | [`bro`](./skills/bro) | Switches the conversation to short, plain, unambiguous English. |
 | [`create-verification-skill`](./skills/create-verification-skill) | Creates and proves a project-local skill that drives one real application surface. |
+| [`deep-dive-explainer`](./skills/deep-dive-explainer) | Researches mechanisms, evidence, alternatives, and limits, then renders a connected long-form article with a reusable offline layout. |
 | [`debug`](./skills/debug) | Reproduces failures, finds the first contract divergence, applies the smallest coherent fix, and proves it. |
 | [`figure-it-out`](./skills/figure-it-out) | Designs and runs an auditable custom workflow for a large task that has no focused playbook. |
 | [`frontend-grilling`](./skills/frontend-grilling) | Resolves frontend design choices through concrete prototypes and focused verdicts. |
