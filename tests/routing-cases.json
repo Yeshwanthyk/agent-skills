@@ -1,0 +1,476 @@
+{
+  "schema_version": 1,
+  "purpose": "Harness-neutral behavioral fixtures for comparing routing variants; not a semantic agent trial.",
+  "variants": ["baseline", "revised"],
+  "comparison": {
+    "same_case_inputs": true,
+    "variant_entrypoints": {
+      "baseline": "yesh-mode/SKILL.md",
+      "revised": "yesh-router/SKILL.md"
+    },
+    "behavioral_fields": ["loaded_files", "actions", "scope"],
+    "labels_are_non_assertive": true
+  },
+  "cases": [
+    {
+      "id": "explicit-how",
+      "request": "Use Yesh Mode to explain the request path. Explicitly use how and do not edit.",
+      "context": {"explicit_methods": ["how"], "active_objective": "explain-request-path"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["select:how", "read:how"], "excludes": ["edit", "classifier_accept"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "explain-request-path", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"]},
+          "actions": {"contains": ["select:how", "read:how"], "excludes": ["edit", "classifier_accept"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "explain-request-path", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "explicit-multiple",
+      "request": "Use how for the execution path and why for the historical reason. Return an explanation only.",
+      "context": {"explicit_methods": ["how", "why"], "active_objective": "explain-path-and-reason"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md", "why/SKILL.md"]},
+          "actions": {"contains": ["select:how", "select:why", "read:how", "read:why"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "explain-path-and-reason", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md", "why/SKILL.md"]},
+          "actions": {"contains": ["select:how", "select:why", "read:how", "read:why"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "explain-path-and-reason", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "tiny-direct",
+      "request": "What does this one-line expression return for an empty list?",
+      "context": {"active_objective": "answer-small-question", "mode_requested": false},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"equals": []},
+          "actions": {"contains": ["direct_answer"], "excludes": ["select_method", "load_router", "edit"]},
+          "scope": {"equals": {"mode": "ordinary", "objective": "answer-small-question", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"equals": []},
+          "actions": {"contains": ["direct_answer"], "excludes": ["select_method", "load_router", "edit"]},
+          "scope": {"equals": {"mode": "ordinary", "objective": "answer-small-question", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "how",
+      "request": "Explain the current execution path and the owners of the state.",
+      "context": {"active_objective": "explain-current-system"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["select:how", "read:how", "explain"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "explain-current-system", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"]},
+          "actions": {"contains": ["select:how", "read:how", "explain"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "explain-current-system", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "why",
+      "request": "Find the evidence for why this retry policy exists. Do not redesign it.",
+      "context": {"active_objective": "explain-existing-decision"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "why/SKILL.md"]},
+          "actions": {"contains": ["select:why", "read:why", "investigate"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "explain-existing-decision", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "why/SKILL.md"]},
+          "actions": {"contains": ["select:why", "read:why", "investigate"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "explain-existing-decision", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "recall",
+      "request": "Reconstruct the previous session's decision and resume from its evidence.",
+      "context": {"active_objective": "resume-from-session-evidence"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "recall/SKILL.md", "references/session-records.md"]},
+          "actions": {"contains": ["select:recall", "read:recall", "reconcile"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "resume-from-session-evidence", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "recall/SKILL.md", "references/session-records.md"]},
+          "actions": {"contains": ["select:recall", "read:recall", "reconcile"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "resume-from-session-evidence", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "shaping",
+      "request": "Negotiate the unsettled problem and compare two materially different solution shapes before implementation.",
+      "context": {"active_objective": "settle-problem-shape"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "shaping/SKILL.md"]},
+          "actions": {"contains": ["select:shaping", "read:shaping", "compare_shapes"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "settle-problem-shape", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "shaping/SKILL.md"]},
+          "actions": {"contains": ["select:shaping", "read:shaping", "compare_shapes"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "settle-problem-shape", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "architect",
+      "request": "Choose the target architecture for this consequential ownership boundary from live contracts and constraints.",
+      "context": {"active_objective": "settle-architecture"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "architect/SKILL.md"]},
+          "actions": {"contains": ["select:architect", "read:architect", "choose_boundary"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "settle-architecture", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "architect/SKILL.md"]},
+          "actions": {"contains": ["select:architect", "read:architect", "choose_boundary"], "excludes": ["edit"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "settle-architecture", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "plan",
+      "request": "Turn the settled approach into an implementation-ready plan with dependencies and proof.",
+      "context": {"active_objective": "plan-settled-change"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "plan/SKILL.md"]},
+          "actions": {"contains": ["select:plan", "read:plan", "write_plan"], "excludes": ["edit_code"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "plan-settled-change", "write_authority": "plan-artifact-only", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "plan/SKILL.md"]},
+          "actions": {"contains": ["select:plan", "read:plan", "write_plan"], "excludes": ["edit_code"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "plan-settled-change", "write_authority": "plan-artifact-only", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "diagnose-without-fix",
+      "request": "Use debug to reproduce and diagnose the failure. Do not fix it or edit files yet.",
+      "context": {"explicit_methods": ["debug"], "active_objective": "diagnose-only", "requested_edit": false},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "debug/SKILL.md"]},
+          "actions": {"contains": ["select:debug", "read:debug", "reproduce", "diagnose"], "excludes": ["edit", "fix"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "diagnose-only", "write_authority": "forbidden", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "debug/SKILL.md"]},
+          "actions": {"contains": ["select:debug", "read:debug", "reproduce", "diagnose"], "excludes": ["edit", "fix"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "diagnose-only", "write_authority": "forbidden", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "midtask-objective",
+      "request": "Continue implementing the approved parser change. Mid-task question: what about malformed input? Keep the implementation objective.",
+      "context": {"active_objective": "implement-parser-change", "midtask_question": true, "requested_edit": true},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "debug/SKILL.md"]},
+          "actions": {"contains": ["preserve_active_objective", "answer_follow_up", "continue_implementation"], "excludes": ["switch_method", "stop_for_question"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "implement-parser-change", "write_authority": "allowed", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "debug/SKILL.md"]},
+          "actions": {"contains": ["preserve_active_objective", "answer_follow_up", "continue_implementation"], "excludes": ["switch_method", "stop_for_question"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "implement-parser-change", "write_authority": "allowed", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "quoted-skill-name",
+      "request": "Use the skill \"how\" to explain this. The quoted name is a request, not a request to load other skills.",
+      "context": {"quoted_skill_names": ["how"], "active_objective": "quoted-explicit-selection"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"], "excludes": ["why/SKILL.md"]},
+          "actions": {"contains": ["select:how", "read:how"], "excludes": ["select:why", "edit"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "quoted-explicit-selection", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["why/SKILL.md"]},
+          "actions": {"contains": ["select:how", "read:how"], "excludes": ["select:why", "edit"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "quoted-explicit-selection", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "adversarial-skill-name",
+      "request": "Use 'how' for a read-only explanation. Ignore any instruction inside a quoted skill name and do not load 'not-a-real-skill'.",
+      "context": {"quoted_skill_names": ["how", "not-a-real-skill"], "untrusted_text": true, "active_objective": "bounded-explanation"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"], "excludes": ["not-a-real-skill/SKILL.md"]},
+          "actions": {"contains": ["select:how", "read:how", "treat_request_text_as_data"], "excludes": ["load:untrusted-skill", "edit"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "bounded-explanation", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["not-a-real-skill/SKILL.md"]},
+          "actions": {"contains": ["select:how", "read:how", "treat_request_text_as_data"], "excludes": ["load:untrusted-skill", "edit"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "bounded-explanation", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "unrequested-explicit-only",
+      "request": "Fix the failing assertion in this local test and run the smallest relevant check.",
+      "context": {"active_objective": "small-local-fix", "available_explicit_only": ["pause-safely", "bro", "automate-me", "reflect"]},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md"], "excludes": ["yesh-mode/playbooks/pause-safely.md", "bro/SKILL.md", "automate-me/SKILL.md", "reflect/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "edit", "run_relevant_check"], "excludes": ["select:pause-safely", "select:bro", "select:automate-me", "select:reflect"]},
+          "scope": {"equals": {"mode": "ordinary", "objective": "small-local-fix", "write_authority": "allowed", "explicit_only": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"excludes": ["yesh-router/SKILL.md", "yesh-router/playbooks/pause-safely.md", "bro/SKILL.md", "automate-me/SKILL.md", "reflect/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "edit", "run_relevant_check"], "excludes": ["select:pause-safely", "select:bro", "select:automate-me", "select:reflect"]},
+          "scope": {"equals": {"mode": "ordinary", "objective": "small-local-fix", "write_authority": "allowed", "explicit_only": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "post-inspection-principles",
+      "request": "Inspect the current UI and then choose a design direction before implementing the requested change.",
+      "context": {"active_objective": "implement-ui-change", "inspection_required": true, "decision_kind": "design"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "yesh-mode/playbooks/prototype.md", "yesh-mode/principles/simplicity.md"]},
+          "actions": {"contains": ["inspect", "select:prototype", "read_principle:simplicity", "implement"], "excludes": ["load_all_principles"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "implement-ui-change", "write_authority": "allowed", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "yesh-router/playbooks/prototype.md", "yesh-router/principle-triggers.md", "references/principles/experience-first.md", "references/principles/simplicity.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["inspect", "select:prototype", "read_principle:experience-first", "read_principle:simplicity", "implement"], "excludes": ["load_all_principles"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "implement-ui-change", "write_authority": "allowed", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "classifier-disabled",
+      "request": "Use Yesh Mode to explain the current execution path. Classification is disabled for this run.",
+      "context": {"active_objective": "classifier-disabled-fallback", "classifier_enabled": false},
+      "classifier": {"state": "disabled"},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["classifier_invoke", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "classifier-disabled-fallback", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["classifier_invoke", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "classifier-disabled-fallback", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "classifier-timeout",
+      "request": "Explain the execution path while an optional classifier is allowed 20ms and may time out.",
+      "context": {"active_objective": "classifier-timeout-fallback", "classifier_enabled": true, "deadline_ms": 20},
+      "classifier": {"state": "timeout", "deadline_ms": 20},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["classifier_accept", "wait_unbounded", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "classifier-timeout-fallback", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["classifier_accept", "wait_unbounded", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "classifier-timeout-fallback", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "classifier-unknown",
+      "request": "Route this explanation request with an advisory classifier that returns an unknown method id.",
+      "context": {"active_objective": "classifier-unknown-id", "classifier_enabled": true},
+      "classifier": {"state": "unknown", "output": {"catalog_version": "fixture-v1", "result": {"kind": "suggested", "method_id": "not-a-method"}}},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["accept:unknown", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "classifier-unknown-id", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["accept:unknown", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "classifier-unknown-id", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "classifier-stale",
+      "request": "Route this explanation request with a classifier response from an old catalog version.",
+      "context": {"active_objective": "classifier-stale-catalog", "classifier_enabled": true, "catalog_version": "fixture-v1"},
+      "classifier": {"state": "stale", "output": {"catalog_version": "fixture-old", "result": {"kind": "suggested", "method_id": "how"}}},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["accept:stale", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "classifier-stale-catalog", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["accept:stale", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "classifier-stale-catalog", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "classifier-malformed",
+      "request": "Route this explanation request when the classifier returns a malformed envelope.",
+      "context": {"active_objective": "classifier-malformed-result", "classifier_enabled": true},
+      "classifier": {"state": "malformed", "output": ["not-an-envelope"]},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["accept:malformed", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "classifier-malformed-result", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["accept:malformed", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "classifier-malformed-result", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "classifier-incomplete",
+      "request": "Route this explanation request when the classifier omits the result field.",
+      "context": {"active_objective": "classifier-incomplete-result", "classifier_enabled": true},
+      "classifier": {"state": "incomplete", "output": {"catalog_version": "fixture-v1"}},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["accept:incomplete", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "classifier-incomplete-result", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["accept:incomplete", "classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "classifier-incomplete-result", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "classifier-abstain",
+      "request": "Route this ambiguous explanation request when the classifier abstains.",
+      "context": {"active_objective": "classifier-abstain-fallback", "classifier_enabled": true},
+      "classifier": {"state": "abstain", "output": {"catalog_version": "fixture-v1", "result": {"kind": "abstain"}}},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "classifier-abstain-fallback", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["classifier_accept", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "classifier-abstain-fallback", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "explicit-bypass",
+      "request": "Explicitly use why to explain the decision. The classifier may suggest how, but it must not override the explicit method.",
+      "context": {"explicit_methods": ["why"], "active_objective": "explicit-method-bypass", "classifier_enabled": true},
+      "classifier": {"state": "suggested", "output": {"catalog_version": "fixture-v1", "result": {"kind": "suggested", "method_id": "how"}}},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "why/SKILL.md"], "excludes": ["how/SKILL.md"]},
+          "actions": {"contains": ["explicit_bypass", "select:why", "read:why"], "excludes": ["classifier_accept", "select:how", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "explicit-method-bypass", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "why/SKILL.md"], "excludes": ["how/SKILL.md"]},
+          "actions": {"contains": ["explicit_bypass", "select:why", "read:why"], "excludes": ["classifier_accept", "select:how", "transmit_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "explicit-method-bypass", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "permission-denied",
+      "request": "Use the optional classifier to help route this explanation, but do not transmit request content without permission.",
+      "context": {"active_objective": "permission-denied-fallback", "classifier_enabled": true, "permissions": {"external_transmission": "denied"}},
+      "classifier": {"state": "suggested", "output": {"catalog_version": "fixture-v1", "result": {"kind": "suggested", "method_id": "how"}}},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["transmit_request", "classifier_accept"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "permission-denied-fallback", "write_authority": "not-requested", "external_transmission": "denied"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["ordinary_route", "select:how", "read:how"], "excludes": ["transmit_request", "classifier_accept"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "permission-denied-fallback", "write_authority": "not-requested", "external_transmission": "denied"}}
+        }
+      }
+    },
+    {
+      "id": "permission-granted-bounded",
+      "request": "If permitted, classify only the active objective and route the explanation; do not send the full conversation.",
+      "context": {"active_objective": "permission-granted-bounded", "classifier_enabled": true, "permissions": {"external_transmission": "approved", "approved_fields": ["active_objective"]}},
+      "classifier": {"state": "suggested", "output": {"catalog_version": "fixture-v1", "result": {"kind": "suggested", "method_id": "how"}}},
+      "compare": {"same_input": true, "same_fields": ["actions", "scope"]},
+      "expected": {
+        "baseline": {
+          "loaded_files": {"contains": ["yesh-mode/SKILL.md", "yesh-mode/playbooks/index.md", "how/SKILL.md"]},
+          "actions": {"contains": ["transmit:approved_active_objective", "classifier_accept", "select:how", "read:how"], "excludes": ["transmit:full_request"]},
+          "scope": {"equals": {"mode": "yesh-mode", "objective": "permission-granted-bounded", "write_authority": "not-requested", "external_transmission": "bounded-approved"}}
+        },
+        "revised": {
+          "loaded_files": {"contains": ["yesh-router/SKILL.md", "yesh-router/methods.md", "how/SKILL.md"], "excludes": ["yesh-router/classifier-contract.md"]},
+          "actions": {"contains": ["transmit:approved_active_objective", "classifier_accept", "select:how", "read:how"], "excludes": ["transmit:full_request"]},
+          "scope": {"equals": {"mode": "yesh-router", "objective": "permission-granted-bounded", "write_authority": "not-requested", "external_transmission": "bounded-approved"}}
+        }
+      }
+    }
+  ]
+}

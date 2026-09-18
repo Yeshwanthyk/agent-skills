@@ -27,7 +27,7 @@ Skip trivial actions. Append a new row when a decision changes. Never rewrite hi
 
 At the end of the run, compare every row with the current session and repository:
 
-1. Load the shared [session-records contract](../yesh-mode/references/session-records.md) and locate the active project session.
+1. Load the shared [session-records contract](../references/session-records.md) and locate the active project session.
 2. Confirm that every row maps to a real action.
 3. Resolve every evidence pointer and check that it proves the row.
 4. Add a row for any fork, pivot, or abandoned approach that shaped the result.
@@ -37,7 +37,7 @@ If the session cannot be read, use the fallback and evidence limits in the share
 
 ## Independent review
 
-For consequential or later-reviewed work, use the shared [agent-routing contract](../yesh-mode/references/agent-routing.md) to request a read-only reviewer when available. Give it the trail, relevant session, and scope; ask it to flag weak evidence, skipped verification, risky choices, and gaps.
+For consequential or later-reviewed work, use the shared [delegation contract](../references/delegation.md) to request a read-only reviewer when available. Give it the trail, relevant session, and scope; ask it to flag weak evidence, skipped verification, risky choices, and gaps.
 
 If the harness cannot provide an independent reviewer, report that limitation. Do not describe self-review as independent review. The reviewer remains read-only.
 

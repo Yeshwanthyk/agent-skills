@@ -7,7 +7,7 @@ description: Compare complete candidate solutions and combine the best work into
 
 Use for a requested candidate bakeoff or a consequential choice between viable designs. A settled mechanical task does not need competing implementations.
 
-Define the artifact and observable selection criteria. Give candidates the same task and raw inputs, with separate write targets. Use the [agent-routing contract](../yesh-mode/references/agent-routing.md) for implementation and review models. Set the number of candidates from the useful design alternatives and available capacity.
+Define the artifact and observable selection criteria. Give candidates the same task and raw inputs, with separate write targets. Use the [delegation contract](../references/delegation.md) for implementation and review roles. Set the number of candidates from the useful design alternatives and available capacity.
 
 Run independent candidates in parallel when possible. Keep failed or incomplete runs visible. A brief design rationale helps when the differences are not evident in the artifacts.
 

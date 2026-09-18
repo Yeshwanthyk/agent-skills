@@ -31,3 +31,11 @@ Original miniature example:
 > That separation lets two builds run at once without overwriting each other's output. It does not isolate the processes: both workers still have the permissions of the same operating-system user.
 
 The first paragraph establishes the mechanism. The second adds concurrency consequences and the exact isolation boundary. Neither claims hands-on testing.
+
+## Explain a boundary or lifetime
+
+When adjacent concepts can be confused, follow one concrete value through them and state what each check accepts, rejects, and leaves to another owner. Separate describing an operation, validating its input, and authorizing its effects. Define terms such as “decode” at their first consequential use.
+
+For lifecycle questions, trace the caller as well as the helper: identify what happens at construction, per request, and per execution; what is reused; and what resets. Distinguish a library's possible lifetime from the lifetime its actual host chooses.
+
+Use a small Mermaid diagram for branching or shared-versus-fresh state, or an ASCII flow for a short sequence. Explain the consequence in prose and cite the source that establishes each boundary. Keep diagrams beside the relevant explanation; omit boxes that add names without clarifying a relationship. Diagram block mechanics live in content.md.

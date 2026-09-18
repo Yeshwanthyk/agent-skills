@@ -15,7 +15,7 @@ Identify the target files, symbols, feature or decision, timeframe, and any hypo
 
 Search the sources most likely to answer this question. Source control is usually the starting point; add issue tracking, long-form documents, team chat, observability, error tracking, or analytics when the decision or question calls for them and the current harness exposes them. Do not assume a provider, schema, project, channel, table, or authentication state. Record searches that were unavailable or returned no useful result. The [source playbook index](references/source-playbook.md) and category guides under [sources](references/sources/) are optional adapters, not a required seven-source itinerary.
 
-Delegate a bounded source search when it improves coverage or time, using the [agent-routing contract](../yesh-mode/references/agent-routing.md). Give each worker one distinct source or question, the code anchor, available tool scope, and the [investigator template](references/investigator-prompt.md). Otherwise investigate directly. Follow material cross-source leads when they are cheap and relevant; leave inaccessible leads as explicit gaps.
+Delegate a bounded source search when it improves coverage or time, using the [delegation contract](../references/delegation.md). Give each worker one distinct source or question, the code anchor, available tool scope, and the [investigator template](references/investigator-prompt.md). Otherwise investigate directly. Follow material cross-source leads when they are cheap and relevant; leave inaccessible leads as explicit gaps.
 
 ## Judge the record
 

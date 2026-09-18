@@ -5,7 +5,7 @@ description: Run a bounded parallel investigation or solution race and reconcile
 
 # Swarm
 
-Fan out independent workers for one bounded question, then return one judged result. In Yesh Mode, use the [`orchestrate` playbook](../yesh-mode/playbooks/orchestrate.md) instead when the work has dependent implementation stages or requires continuing integration.
+Fan out independent workers for one bounded question, then return one judged result. In an active routing mode, use the [`orchestrate` playbook](../yesh-router/playbooks/orchestrate.md) instead when the work has dependent implementation stages or requires continuing integration.
 
 ## Frame
 
@@ -20,7 +20,7 @@ Fan out independent workers for one bounded question, then return one judged res
 
 ## Route
 
-Use [`references/agent-routing.md`](../yesh-mode/references/agent-routing.md) when dispatching. Every brief names its exact slice or race arm. Require `PASS`, `ISSUES`, or `BLOCKED` with evidence.
+Use the [shared delegation contract](../references/delegation.md) when dispatching. Every brief names its exact slice or race arm. Require `PASS`, `ISSUES`, or `BLOCKED` with evidence.
 
 ## Fan out and aggregate
 

@@ -15,7 +15,7 @@ Read the relevant implementation and tests. Use [`how`](../how/SKILL.md) for cur
 
 Write caller-facing usage before the type sketch. Show the dominant calls, inputs, outputs, and failure handling; two or three examples are useful when they expose different contracts, but use fewer for a narrow case. Derive data structures from those access patterns and parse external, storage, or framework data at the boundary.
 
-Describe module responsibilities, dependency direction, state transitions, side effects, observability, migration, rollout, and production/test substitution points. Compare alternatives when an unresolved choice matters. Prefer a small public surface that hides real policy; consult [`design-red-flags.md`](references/design-red-flags.md). Use the candidate and rationale templates for a design that will be handed to others. Run [`arena`](../arena/SKILL.md) only when competing whole-shape alternatives would materially improve the decision.
+Describe module responsibilities, dependency direction, state transitions, side effects, observability, migration, rollout, and production/test substitution points. For novel choices with multiple viable approaches, apply the [exhaust-the-design-space principle](../references/principles/exhaust-the-design-space.md) before selecting a shape. Prefer a small public surface that hides real policy; consult [`design-red-flags.md`](references/design-red-flags.md). Use the candidate and rationale templates for a design that will be handed to others. Run [`arena`](../arena/SKILL.md) only when competing whole-shape alternatives would materially improve the decision.
 
 Record the selected shape, rejected alternatives, tradeoffs, risks, and open questions. Keep the rationale beside the sketch for larger changes.
 
@@ -23,7 +23,7 @@ Record the selected shape, rejected alternatives, tradeoffs, risks, and open que
 
 An architecture-only request ends with the selected design and its rationale. If implementation is already requested, continue without adding a new approval checkpoint. If implementation reveals a mismatch, determine whether the sketch, requirement, or implementation was wrong and update the design before adding exceptions. Verify the wiring that matters to the changed contract.
 
-Delegation is optional. When useful, follow [agent routing](../yesh-mode/references/agent-routing.md), use [`runner-prompt.md`](references/runner-prompt.md), and review the actual candidate artifacts; do not delegate a shared mutable write target.
+Delegation is optional. When useful, follow [delegation](../references/delegation.md), use [`runner-prompt.md`](references/runner-prompt.md), and review the actual candidate artifacts; do not delegate a shared mutable write target.
 
 ## Redesign signal
 

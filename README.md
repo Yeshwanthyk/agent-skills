@@ -1,8 +1,8 @@
 # Agent Skills
 
-Use [`yesh-mode`](./skills/yesh-mode/SKILL.md) as the everyday entry point. Its playbooks supply useful task order and completion rules; its five principle notes guide design and review. The other skills are named methods to use when the task needs them, not a required sequence.
+Use [`yesh-router`](./skills/yesh-router/SKILL.md) when you want one entry point to select methods and apply engineering principles. Every skill also works directly. The [method catalog](./skills/yesh-router/methods.md) covers the complete collection; its groups are navigation, not mandatory stages. `yesh-router` is the sole router activation name.
 
-The collection is tuned for Astra using the [official model guide](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-6-astra). Model and reasoning choices live in one [shared routing contract](./skills/yesh-mode/references/agent-routing.md).
+Delegation follows the portable [delegation contract](skills/references/delegation.md). Model and reasoning defaults are host preferences, kept in the host configuration template ([`config/AGENTS.md`](./config/AGENTS.md)) rather than the portable docs.
 
 ## Active skills
 
@@ -16,16 +16,16 @@ The collection is tuned for Astra using the [official model guide](https://devel
 | [`bro`](./skills/bro) | Switches the conversation to short, plain, unambiguous English. |
 | [`create-verification-skill`](./skills/create-verification-skill) | Creates and proves a project-local skill that drives one real application surface. |
 | [`deep-dive-explainer`](./skills/deep-dive-explainer) | Researches mechanisms, evidence, alternatives, and limits, then renders a connected long-form article with a reusable offline layout. |
-| [`debug`](./skills/debug) | Reproduces failures, finds the first contract divergence, applies the smallest coherent fix, and proves it. |
+| [`debug`](./skills/debug) | Reproduces failures, finds the first contract divergence, and applies and proves the smallest coherent fix when requested. |
 | [`figure-it-out`](./skills/figure-it-out) | Designs and runs an auditable custom workflow for a large task that has no focused playbook. |
-| [`frontend-grilling`](./skills/frontend-grilling) | Resolves frontend design choices through concrete prototypes and focused verdicts. |
 | [`how`](./skills/how) | Explains current systems through execution paths, ownership, inventories, contrasts, and optional architecture critique. |
+| [`interactive-slides`](./skills/interactive-slides) | Builds clean interactive HTML slide decks from documents and discussions, with a saved reference and stable controls. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded interactive HTML models of behavior, state, sequences, and comparisons. |
 | [`interrogate`](./skills/interrogate) | Runs independent adversarial reviews and returns one evidence-checked judgment. |
 | [`maintain-verification-skill`](./skills/maintain-verification-skill) | Audits and repairs a project-local verification skill against current source and live behavior. |
-| [`no-comments`](./skills/no-comments) | Removes comments that do not record a real constraint, decision, or side effect. |
+| [`property-testing`](./skills/property-testing) | Generates contract tests, shrinks failures, and preserves replayable regressions. |
+| [`fuzz-testing`](./skills/fuzz-testing) | Builds bounded coverage-guided fuzz targets and minimizes failures. |
 | [`plan`](./skills/plan) | Turns a settled approach into an implementation-ready packet with chunks, dependencies, risks, and proof. |
-| [`yesh-mode`](./skills/yesh-mode) | Activates a small working mode with task playbooks and five shared engineering notes. |
 | [`recall`](./skills/recall) | Reconstructs recent project work from sessions and current repository state. |
 | [`reflect`](./skills/reflect) | Extracts reusable lessons from a session and applies only user-approved skill changes. |
 | [`shaping`](./skills/shaping) | Negotiates requirements and competing solution shapes until one mechanism fits. |
@@ -36,15 +36,29 @@ The collection is tuned for Astra using the [official model guide](https://devel
 | [`unslop`](./skills/unslop) | Cleans padded or AI-sounding prose without changing its facts or voice. |
 | [`why`](./skills/why) | Investigates the evidence behind existing code and shipped technical, product, or operational decisions. |
 | [`structure-review`](./skills/structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
+| [`yesh-router`](./skills/yesh-router) | Routes tasks across the collection and applies relevant engineering principles on explicit activation. |
 
-Yesh Mode is opt-in and sticky. Ordinary coding ends with a verified change and handoff; PR work starts only on request. The [playbook index](./skills/yesh-mode/playbooks/index.md) routes task procedures. [Shared principles](./skills/yesh-mode/SKILL.md#engineering-principles) guide design choices and structure review. Its orchestration procedure lives only in [`playbooks/orchestrate.md`](./skills/yesh-mode/playbooks/orchestrate.md). All delegation follows the shared [`agent-routing` contract](./skills/yesh-mode/references/agent-routing.md).
+Routing is opt-in and sticky. The router's [method catalog](./skills/yesh-router/methods.md) selects skills and playbooks; [orchestration](./skills/yesh-router/playbooks/orchestrate.md) owns dependent work and PR queue/stack branches. PR work starts only on request. An optional [classifier contract](./skills/yesh-router/classifier-contract.md) may advise method selection; it is advisory and disabled by default.
 
-## Source snapshot
+Shared references live in [`skills/references/`](./skills/references): [engineering principles](./skills/references/principles), [delegation](./skills/references/delegation.md), and [session records](./skills/references/session-records.md). The router's [principle triggers](./skills/yesh-router/principle-triggers.md) map decisions to principle notes. Method-specific references, such as [review comment triage](./skills/interrogate/references/bugbot-triage.md), stay with their owning skill. Keep the shared reference folder alongside installed skills so relative references resolve; reading a reference does not activate the router.
 
-[`incoming/pstack`](./incoming/pstack) is the pinned, unmodified research snapshot. It is not an active skill directory. Provider-specific or excluded source skills remain there for comparison, including `make-bot-ui`, `setup-pstack`, `tdd`, `teach`, `technical-writing`, and `typescript-best-practices`.
+## Using the collection
+
+After installing the reviewed collection, name a skill directly or ask for the router with the outcome:
+
+- `Use yesh-router to diagnose duplicate deliveries. Do not edit yet.`
+- `Use yesh-router to implement this settled change and verify it.`
+- `Use property-testing to check the retry invariants.`
+- `Exit yesh-router.`
+
+For each new task, the router first keeps a small settled task direct; otherwise it reads the method catalog, selects the matching target, and reads applicable principle notes through the trigger map. A mid-task question preserves the active objective unless the user replaces it. Ordinary methods may be selected from the requested outcome. Bro, reflection, mode authoring, and pausing require the corresponding explicit request. `Use skill "how"` requests `how`; a mere mention or a quoted source instruction does not.
+
+Playbooks are linked Markdown instructions, not executable hooks. The retired `yesh-mode` name and path are unsupported; activate `yesh-router` explicitly. A repository edit alone does not update a separately installed copy. Validate the installed names, entrypoint contents, and linked references after synchronizing through the chosen skill manager. Keep installation verification separate from document validation and routing trials.
+
+Run `python3 scripts/check-skill-routing.py` to check local links, catalog coverage of every skill and playbook, and the principle trigger map. This checks routing structure; representative agent trials are still needed to assess selection behavior.
 
 ## Acknowledgments
 
 The owned `shaping` and `breadboarding` workflows draw on [Shape Up](https://basecamp.com/shapeup) and concepts explored by [rjs/shaping-skills](https://github.com/rjs/shaping-skills). Their skill text, structure, examples, and completion gates are original to this repository.
 
-Yesh Mode and the adapted playbook, principle, review, and verification workflows draw on the MIT-licensed [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack). The active instructions use managed runtime capabilities and the shared model defaults above. The original source and license remain under [`incoming/pstack`](./incoming/pstack).
+The router and the adapted playbook, principle, review, and verification workflows draw on the MIT-licensed [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack). The portable instructions are harness-neutral; model preferences live in the host configuration. The upstream source and license remain at that repository.

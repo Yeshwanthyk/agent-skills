@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Render article content using the bundled offline reading layout."""
 import argparse
+import base64
 import datetime
 import html
 import json
@@ -30,7 +31,7 @@ def sequence(value, nonempty=True):
     return value
 
 
-def render(data):
+def render(data, source_dir=None):
     keys(data, ('title', 'summary', 'date', 'intro', 'sections'), ('author',))
     datetime.date.fromisoformat(string(data['date']))
     ids, fragments, toc = set(), set(), []
@@ -72,6 +73,22 @@ def render(data):
                 keys(value, ('code',), ('language',))
                 label = html.escape(string(value.get('language', 'text')))
                 output.append(f'<figure><figcaption>{label}</figcaption><pre tabindex="0"><code>{html.escape(string(value["code"]))}</code></pre></figure>')
+            elif isinstance(value, dict) and 'mermaid' in value:
+                keys(value, ('mermaid', 'svg', 'caption', 'alt'))
+                if source_dir is None:
+                    raise ValueError('Diagram blocks require an article source directory')
+                def asset(field, suffix):
+                    path = (source_dir / string(value[field])).resolve()
+                    if not path.is_relative_to(source_dir.resolve()) or path.suffix != suffix:
+                        raise ValueError(f'Diagram {field} must be a {suffix} file within the article directory')
+                    return path.read_bytes()
+                source = asset('mermaid', '.mmd').decode('utf-8')
+                svg = asset('svg', '.svg')
+                if b'<svg' not in svg:
+                    raise ValueError('Diagram SVG is missing its root element')
+                encoded = base64.b64encode(svg).decode('ascii')
+                alt = html.escape(string(value['alt']), quote=True)
+                output.append(f'<figure class="diagram"><div class="diagram-scroll" tabindex="0" role="region" aria-label="Scrollable diagram"><img src="data:image/svg+xml;base64,{encoded}" alt="{alt}"></div><figcaption>{inline(value["caption"])}</figcaption><details><summary>Mermaid source</summary><pre tabindex="0"><code>{html.escape(source)}</code></pre></details></figure>')
             elif isinstance(value, dict) and 'quote' in value:
                 keys(value, ('quote',))
                 output.append('<blockquote><p>' + inline(value['quote']) + '</p></blockquote>')
@@ -112,10 +129,12 @@ def render(data):
     title = html.escape(string(data['title']))
     summary = html.escape(string(data['summary']))
     author = html.escape(string(data['author'])) + ' · ' if 'author' in data else ''
-    css = (Path(__file__).resolve().parent.parent / 'assets' / 'reading.css').read_text()
+    assets = Path(__file__).resolve().parent.parent / 'assets'
+    css = (assets / 'reading.css').read_text()
+    script = (assets / 'reading.js').read_text() + '\n' + (assets / 'annotations.js').read_text()
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title><style>{css}</style></head>
-<body><a class="skip" href="#article">Skip to article</a><div class="layout"><aside><nav aria-label="In this article"><details open><summary>In this article</summary><ol>{''.join(toc)}</ol></details></nav></aside><main id="article"><header><h1>{title}</h1><p class="meta">{author}<time datetime="{data['date']}">{data['date']}</time></p><p class="summary">{summary}</p></header><article>{intro}{body}</article><footer><a href="#article">Back to top ↑</a></footer></main></div></body></html>'''
+<body><a class="skip" href="#article">Skip to article</a><div class="layout"><aside><nav aria-label="In this article"><details open><summary>In this article</summary><ol>{''.join(toc)}</ol></details><details class="reading-controls" data-reading-controls hidden><summary>Keyboard reading</summary><label><input type="checkbox" data-reading-keys checked> Enable shortcuts</label><p><kbd>j</kbd> / <kbd>k</kbd> down / up<br><kbd>d</kbd> / <kbd>u</kbd> half page<br><kbd>gg</kbd> top · <kbd>G</kbd> bottom</p><p>Ctrl+D / Ctrl+U also work. Browser Find stays available.</p></details></nav></aside><main id="article"><header><h1>{title}</h1><p class="meta">{author}<time datetime="{data['date']}">{data['date']}</time></p><p class="summary">{summary}</p></header><article>{intro}{body}</article><footer><a href="#article">Back to top ↑</a></footer></main></div><script>{script}</script></body></html>'''
 
 
 def main():
@@ -128,7 +147,7 @@ def main():
     try:
         if args.output and args.input.resolve() == args.output.resolve():
             raise ValueError('Output must differ from input')
-        result = render(json.loads(args.input.read_text()))
+        result = render(json.loads(args.input.read_text()), args.input.resolve().parent)
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(result)

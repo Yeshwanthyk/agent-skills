@@ -18,6 +18,8 @@ Check validation at boundaries, abstraction level, dependency direction, data-mo
 
 Check tests at stable behavior boundaries, a regression proof for bug fixes, integration proof for boundary changes, and real artifact verification for delegated or asynchronous work. Flag proxies and self-reported success when the real result was not checked.
 
+For broad input/transition contracts or malformed-input boundaries, use the [evidence-discipline principle](../../references/principles/evidence-discipline.md) to assess whether property or fuzz testing would address a concrete evidence gap. Check the oracle, explored domain, run budget, and replay evidence when those techniques are used.
+
 ## Complexity
 
 Check for needless layers, one-call abstractions, configuration for nonexistent cases, dead code, duplicated helpers, and avoidable sequential orchestration. Prefer the smallest structure that keeps behavior clear and correct.

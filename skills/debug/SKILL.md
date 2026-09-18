@@ -23,7 +23,7 @@ One mechanism must explain how the symptom occurs. A plausible story without a c
 
 A diagnosis-only request ends with the cause and evidence. When a fix is requested, change the first evidenced divergence. Consult [`architect`](../architect/SKILL.md) when the target shape is unsettled. Preserve the red signal when a cheap test can pin it. Keep validation at boundaries and migrate evidenced sibling callers within scope. Do not add speculative guards, retries, or compatibility branches.
 
-Delegation is optional. If useful, follow the [shared routing contract](../yesh-mode/references/agent-routing.md), assign a precise read-only diagnosis or disjoint edit, then inspect the actual diff and proof yourself.
+Delegation is optional. If useful, follow the [shared delegation contract](../references/delegation.md), assign a precise read-only diagnosis or disjoint edit, then inspect the actual diff and proof yourself.
 
 ## Prove and hand off
 

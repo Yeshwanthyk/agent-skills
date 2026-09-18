@@ -24,7 +24,7 @@ State the interpretation, scope, and completeness boundary when the request coul
 3. Use the requested view's source of truth. An inventory is complete only within the named mechanical boundary; a sample is not a complete inventory. For a contrast, hold the comparison dimensions constant.
 4. Distinguish direct evidence, inference, and unresolved gaps where a reader could mistake interpretation for fact. Reconcile delegated reports and contradictions by reading the implementation.
 
-Use the [agent-routing contract](../yesh-mode/references/agent-routing.md) for delegated roles. The [explorer brief](references/explorer-prompt.md), [explainer brief](references/explainer-prompt.md), [critique rubric](references/critique-rubric.md), and [critic brief](references/critic-prompt.md) are optional aids for their respective tasks.
+Use the [delegation contract](../references/delegation.md) for delegated roles. The [explorer brief](references/explorer-prompt.md), [explainer brief](references/explainer-prompt.md), [critique rubric](references/critique-rubric.md), and [critic brief](references/critic-prompt.md) are optional aids for their respective tasks.
 
 ## Critique
 

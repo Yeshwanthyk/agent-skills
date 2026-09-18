@@ -25,9 +25,11 @@ Start with what changes, who benefits, why the shape fits, and the tradeoffs tha
 6. Describe migration, compatibility, rollout, observability, recovery, and rollback only where they affect delivery.
 7. End with open decisions and the chunks or gates they block.
 
-Use [`change-shape.md`](references/change-shape.md) for feature/refactoring guidance. Use [`program-template.md`](references/program-template.md) when the work spans phases, stacked changes, or multiple owners. Delegate distinct read-only exploration through the [shared routing contract](../yesh-mode/references/agent-routing.md) when it reduces risk; reconcile reports against the source.
+Use [`change-shape.md`](references/change-shape.md) for feature/refactoring guidance. Use [`program-template.md`](references/program-template.md) when the work spans phases, stacked changes, or multiple owners. Delegate distinct read-only exploration through the [shared delegation contract](../references/delegation.md) when it reduces risk; reconcile reports against the source.
 
 ## Verification matrix
+
+For broad input/transition contracts or malformed-input boundaries, consult the [evidence-discipline principle](../references/principles/evidence-discipline.md) to select property or fuzz testing. Specify the invariant, generator or target, budget, and replay plan within the applicable lane; planning alone does not execute it.
 
 Match checks to changed behavior. Name a concrete scenario, command or driving procedure, artifact/output, and pass predicate for each applicable lane:
 

@@ -7,7 +7,7 @@ description: Use independent reviewers to challenge a design or change and retur
 
 Run independent adversarial reviews of the same intent and artifacts. The coordinator's evidence-based judgment decides the outcome; agreement alone is not proof.
 
-Identify the requested diff or design and its intended behavior. Use the [agent-routing contract](../yesh-mode/references/agent-routing.md) for reviewer models, isolation, and result accounting. Choose review count from useful independent coverage and available capacity. Label a single-review fallback honestly.
+Identify the requested diff or design and its intended behavior. Use the [delegation contract](../references/delegation.md) for reviewer roles, isolation, and result accounting. Choose review count from useful independent coverage and available capacity. Label a single-review fallback honestly.
 
 Give reviewers the same intent, relevant artifacts, and read-only scope using the [reviewer brief](references/reviewer-prompt.md). Select the relevant [risk rubric](references/rubric.md) and [code-quality lens](references/code-quality-review.md). Reviewers can inspect surrounding code to test a claim.
 
