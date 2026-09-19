@@ -19,7 +19,7 @@ The loading map for the shared principle notes. Before a consequential decision,
 | Choosing how to perform or prove non-trivial work, not only final verification | [build-the-lever](../references/principles/build-the-lever.md) |
 | Sequencing a sweep, migration, or multi-step delivery | [sequence-verifiable-units](../references/principles/sequence-verifiable-units.md) |
 | Work that could overflow the context window | [guard-the-context-window](../references/principles/guard-the-context-window.md) |
-| Work crossing an agent boundary | [handoffs](../references/principles/handoffs.md) |
+| Restarting work, replacing an agent, or transferring work to a receiver without its context | [handoffs](../references/principles/handoffs.md) |
 | Claiming completion, or verifying a change or delegated result | [prove-it-works](../references/principles/prove-it-works.md) |
 | Choosing what a test or check should assert | [test-behavior](../references/principles/test-behavior.md) |
 | Debugging a reproducible failure or recurring incidents | [fix-root-causes](../references/principles/fix-root-causes.md) |
