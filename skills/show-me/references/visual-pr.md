@@ -12,7 +12,7 @@ Proceed when the PR's identity, comparison, purpose, and changed responsibilitie
 
 ## 2. Build the reviewer view
 
-Read [visual forms](visual-forms.md). Select views by the actual change, not a fixed checklist:
+Read [visual forms](visual-forms.md). Default to fenced diffs, text trees, pseudocode, schemas, and type blocks: these remain readable directly on GitHub without a diagram renderer. Select views by the actual change, not a fixed checklist:
 
 | Change | Useful view | Include |
 | --- | --- | --- |
@@ -44,7 +44,17 @@ imports/
 └── apply.ts     # writes accepted records in one transaction
 ```
 
-Examples illustrate notation, not facts to reuse. Ground every actual node, path, and relationship in inspected evidence. Label pseudocode and uncertainty. Use supported Mermaid for interactions when text trees would hide the sequence. Keep prose beside the visual it explains. Order views to teach the change: establish the contract or data model before the flow when the flow depends on it.
+Examples illustrate notation, not facts to reuse. Ground every actual node, path, and relationship in inspected evidence. Label pseudocode and uncertainty. Keep prose beside the visual it explains. Order views to teach the change: establish the contract or data model before the flow when the flow depends on it.
+
+### Mermaid exception
+
+Use Mermaid only when it clarifies relationships that the default formats cannot show clearly and its rendering can be verified on GitHub. Otherwise use a text sequence, tree, or diff.
+
+- Use a fenced `mermaid` block with conservative syntax supported by GitHub. Keep participant or node identifiers simple and distinct from display labels.
+- In sequence diagrams, put each declaration or message on its own line. Use commas or short separate messages instead of raw semicolons in message labels: semicolons can terminate a statement. For example, use `Config->>Cache: Stream bytes, verify checksum`, not a semicolon between the clauses.
+- Quote flowchart display labels containing punctuation; follow the selected diagram type's escaping rules rather than assuming prose is safe syntax.
+- Render-check locally when a compatible validator is available, then inspect the actual rendered PR body on GitHub. A local parser, Markdown source readback, or API response alone does not prove GitHub rendering.
+- Verify every diagram displays its expected nodes and relationships, readable labels, and no parse-error panel. If GitHub rendering is inaccessible or a diagram cannot be repaired and verified, replace it with a fenced text or diff view before declaring the description complete.
 
 For complex visual UI changes, a focused HTML comparison may supplement the PR. Match the actual product, use representative labels and data, and cover desktop and mobile. The PR body still needs a readable structural outline; a local HTML path alone is insufficient.
 
@@ -60,7 +70,7 @@ Record checks that actually ran, their results, and relevant missing checks. Vis
 
 Save the body as `pr-description.md` in the existing task-artifact directory, or a temporary Markdown file when none exists. Inspect the saved content. Use the host's PR tools to create or update the intended PR; GitHub accepts `gh pr create --body-file <path>` and `gh pr edit <number> --body-file <path>`. Follow repository requirements for base, title, and draft state.
 
-Read the published body back. Confirm the comparison is correct, the structural view and required sections survived, and verification claims match the checks. If publishing is blocked, retain the prepared description and report the exact blocker. Never report a draft file as a successfully published PR.
+Read the published body back. Confirm the comparison is correct, the structural view and required sections survived, and verification claims match the checks. For Mermaid, also open the PR on GitHub and inspect every rendered diagram under the Mermaid exception above; repair or replace broken diagrams, publish again, and repeat verification. If publishing is blocked, retain the prepared description and report the exact blocker. Never report a draft file as a successfully published PR.
 
 ## 5. Hand back the result
 
