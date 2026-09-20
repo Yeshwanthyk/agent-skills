@@ -9,6 +9,8 @@ Route the requested work to the collection's methods and principles. Activation 
 
 ## Select the method
 
+**PR descriptions always take the visual route.** Whenever authorized work reaches PR creation or a PR description update, including during another method, read [show-me](../show-me/SKILL.md) and follow its [visual PR workflow](../show-me/references/visual-pr.md). Apply this before the small-task shortcut, for every change type. Publish a structural change outline in the PR body and verify it by reading the body back. This route does not authorize PR creation or publication on its own.
+
 At each new task, first decide whether it is small and settled. If no specialized method adds value, do it directly without loading the catalog. Otherwise identify the requested outcome — explanation, planning, review, implementation, or something else — and read the matching entry in the [method catalog](methods.md), then its target file before following that method.
 
 - **Explicit methods win.** Honor each method the user names, in the order implied. Additional methods must serve a concrete part of the requested outcome; a route is not a mandatory sequence or pipeline.

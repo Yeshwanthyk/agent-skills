@@ -1,11 +1,15 @@
 ---
 name: show-me
-description: Explain the current topic with a focused diagram, code sketch, or visual artifact.
+description: Explain the current topic visually; create a visual change outline whenever creating or updating a pull request description.
 ---
 
 # Show me
 
 Explain the current topic visually. Skip the preamble. Pick the smallest view that makes the key point clear.
+
+## Pull requests
+
+Whenever creating a PR or updating its description, follow [`references/visual-pr.md`](references/visual-pr.md). This branch applies to every PR, including backend, documentation, and configuration changes; it does not authorize creating or publishing a PR without a user request.
 
 ## Choose the form
 
