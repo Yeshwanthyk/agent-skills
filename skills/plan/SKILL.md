@@ -15,6 +15,10 @@ Read the current implementation and relevant tests when changing an existing sys
 
 Start with what changes, who benefits, why the shape fits, and the tradeoffs that matter. Keep this orientation short.
 
+For staged delivery, replay, or metadata gates, apply [forward implementation first](../references/principles/forward-implementation-first.md) when selecting work and proof. Name the affected dependency cone and replay conditions rather than making administrative completion a prerequisite.
+
+Use Jev for bounded action triage when a plan has enough disputed or repetitive steps that classification would save work. Gather each step's intended effect, affected dependencies, evidence, and required obligations, then ask for implementation, validation, bookkeeping, or uncertain under the [action-classifier contract](../references/action-classifier-contract.md). Invoke the available Jev choice tool only when enabled and transmission is approved; otherwise classify locally. Reconcile advice against the source before changing the plan, preserving requested work and required checks. Skip the call for an obvious small plan.
+
 ## Build the packet
 
 1. State settled decisions and explicit exclusions.

@@ -62,3 +62,5 @@ Run `python3 scripts/check-skill-routing.py` to check local links, catalog cover
 The owned `shaping` and `breadboarding` workflows draw on [Shape Up](https://basecamp.com/shapeup) and concepts explored by [rjs/shaping-skills](https://github.com/rjs/shaping-skills). Their skill text, structure, examples, and completion gates are original to this repository.
 
 The router and the adapted playbook, principle, review, and verification workflows draw on the MIT-licensed [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack). The portable instructions are harness-neutral; model preferences live in the host configuration. The upstream source and license remain at that repository.
+
+The [forward implementation first principle](skills/references/principles/forward-implementation-first.md) draws on concepts from [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first). The local policy preserves required integrity, concurrency, review, and authorization controls. Its optional [action-classifier contract](skills/references/action-classifier-contract.md) is separate from method routing and enables no live adapter.

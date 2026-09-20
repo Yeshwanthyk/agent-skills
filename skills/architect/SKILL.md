@@ -19,6 +19,10 @@ Describe module responsibilities, dependency direction, state transitions, side 
 
 Record the selected shape, rejected alternatives, tradeoffs, risks, and open questions. Keep the rationale beside the sketch for larger changes.
 
+When the decision seam concerns stage ownership, publication, replay, or metadata gates, consult [forward implementation first](../references/principles/forward-implementation-first.md). Use it within the current design decision, not as another architecture phase.
+
+For that decision, consider Jev to classify proposed actions as implementation, validation, bookkeeping, or uncertain when bounded triage would reduce design work. First establish each action's effect and contractual obligations from the source. Follow the [action-classifier contract](../references/action-classifier-contract.md): when enabled and transmission is approved, use the available Jev choice tool with only that evidence; otherwise continue locally. Treat the answer as advice, not proof or permission to remove a control.
+
 ## Implement or hand off
 
 An architecture-only request ends with the selected design and its rationale. If implementation is already requested, continue without adding a new approval checkpoint. If implementation reveals a mismatch, determine whether the sketch, requirement, or implementation was wrong and update the design before adding exceptions. Verify the wiring that matters to the changed contract.

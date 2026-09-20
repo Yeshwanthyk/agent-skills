@@ -18,6 +18,7 @@ The loading map for the shared principle notes. Before a consequential decision,
 | Removing an API or changing a persistent form | [migrate-callers](../references/principles/migrate-callers.md) |
 | Choosing how to perform or prove non-trivial work, not only final verification | [build-the-lever](../references/principles/build-the-lever.md) |
 | Sequencing a sweep, migration, or multi-step delivery | [sequence-verifiable-units](../references/principles/sequence-verifiable-units.md) |
+| Staged pipelines, publication cursors, or work blocked/replayed because of administrative metadata | [forward-implementation-first](../references/principles/forward-implementation-first.md) |
 | Work that could overflow the context window | [guard-the-context-window](../references/principles/guard-the-context-window.md) |
 | Restarting work, replacing an agent, or transferring work to a receiver without its context | [handoffs](../references/principles/handoffs.md) |
 | Claiming completion, or verifying a change or delegated result | [prove-it-works](../references/principles/prove-it-works.md) |

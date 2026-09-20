@@ -6,6 +6,8 @@ Use the shared [delegation contract](../../references/delegation.md) for ownersh
 
 Coordinate through the current host harness's native subagent tools and supported dispatch, messaging, inspection, steering, waiting, and cancellation capabilities. Use the delegation contract for worker context, parent–child questions and results, runtime choice, and unavailable capabilities. Discover what this harness supports rather than building a parallel coordination mechanism.
 
+For staged output, cursor movement, or metadata-driven replay, apply [forward implementation first](../../references/principles/forward-implementation-first.md) to publication ownership, dependency consumption, and relevant proof. Existing approval and review requirements still apply.
+
 ## Coordinate
 
 Define the requested outcome and units with their dependencies and proof. Scout independent unknowns before committing to a costly design. A known path does not need a scout pass.
