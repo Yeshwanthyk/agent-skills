@@ -20,7 +20,17 @@ The complete base-to-head diff is authoritative. Use the smallest visual that an
 - Treat Meat as a reading aid, never as the source of truth. It may remove imports and other context. Inspect the complete diff explicitly for meaningful import/dependency, authentication/authorization, secrets, or other security changes, and show those changes in the structural or source view even when Meat omits them.
 - Mark every material omission: omitted files or hunks, unavailable commands/provider, denied data sharing, and any unverified explanation. The reviewer should be able to distinguish “not shown” from “not changed.”
 
-Place the reading diff beside the structural outline in the PR body, using a fenced `diff` block inside a `<details>` section when long. Preserve Meat's source text and omission markers; label it as abridged and link to the full comparison. If too large for a useful PR body, attach an accessible artifact and include a focused excerpt. Recompute after the compared commits change, and verify retained excerpts against that exact full diff.
+### Present selected evidence, not a raw patch
+
+Keep the complete Meat output as a separate review artifact. In the PR body, select one to three short excerpts that explain distinct behavior or design decisions; target 10–25 lines per excerpt and at most 60 code lines total. These are presentation limits, not quotas for deleting meaningful code. When a coherent excerpt exceeds them, link to the source or artifact instead. A collapsed block is not a substitute for editing down the reading burden.
+
+For each excerpt, put a behavior-focused heading, a linked file/symbol at the compared revision, and one sentence explaining what the reviewer should notice above the code. Use `diff` for meaningful old/new comparisons and a language-tagged block for entirely new code. Omit Git transport metadata (`diff --git`, `index`, `---`, `+++`, and `@@`) from these explicitly labeled excerpts; file links provide navigation. Move CLI summaries and retention counts out of code blocks and into the artifact description, not the main explanation.
+
+Preserve selected source lines and Meat's omission markers. Separate noncontiguous excerpts rather than silently stitching them together; label them as selected, abridged evidence and link to the full comparison. Choose excerpts whose important expressions fit GitHub's normal content width. If a long line is essential, link to it and explain it with separately labeled pseudocode rather than rewriting source and presenting it as an exact excerpt.
+
+Avoid repeating the structural outline in code form unless the excerpt adds a concrete implementation decision. Link the complete reading diff only when an accessible artifact exists; otherwise report its local path as local, not as a reviewer-accessible link. Recompute after the compared commits change, and verify retained excerpts against that exact full diff.
+
+Check the rendered PR for a readable heading-to-explanation-to-excerpt sequence, bounded code blocks, and no horizontal scrolling needed to understand the key change. If the rendered view cannot be inspected, keep excerpts conservatively short and report that visual check as unverified.
 
 ## 2. Build the reviewer view
 
