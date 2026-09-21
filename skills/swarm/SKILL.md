@@ -20,7 +20,7 @@ Fan out independent workers for one bounded question, then return one judged res
 
 ## Route
 
-Use the [shared delegation contract](../references/delegation.md) when dispatching. Every brief names its exact slice or race arm. Require `PASS`, `ISSUES`, or `BLOCKED` with evidence.
+Use the [shared delegation contract](../references/delegation.md) when dispatching. Every brief names its exact slice or race arm. Require `PASS`, `ISSUES`, or `BLOCKED` with evidence. Use Jev here when needed
 
 ## Fan out and aggregate
 
