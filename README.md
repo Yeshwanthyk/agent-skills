@@ -57,6 +57,20 @@ Playbooks are linked Markdown instructions, not executable hooks. The retired `y
 
 Run `python3 scripts/check-skill-routing.py` to check local links, catalog coverage of every skill and playbook, and the principle trigger map. This checks routing structure; representative agent trials are still needed to assess selection behavior.
 
+## CLI prerequisites used by skills
+
+These are the command-line tools named by the skill instructions. Roles are optional unless the workflow below is selected.
+
+| Tool | Install/source | Role and prerequisites |
+| --- | --- | --- |
+| Git | [git-scm.com/downloads](https://git-scm.com/downloads) | Required for repository state, diffs, revisions, and the routing checks. |
+| Python 3 | [python.org/downloads](https://www.python.org/downloads/) | Required for `python3 scripts/check-skill-routing.py`; the repository test module uses the standard library `unittest` runner. |
+| GitHub CLI (`gh`) | [cli.github.com](https://cli.github.com/) | Optional; needed for the GitHub PR identity, create, edit, and readback commands in `show-me`'s PR workflow. GitHub access/authentication is required for those operations. |
+| `calldiff` | [github.com/tanishqkancharla/calldiff](https://github.com/tanishqkancharla/calldiff); `npm install -g calldiff` | Optional; used only for changed call-tree/stack views. Requires Node.js 22 or newer. If unavailable or unable to parse the project, `show-me` uses a source-grounded manual call tree and reports the limitation. |
+| Meat | [github.com/boldsoftware/meat](https://github.com/boldsoftware/meat); upstream install: `go install meat.dev/cmd/meat@latest` | Optional; used for substantial/noisy PRs when a structural outline plus a reading diff improves review. Requires Go to install and a configured provider: an OpenAI or Anthropic API key/base URL, or the upstream exe.dev managed gateway. It sends the diff to that provider, so explicit data-sharing permission is required; otherwise use the authoritative full diff and report the fallback. |
+
+Meat is never authoritative: its reading diff can omit imports and security-relevant context. The `show-me` PR workflow requires explicit full-diff coverage for meaningful import, dependency, authentication/authorization, secrets, or other security changes. Mermaid diagrams still require actual GitHub render validation; if GitHub rendering cannot be verified, use the required text or diff fallback.
+
 ## Acknowledgments
 
 The owned `shaping` and `breadboarding` workflows draw on [Shape Up](https://basecamp.com/shapeup) and concepts explored by [rjs/shaping-skills](https://github.com/rjs/shaping-skills). Their skill text, structure, examples, and completion gates are original to this repository.

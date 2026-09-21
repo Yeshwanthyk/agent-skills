@@ -10,6 +10,18 @@ Read the complete base-to-head diff, the repository's PR template, relevant issu
 
 Proceed when the PR's identity, comparison, purpose, and changed responsibilities are known.
 
+### Reading-diff coverage
+
+The complete base-to-head diff is authoritative. Use the smallest visual that answers the review question, but do not let a condensed view replace source inspection:
+
+- For a small, low-noise PR, a focused source diff may be the visual. Still inspect the complete diff and state any intentionally omitted paths or hunks.
+- For a substantial or noisy PR, combine a structural outline (file tree, responsibility view, or call/flow view) with an actual Meat reading diff. Run the inspected upstream interface, such as `meat <base>...<head>` or `git diff <base>...<head> | meat`, and retain the output as review evidence.
+- Meat sends the diff to its configured model provider. Use it only when the user or repository policy permits that data sharing and the required provider is configured. If permission, `meat`, or a provider is missing, use the full diff plus a manual structural outline or focused source diff; report the exact omission and fallback rather than implying Meat ran.
+- Treat Meat as a reading aid, never as the source of truth. It may remove imports and other context. Inspect the complete diff explicitly for meaningful import/dependency, authentication/authorization, secrets, or other security changes, and show those changes in the structural or source view even when Meat omits them.
+- Mark every material omission: omitted files or hunks, unavailable commands/provider, denied data sharing, and any unverified explanation. The reviewer should be able to distinguish “not shown” from “not changed.”
+
+Place the reading diff beside the structural outline in the PR body, using a fenced `diff` block inside a `<details>` section when long. Preserve Meat's source text and omission markers; label it as abridged and link to the full comparison. If too large for a useful PR body, attach an accessible artifact and include a focused excerpt. Recompute after the compared commits change, and verify retained excerpts against that exact full diff.
+
 ## 2. Build the reviewer view
 
 Read [visual forms](visual-forms.md). Default to fenced diffs, text trees, pseudocode, schemas, and type blocks: these remain readable directly on GitHub without a diagram renderer. Select views by the actual change, not a fixed checklist:
