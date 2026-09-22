@@ -1,27 +1,14 @@
 # Forward implementation first
 
-Use for staged pipelines, migrations, long-running delivery, or a run blocked or replayed because status metadata is missing. Prioritize working output and relevant proof over administrative completion. This is a supporting principle, not another mandatory workflow stage.
+**Read when:** sequencing staged delivery or migrations, or work is blocked or replayed because progress metadata is missing.
 
-## Classify by purpose
+- Classify a step by its actual effect: **implementation** creates capability; **validation** establishes correctness; **bookkeeping** records progress. If the effect is uncertain, investigate before omitting it. Split mixed steps when their obligations differ.
+- Prioritize implementation and relevant validation. Omit bookkeeping only when neither the user nor the product or delivery contract requires it.
+- A missing progress marker does not invalidate working output. Replay for changed inputs, dependencies, incompatible output, or an observed defect; reuse current, verified results otherwise. Consume completed dependencies without waiting for unrelated work.
+- Before removing an administrative gate, establish what it protects. Checksums, locks, receipts, and revision IDs may enforce real guarantees. Preserve those guarantees and required reviews; this principle grants no additional authority.
+- Report delivered behavior, evidence, and actual blockers before status infrastructure.
 
-For a proposed step, establish its actual effect from contracts and code:
-
-- **Implementation:** creates or connects capability, producers, consumers, schemas, or output.
-- **Validation:** checks affected behavior or the downstream dependencies whose results may change (the dependency cone).
-- **Bookkeeping:** records progress without changing capability or establishing correctness.
-- **Uncertain:** the purpose or consequence is not established; investigate before omitting it.
-
-Prioritize implementation and validation. Omit bookkeeping unless requested or required by the product or delivery contract. Split mixed steps when their obligations differ. A filename is not a classification: checksums, locks, receipts, and revision IDs can enforce integrity, concurrency, recovery, or correct target selection. Preserve those obligations, authorization boundaries, and required reviews.
-
-## Advance on evidence
-
-For staged work, name the publication and cursor owner, the affected dependency cone, and the reason for replay. Changed inputs or revisions, observed defects, incompatible output, or changed dependencies can require replay. A missing progress marker alone does not establish that valid output is wrong.
-
-Choose checks that establish the changed contract: runtime behavior, schema, counts, conservation, consistency, nontruncation, or resource budgets as applicable. Artifact presence and a worker's report alone are not proof. A substantive execution record ties a command and input to its result and expected outcome; missing evidence limits that claim rather than invalidating unrelated work.
-
-If an administrative gate blocks progress, first prove what it protects. Remove or downgrade an admin-only dependency only within authorized scope. A manual stage run must preserve required preconditions, concurrency controls, validation, and safe publication; this principle never authorizes bypassing a gate merely because it looks administrative.
-
-Keep one authoritative owner for publication, cursor movement, and acceptance of each shared result. Consume verified completed dependencies when needed; unrelated workers need not delay them. The host owns scheduling and approval. Report delivered behavior, measured evidence, and literal blockers before status infrastructure.
+For proof selection, follow [evidence discipline](evidence-discipline.md); for reuse after changes or restart, [evidence lifecycle](evidence-lifecycle.md). When publication or cursor state is shared, apply [state ownership](state-ownership.md); when retrying a partial stage, [recovery and idempotency](recovery-and-idempotency.md).
 
 ## Optional action classification
 

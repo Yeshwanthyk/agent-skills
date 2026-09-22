@@ -1,14 +1,14 @@
 # Method catalog
 
-Choose by the requested outcome, following the selection rules in the router policy. These sections are actual navigation groups, not execution stages. Read only the selected target; do not load every entry. A supporting method inherits the task's scope.
+Choose by the requested outcome, following the selection rules in the router policy. These sections are actual navigation groups, not execution stages. Select a main workflow and supporting methods by these conditions, then read their target files. The same entry can own a task or support one step of another workflow. Other installed skills remain eligible through the host's catalog and their invocation rules. A supporting method inherits the task's scope.
 
-This catalog is authoritative for router method IDs and eligibility. Entry IDs are the method names exactly as written in the Method column; entries marked **explicit request** need the user to ask for that activity and are excluded otherwise. Classifier inputs are a projection of these entries, not a separate authority. Catalog version: v3 — increment it when method IDs, eligibility, or classifier-facing descriptions change.
+This catalog is authoritative for router method IDs and eligibility. Entry IDs are the method names exactly as written in the Method column; entries marked **explicit request** need the user to ask for that activity and are excluded otherwise. Classifier inputs are a projection of these entries, not a separate authority. Catalog version: v4 — increment it when method IDs, eligibility, or classifier-facing descriptions change.
 
 ## Understand and diagnose
 
 | Use when | Method |
 | --- | --- |
-| Explain current code, execution paths, or registered surfaces | [how](../how/SKILL.md) |
+| Explain current code, execution paths, or registered surfaces, or establish the relevant path before a consequential change | [how](../how/SKILL.md) |
 | Explain the historical or operational reason a design or decision exists — not a failure to reproduce | [why](../why/SKILL.md) |
 | Reproduce a failing or crashing behavior, diagnose its cause, and fix it when requested | [debug](../debug/SKILL.md) |
 | Reconstruct prior work or resume from session evidence | [recall](../recall/SKILL.md) |

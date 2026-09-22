@@ -1,11 +1,9 @@
 # Hillclimb
 
-Use for sustained improvement of one measurable outcome.
+Use for sustained improvement of one measurable outcome. The user can describe the target without naming this playbook. Use [perf-issue](perf-issue.md) for a bounded performance complaint.
 
-Set the metric, direction, target, workload, and resource budget. Preserve these during the run. Establish a stable baseline and a regression check that can reject a fast but incorrect result.
-
-Try one evidence-backed hypothesis at a time. Measure under comparable conditions, account for noise, and record the change, result, and keep/reject decision. Revert only the experiment's own unsuccessful edits. Combine changes once their effects are understood.
-
-Continue while the target remains unmet and useful experiments fit the budget. Change hypothesis when progress stalls. Stop at the target, exhausted budget, or a concrete blocker; do not relax the target to declare success.
-
-Report the accepted changes, baseline, final metric, regression result, and remaining gap. Use a decision log for a run that needs later review, not a commit for every attempt.
+1. **Define the run.** Set the metric, direction, target, representative workload, and resource budget from the request and available evidence. Resolve missing consequential targets or limits with the user before starting experiments. Preserve them during the run. Use [how](../../how/SKILL.md) to establish the relevant execution path and constraints; reuse an existing source-grounded map when it is still valid. This step ends with a measurable stopping condition and an understood path to investigate.
+2. **Establish measurement.** Read [build the lever](../../references/principles/build-the-lever.md) and reuse or create a rerunnable measurement harness. Check that it exercises the intended workload and can detect a meaningful change. Establish a stable baseline, estimate noise, and run a regression check that can reject a fast but incorrect result. Keep the workload and measurement conditions comparable across experiments.
+3. **Run experiments.** Use [show-me-your-work](../../show-me-your-work/SKILL.md) for the decision trail. Try one evidence-backed hypothesis at a time; record the change, measurement, regression result, and keep/reject decision with evidence. Accept a change only when its benefit exceeds measurement noise and correctness holds. Revert only the experiment's own unsuccessful edits. Combine changes once their effects are understood. If delegation helps and is authorized, follow the [delegation contract](../../references/delegation.md), supplying the hypothesis, harness, constraints, and acceptance criteria.
+4. **Continue or stop.** Continue while the target remains unmet and useful experiments fit the budget. Change hypothesis when progress stalls; revisit skill selection when a new question blocks progress. Stop at the target, exhausted budget, or a concrete blocker. Do not relax the target to declare success.
+5. **Close the run.** Complete the decision-trail audit and report accepted changes, baseline, final metric, regression result, and remaining gap. Link the measurement invocation and evidence so the result can be reproduced. Commits and PR publication follow the task's authorization; an experiment does not require a commit.

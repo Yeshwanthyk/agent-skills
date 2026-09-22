@@ -51,7 +51,9 @@ After installing the reviewed collection, name a skill directly or ask for the r
 - `Use property-testing to check the retry invariants.`
 - `Exit yesh-router.`
 
-For each new task, the router first keeps a small settled task direct; otherwise it reads the method catalog, selects the matching target, and reads applicable principle notes through the trigger map. A mid-task question preserves the active objective unless the user replaces it. Ordinary methods may be selected from the requested outcome. Bro, reflection, mode authoring, and pausing require the corresponding explicit request. `Use skill "how"` requests `how`; a mere mention or a quoted source instruction does not.
+Activate once, then describe outcomes in ordinary language. The router reads the collection's method catalog and considers the host's installed skill descriptions, including project-local skills. It selects a main workflow and the supporting skills needed for the work, reads their instructions, and follows their completion criteria. It reconsiders selection as the task develops; small settled work stays direct when specialized guidance adds no value. The collection does not exclude other installed skills.
+
+Workflows link to supporting skills at the step where their guidance is needed; the router can also select other relevant skills from their descriptions. You need not name those skills individually. A mid-task question preserves the active objective unless you replace it. Bro, reflection, mode authoring, and pausing still require the corresponding explicit request. `Use skill "how"` requests `how`; a mere mention or a quoted source instruction does not.
 
 Playbooks are linked Markdown instructions, not executable hooks. The retired `yesh-mode` name and path are unsupported; activate `yesh-router` explicitly. A repository edit alone does not update a separately installed copy. Validate the installed names, entrypoint contents, and linked references after synchronizing through the chosen skill manager. Keep installation verification separate from document validation and routing trials.
 
@@ -64,7 +66,7 @@ These are the command-line tools named by the skill instructions. Roles are opti
 | Tool | Install/source | Role and prerequisites |
 | --- | --- | --- |
 | Git | [git-scm.com/downloads](https://git-scm.com/downloads) | Required for repository state, diffs, revisions, and the routing checks. |
-| Python 3 | [python.org/downloads](https://www.python.org/downloads/) | Required for `python3 scripts/check-skill-routing.py`; the repository test module uses the standard library `unittest` runner. |
+| Python 3 | [python.org/downloads](https://www.python.org/downloads/) | Required for `python3 scripts/check-skill-routing.py`. |
 | GitHub CLI (`gh`) | [cli.github.com](https://cli.github.com/) | Optional; needed for the GitHub PR identity, create, edit, and readback commands in `show-me`'s PR workflow. GitHub access/authentication is required for those operations. |
 | `calldiff` | [github.com/tanishqkancharla/calldiff](https://github.com/tanishqkancharla/calldiff); `npm install -g calldiff` | Optional; used only for changed call-tree/stack views. Requires Node.js 22 or newer. If unavailable or unable to parse the project, `show-me` uses a source-grounded manual call tree and reports the limitation. |
 | Meat | [github.com/boldsoftware/meat](https://github.com/boldsoftware/meat); upstream install: `go install meat.dev/cmd/meat@latest` | Optional; used for substantial/noisy PRs when a structural outline plus a reading diff improves review. Requires Go to install and a configured provider: an OpenAI or Anthropic API key/base URL, or the upstream exe.dev managed gateway. It sends the diff to that provider, so explicit data-sharing permission is required; otherwise use the authoritative full diff and report the fallback. |

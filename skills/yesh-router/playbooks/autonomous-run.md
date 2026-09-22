@@ -4,7 +4,7 @@ Use when the user asks to continue until an outcome is reached.
 
 State a checkable completion condition and carry the authorized task through it. Resolve routine choices, fix failures caused by the work, and continue through relevant checks. Unrelated discoveries belong in the handoff.
 
-Use the harness's actual wait or continuation mechanism for pending external work. Do not promise unattended execution if the runtime cannot resume the session. A stalled attempt calls for diagnosis or another justified approach, not blind repetition.
+Use the harness's actual wait or continuation mechanism for pending external work. Do not promise unattended execution if the runtime cannot resume the session. A stalled attempt calls for diagnosis or another justified approach, not blind repetition. Use [debug](../../debug/SKILL.md) when a reproducible failure blocks progress; carry its diagnosis and verified fix back into the active task.
 
 Keep a recoverable checkpoint when the work spans sessions or has meaningful partial state. Use [orchestrate](orchestrate.md) for dependent units and multiple owners.
 

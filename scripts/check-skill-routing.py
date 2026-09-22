@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
-"""Check the Yesh router's file graph and routing fixture shape.
+"""Check the Yesh router's file graph and routing structure.
 
-This checker deliberately validates structure, paths, and observable-fixture
-contracts. It does not claim to run semantic agent trials or a live classifier.
+This checker deliberately validates structure and paths. It does not claim to
+run semantic agent trials or a live classifier.
 Retired router paths are rejected rather than aliased.
 """
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Iterator, Optional
 from urllib.parse import unquote, urlsplit
 
 
@@ -23,8 +22,6 @@ RETIRED_ROUTER_REL = Path("skills/yesh-mode")
 SHARED_REL = Path("skills/references")
 PRINCIPLES_REL = SHARED_REL / "principles"
 RETIRED_PATH_POLICY = "retired-router-paths-forbidden"
-
-
 
 REQUIRED_ROUTER_DOCS = (
     "SKILL.md",
@@ -42,24 +39,6 @@ LEGACY_FILES = {
 }
 
 _FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
-
-ROUTING_CASE_VARIANTS = ("baseline", "revised")
-ROUTING_VARIANT_ENTRYPOINTS = {
-    "baseline": "yesh-mode/SKILL.md",
-    "revised": "yesh-router/SKILL.md",
-}
-ROUTING_OBSERVATIONS = ("loaded_files", "actions", "scope")
-CLASSIFIER_STATES = {
-    "disabled",
-    "timeout",
-    "unknown",
-    "stale",
-    "malformed",
-    "incomplete",
-    "abstain",
-    "suggested",
-}
-
 
 @dataclass(frozen=True)
 class MarkdownLink:
@@ -537,158 +516,6 @@ def _check_principle_triggers(root: Path, errors: list[str]) -> None:
             )
 
 
-
-def _string_list(value: Any, label: str, errors: list[str]) -> None:
-    if not isinstance(value, list) or any(not isinstance(item, str) or not item for item in value):
-        errors.append(f"{label} must be a list of non-empty strings")
-
-
-def _observation_assertion(value: Any, label: str, errors: list[str]) -> None:
-    if not isinstance(value, dict):
-        errors.append(f"{label} must be an object")
-        return
-    if not set(value).intersection({"equals", "contains", "excludes"}):
-        errors.append(f"{label} needs equals, contains, or excludes")
-    for key in ("contains", "excludes", "equals"):
-        if key not in value:
-            continue
-        if key == "equals" and label.endswith(".scope"):
-            if not isinstance(value[key], dict) or not value[key]:
-                errors.append(f"{label}.equals must be an object")
-        else:
-            _string_list(value[key], f"{label}.{key}", errors)
-            if key in {"contains", "excludes"} and isinstance(value[key], list) and not value[key]:
-                errors.append(f"{label}.{key} must not be empty")
-
-
-def _contains_retired_router_name(value: Any) -> bool:
-    if isinstance(value, str):
-        return "yesh-mode" in value.casefold()
-    if isinstance(value, list):
-        return any(_contains_retired_router_name(item) for item in value)
-    if isinstance(value, dict):
-        return any(
-            _contains_retired_router_name(key) or _contains_retired_router_name(item)
-            for key, item in value.items()
-        )
-    return False
-
-
-def validate_routing_cases(payload: Any) -> list[str]:
-    """Return schema errors for tests/routing-cases.json.
-
-    The schema keeps one request per case and runs that same request against
-    both variants. Every variant must assert loaded files, actions, and scope;
-    a route label by itself is therefore never sufficient evidence.
-    """
-    errors: list[str] = []
-    if not isinstance(payload, dict):
-        return ["routing cases must be an object"]
-    if payload.get("schema_version") != 1:
-        errors.append("schema_version must be 1")
-    if payload.get("variants") != list(ROUTING_CASE_VARIANTS):
-        errors.append("variants must be exactly ['baseline', 'revised'] in that order")
-
-    comparison = payload.get("comparison")
-    if not isinstance(comparison, dict):
-        errors.append("comparison must be an object")
-    else:
-        if comparison.get("same_case_inputs") is not True:
-            errors.append("comparison.same_case_inputs must be true")
-        if comparison.get("variant_entrypoints") != ROUTING_VARIANT_ENTRYPOINTS:
-            errors.append(
-                "comparison.variant_entrypoints must map baseline to "
-                "yesh-mode/SKILL.md and revised to yesh-router/SKILL.md"
-            )
-        fields = comparison.get("behavioral_fields")
-        if fields != list(ROUTING_OBSERVATIONS):
-            errors.append(
-                "comparison.behavioral_fields must list loaded_files, actions, and scope"
-            )
-        if comparison.get("labels_are_non_assertive") is not True:
-            errors.append("comparison.labels_are_non_assertive must be true")
-
-    cases = payload.get("cases")
-    if not isinstance(cases, list) or not cases:
-        errors.append("cases must be a non-empty list")
-        return errors
-
-    seen: set[str] = set()
-    for index, case in enumerate(cases):
-        prefix = f"cases[{index}]"
-        if not isinstance(case, dict):
-            errors.append(f"{prefix} must be an object")
-            continue
-        case_id = case.get("id")
-        if not isinstance(case_id, str) or not case_id:
-            errors.append(f"{prefix}.id must be a non-empty string")
-        elif case_id in seen:
-            errors.append(f"duplicate case id: {case_id}")
-        else:
-            seen.add(case_id)
-        if not isinstance(case.get("request"), str) or not case["request"].strip():
-            errors.append(f"{prefix}.request must be a non-empty string")
-
-        context = case.get("context", {})
-        if not isinstance(context, dict):
-            errors.append(f"{prefix}.context must be an object")
-        classifier = case.get("classifier")
-        if classifier is not None:
-            if not isinstance(classifier, dict):
-                errors.append(f"{prefix}.classifier must be an object")
-            elif classifier.get("state") not in CLASSIFIER_STATES:
-                errors.append(
-                    f"{prefix}.classifier.state must be one of "
-                    f"{', '.join(sorted(CLASSIFIER_STATES))}"
-                )
-
-        compare = case.get("compare")
-        if not isinstance(compare, dict) or compare.get("same_input") is not True:
-            errors.append(f"{prefix}.compare.same_input must be true")
-        elif not isinstance(compare.get("same_fields"), list) or not {
-            "actions",
-            "scope",
-        }.issubset(compare["same_fields"]):
-            errors.append(f"{prefix}.compare.same_fields must include actions and scope")
-
-        expected = case.get("expected")
-        if not isinstance(expected, dict):
-            errors.append(f"{prefix}.expected must be an object")
-            continue
-        for variant in ROUTING_CASE_VARIANTS:
-            result = expected.get(variant)
-            variant_prefix = f"{prefix}.expected.{variant}"
-            if not isinstance(result, dict):
-                errors.append(f"{variant_prefix} must be an object")
-                continue
-            if variant == "revised" and _contains_retired_router_name(result):
-                errors.append(
-                    f"{variant_prefix} must not load or name the retired yesh-mode router"
-                )
-            for observation in ROUTING_OBSERVATIONS:
-                if observation not in result:
-                    errors.append(f"{variant_prefix} is missing {observation}")
-                else:
-                    _observation_assertion(
-                        result[observation], f"{variant_prefix}.{observation}", errors
-                    )
-
-    return errors
-
-
-def _check_fixture_if_present(root: Path, errors: list[str]) -> None:
-    fixture = root / "tests/routing-cases.json"
-    if not fixture.is_file():
-        return
-    try:
-        payload = json.loads(fixture.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        errors.append(f"{_display(fixture, root)} is not valid JSON: {exc}")
-        return
-    for error in validate_routing_cases(payload):
-        errors.append(f"{_display(fixture, root)}: {error}")
-
-
 def collect_errors(root: Path) -> list[str]:
     root = Path(root).resolve()
     errors: list[str] = []
@@ -699,7 +526,6 @@ def collect_errors(root: Path) -> list[str]:
     _check_router_entry(root, errors)
     _check_method_catalog(root, errors)
     _check_principle_triggers(root, errors)
-    _check_fixture_if_present(root, errors)
 
     unique: list[str] = []
     seen: set[str] = set()

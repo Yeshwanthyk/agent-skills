@@ -2,7 +2,7 @@
 
 Use for a continuing program with dependent units, shared integration, or multiple owners. One bounded task can use [autonomous run](autonomous-run.md).
 
-Use the shared [delegation contract](../../references/delegation.md) for ownership, results, and host-configured role defaults. Reviews use a different agent from the implementation author. Escalate to a high-level audit when requested or when an unresolved architectural or cross-cutting question needs it.
+Use the shared [delegation contract](../../references/delegation.md) for ownership, results, and host-configured role defaults. Reviews use a different agent from the implementation author. When an unresolved question blocks progress, use [architect](../../architect/SKILL.md) for an unsettled design boundary, [blast-radius](../../blast-radius/SKILL.md) for downstream consequences, or [interrogate](../../interrogate/SKILL.md) for a requested or warranted independent challenge. Select the method for that question, then resume coordination.
 
 Coordinate through the current host harness's native subagent tools and supported dispatch, messaging, inspection, steering, waiting, and cancellation capabilities. Use the delegation contract for worker context, parent–child questions and results, runtime choice, and unavailable capabilities. Discover what this harness supports rather than building a parallel coordination mechanism.
 
