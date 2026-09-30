@@ -21,6 +21,7 @@ Delegation follows the portable [delegation contract](skills/references/delegati
 | [`how`](./skills/how) | Explains current systems through execution paths, ownership, inventories, contrasts, and optional architecture critique. |
 | [`interactive-slides`](./skills/interactive-slides) | Builds clean interactive HTML slide decks from documents and discussions, with a saved reference and stable controls. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded interactive HTML models of behavior, state, sequences, and comparisons. |
+| [`module-map`](./skills/module-map) | Builds an interactive map of a codebase's modules by layer, with a per-file review of issues, key code, branch diffs and dependencies. |
 | [`interrogate`](./skills/interrogate) | Runs independent adversarial reviews and returns one evidence-checked judgment. |
 | [`maintain-verification-skill`](./skills/maintain-verification-skill) | Audits and repairs a project-local verification skill against current source and live behavior. |
 | [`property-testing`](./skills/property-testing) | Generates contract tests, shrinks failures, and preserves replayable regressions. |
@@ -38,7 +39,7 @@ Delegation follows the portable [delegation contract](skills/references/delegati
 | [`structure-review`](./skills/structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
 | [`yesh-router`](./skills/yesh-router) | Routes tasks across the collection and applies relevant engineering principles on explicit activation. |
 
-Routing is opt-in and sticky. The router's [method catalog](./skills/yesh-router/methods.md) selects skills and playbooks; [orchestration](./skills/yesh-router/playbooks/orchestrate.md) owns dependent work and integration through the host harness’s subagent tools. PR work starts only on request. An optional [classifier contract](./skills/yesh-router/classifier-contract.md) may advise method selection; it is advisory and disabled by default.
+Routing is opt-in and sticky. The router's [method catalog](./skills/yesh-router/methods.md) selects skills and playbooks; [orchestration](./skills/yesh-router/playbooks/orchestrate.md) owns dependent work and integration through the host harness’s subagent tools. PR work starts only on request.
 
 Shared references live in [`skills/references/`](./skills/references): [engineering principles](./skills/references/principles), [delegation](./skills/references/delegation.md), and [session records](./skills/references/session-records.md). The router's [principle triggers](./skills/yesh-router/principle-triggers.md) map decisions to principle notes. Method-specific references, such as [review comment triage](./skills/interrogate/references/bugbot-triage.md), stay with their owning skill. Keep the shared reference folder alongside installed skills so relative references resolve; reading a reference does not activate the router.
 
@@ -79,4 +80,4 @@ The owned `shaping` and `breadboarding` workflows draw on [Shape Up](https://bas
 
 The router and the adapted playbook, principle, review, and verification workflows draw on the MIT-licensed [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack). The portable instructions are harness-neutral; model preferences live in the host configuration. The upstream source and license remain at that repository.
 
-The [forward implementation first principle](skills/references/principles/forward-implementation-first.md) draws on concepts from [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first). The local policy preserves required integrity, concurrency, review, and authorization controls. Its optional [action-classifier contract](skills/references/action-classifier-contract.md) is separate from method routing and enables no live adapter.
+The [forward implementation first principle](skills/references/principles/forward-implementation-first.md) draws on concepts from [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first). The local policy preserves required integrity, concurrency, review, and authorization controls.

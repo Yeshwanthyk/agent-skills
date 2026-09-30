@@ -2,7 +2,7 @@
 
 Choose by the requested outcome, following the selection rules in the router policy. These sections are actual navigation groups, not execution stages. Select a main workflow and supporting methods by these conditions, then read their target files. The same entry can own a task or support one step of another workflow. Other installed skills remain eligible through the host's catalog and their invocation rules. A supporting method inherits the task's scope.
 
-This catalog is authoritative for router method IDs and eligibility. Entry IDs are the method names exactly as written in the Method column; entries marked **explicit request** need the user to ask for that activity and are excluded otherwise. Classifier inputs are a projection of these entries, not a separate authority. Catalog version: v4 — increment it when method IDs, eligibility, or classifier-facing descriptions change.
+This catalog is authoritative for router method IDs and eligibility. Entry IDs are the method names exactly as written in the Method column; entries marked **explicit request** need the user to ask for that activity and are excluded otherwise. Catalog version: v4 — increment it when method IDs or eligibility change.
 
 ## Understand and diagnose
 
@@ -63,6 +63,7 @@ For an ordinary feature or refactoring with a settled shape, implement directly.
 | Create or update a PR description (always include a visual change outline), or explain the current topic with a concise diagram or code sketch | [show-me](../show-me/SKILL.md) |
 | Turn a document or discussion into an interactive browser slide deck | [interactive-slides](../interactive-slides/SKILL.md) |
 | Build an interactive HTML model of behavior or state | [interactive-explainer](../interactive-explainer/SKILL.md) |
+| Map a codebase's modules and review its structure file by file | [module-map](../module-map/SKILL.md) |
 | Research and write a connected long-form HTML article | [deep-dive-explainer](../deep-dive-explainer/SKILL.md) |
 | Clean padded prose while preserving facts and voice | [unslop](../unslop/SKILL.md) |
 | Switch the conversation to Bro's plain-English style — **explicit request** | [bro](../bro/SKILL.md) |

@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Module Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #f3f4f1; --surface: #ffffff; --sunk: #eceee9; --ink: #1b2220; --muted: #5d6964; --rule: #d6dbd5; --focus: #3f5aa8;
+  --l0: #b4443a; --l1: #a86d14; --l2: #3f5aa8; --l3: #2f6f5e; --l4: #76578c; --l5: #2f7a8f; --l6: #8a6a3a; --l7: #6b7570;
+  --high: #b4443a; --medium: #b07a10; --low: #4f6aa8; --ok: #2f6f5e; --branch: #c98a12;
+  --add-bg: #e3f3e6; --add-ink: #1f6b33; --del-bg: #fbe6e3; --del-ink: #9d2f25; --hl-bg: #fff3cf;
+  --code-bg: #f7f8f5; --syn-kw: #7a3fa0; --syn-str: #2f6f3e; --syn-com: #8a948f; --syn-num: #a8551a; --syn-type: #2d5f9a;
+  --sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #121614; --surface: #1a1f1d; --sunk: #222926; --ink: #e4e9e6; --muted: #97a39e; --rule: #2d3532; --focus: #8ea3e6;
+    --l0: #e27a70; --l1: #d9a24a; --l2: #8ea3e6; --l3: #5fb39b; --l4: #b596cc; --l5: #6cc0d4; --l6: #cfa874; --l7: #9aa5a0;
+    --high: #e27a70; --medium: #e0aa3e; --low: #8ea3e6; --ok: #5fb39b; --branch: #e0aa3e;
+    --add-bg: #173022; --add-ink: #8fd6a4; --del-bg: #3a1d1a; --del-ink: #f0a39a; --hl-bg: #3a3214;
+    --code-bg: #151a18; --syn-kw: #c59be0; --syn-str: #9cd3a8; --syn-com: #6f7b76; --syn-num: #e6a872; --syn-type: #8fb7ea;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #121614; --surface: #1a1f1d; --sunk: #222926; --ink: #e4e9e6; --muted: #97a39e; --rule: #2d3532; --focus: #8ea3e6;
+  --l0: #e27a70; --l1: #d9a24a; --l2: #8ea3e6; --l3: #5fb39b; --l4: #b596cc; --l5: #6cc0d4; --l6: #cfa874; --l7: #9aa5a0;
+  --high: #e27a70; --medium: #e0aa3e; --low: #8ea3e6; --ok: #5fb39b; --branch: #e0aa3e;
+  --add-bg: #173022; --add-ink: #8fd6a4; --del-bg: #3a1d1a; --del-ink: #f0a39a; --hl-bg: #3a3214;
+  --code-bg: #151a18; --syn-kw: #c59be0; --syn-str: #9cd3a8; --syn-com: #6f7b76; --syn-num: #e6a872; --syn-type: #8fb7ea;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 120px; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 15px/1.5 var(--sans); padding: 0 16px 48px; }
+.wrap { max-width: 1480px; margin: 0 auto; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+header.top { position: sticky; top: 0; z-index: 10; background: var(--ground); border-bottom: 1px solid var(--rule); margin: 0 -16px; padding: 14px 16px 0; }
+.titlebar { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; max-width: 1480px; margin: 0 auto; }
+.titlebar h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.meta { color: var(--muted); font-size: 13px; }
+.meta code { color: var(--ink); }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; max-width: 1480px; margin: 10px auto 0; }
+nav.tabs button { background: none; border: 0; padding: 8px 12px 10px; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.count { font-size: 12px; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+main { padding-top: 20px; }
+.lede { color: var(--muted); max-width: 72ch; margin: 0 0 18px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-bottom: 14px; }
+.toolbar input[type="search"] { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 7px 10px; width: 260px; max-width: 100%; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--rule); background: var(--surface); border-radius: 999px; padding: 4px 10px; font-size: 13px; color: var(--muted); }
+.chip[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(400px, 36%); gap: 20px; align-items: start; }
+body.wide .layout { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
+@media (max-width: 1000px) { .layout, body.wide .layout { grid-template-columns: minmax(0, 1fr); } }
+
+.stratum { border-top: 1px solid var(--rule); padding: 12px 0 16px; }
+.stratum-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 10px; }
+.stratum-head h2 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.stratum-head .sub { color: var(--muted); font-size: 13px; }
+.stratum-head .num { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; margin-left: auto; }
+.dirlabel { font-family: var(--mono); color: var(--muted); font-size: 12px; margin: 6px 0 5px; }
+.tiles { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+.tile { position: relative; text-align: left; background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--layer); border-radius: 4px; padding: 5px 8px 6px; min-height: 46px; display: flex; flex-direction: column; justify-content: space-between; gap: 2px; overflow: hidden; }
+.tile:hover { border-color: var(--layer); }
+.tile[aria-current="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.tile .name { font-family: var(--mono); font-size: 12px; line-height: 1.3; overflow-wrap: anywhere; }
+.tile .foot { display: flex; align-items: center; gap: 6px; }
+.tile .loc { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; margin-right: auto; }
+.tile .flags { display: flex; gap: 3px; align-items: center; }
+.tile .badge { font-size: 10px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 3px; color: var(--surface); background: var(--sev); font-variant-numeric: tabular-nums; }
+.tile .mark { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; }
+.tile.dim { opacity: 0.25; }
+@media (prefers-reduced-motion: no-preference) { .tile { transition: opacity .15s, border-color .15s; } }
+
+/* ---------- panel ---------- */
+.panel { position: sticky; top: 112px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; max-height: calc(100vh - 128px); overflow-y: auto; overscroll-behavior: contain; }
+@media (max-width: 1000px) { .panel { position: static; max-height: none; } }
+.panel .empty { padding: 20px; color: var(--muted); }
+.phead { position: sticky; top: 0; z-index: 2; background: var(--surface); border-bottom: 1px solid var(--rule); padding: 14px 18px 0; }
+.phead .row { display: flex; gap: 8px; align-items: flex-start; }
+.phead .path { font-family: var(--mono); font-size: 14px; font-weight: 500; overflow-wrap: anywhere; flex: 1; }
+.iconbtn { background: none; border: 1px solid var(--rule); border-radius: 6px; padding: 2px 8px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.iconbtn:hover { color: var(--ink); border-color: var(--ink); }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 13px; color: var(--muted); margin-top: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 500; white-space: nowrap; border: 1px solid currentColor; }
+.jump { display: flex; gap: 2px; overflow-x: auto; margin: 10px -4px 0; }
+.jump a { font-size: 12.5px; color: var(--muted); text-decoration: none; padding: 5px 8px 8px; border-bottom: 2px solid transparent; white-space: nowrap; }
+.jump a:hover { color: var(--ink); border-bottom-color: var(--rule); }
+.jump a b { font-weight: 600; color: var(--ink); margin-left: 3px; }
+.panel section { padding: 14px 18px; border-bottom: 1px solid var(--rule); }
+.panel section:last-child { border-bottom: 0; }
+.panel h3 { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 8px; display: flex; gap: 8px; align-items: baseline; }
+.panel h3 .aside { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: auto; }
+.panel p { margin: 0; }
+.purpose { font-size: 16px; line-height: 1.45; }
+.note { background: var(--sunk); border-radius: 6px; padding: 8px 10px; font-size: 14px; margin-top: 10px; }
+.areas { font-size: 13px; color: var(--muted); margin-top: 8px; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.metrics div { background: var(--sunk); border-radius: 6px; padding: 6px 8px; }
+.metrics b { display: block; font-size: 16px; font-variant-numeric: tabular-nums; }
+.metrics span { font-size: 11px; color: var(--muted); }
+.markers { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.markers b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.issue { border: 1px solid var(--rule); border-left: 4px solid var(--sev); border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+.issue:last-child { margin-bottom: 0; }
+.issue .ih { padding: 8px 10px 6px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.issue .ih strong { font-weight: 600; flex: 1 1 60%; }
+.issue .sev { color: var(--sev); }
+.issue .detail { padding: 0 10px 8px; font-size: 14px; }
+.issue .fix { margin: 0 10px 10px; font-size: 14px; background: color-mix(in srgb, var(--ok) 10%, transparent); border-radius: 6px; padding: 7px 10px; }
+.issue .fix b { color: var(--ok); font-weight: 600; margin-right: 4px; }
+.issue.flash { box-shadow: 0 0 0 2px var(--sev); }
+.lineref { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+.sym { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 8px; align-items: baseline; padding: 4px 0; border-top: 1px solid var(--rule); font-size: 13px; }
+.sym:first-child { border-top: 0; }
+.sym .kind { font-family: var(--mono); font-size: 10.5px; color: var(--muted); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; }
+.sym .nm { font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
+.sym .nm button { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-align: left; }
+.sym .nm button:hover { text-decoration: underline; }
+.sym .sm { grid-column: 2 / 4; color: var(--muted); }
+.excerpt { margin-top: 14px; }
+.excerpt .et { font-weight: 600; font-size: 14px; }
+.excerpt .ew { color: var(--muted); font-size: 13.5px; margin: 2px 0 6px; }
+
+.code { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 12px; line-height: 1.55; overflow-x: auto; }
+.code table { border-collapse: collapse; width: 100%; }
+.code td { padding: 0; vertical-align: top; }
+.code td.ln { width: 1%; padding: 0 8px 0 10px; text-align: right; color: var(--muted); user-select: none; font-variant-numeric: tabular-nums; opacity: 0.7; }
+.code td.sg { width: 1%; padding: 0 4px; user-select: none; color: var(--muted); }
+.code td.src { padding-right: 12px; white-space: pre; }
+.code tr.hl td { background: var(--hl-bg); }
+.code tr.add td { background: var(--add-bg); } .code tr.add td.sg { color: var(--add-ink); }
+.code tr.del td { background: var(--del-bg); } .code tr.del td.sg { color: var(--del-ink); }
+.code tr.hunk td { color: var(--muted); background: var(--sunk); padding-top: 2px; padding-bottom: 2px; }
+.code tr:first-child td { padding-top: 6px; } .code tr:last-child td { padding-bottom: 6px; }
+.k { color: var(--syn-kw); } .s { color: var(--syn-str); } .c { color: var(--syn-com); font-style: italic; } .n { color: var(--syn-num); } .t { color: var(--syn-type); }
+.clip { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.diffhead { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; margin-bottom: 6px; font-size: 13px; }
+.plus { color: var(--add-ink); font-variant-numeric: tabular-nums; } .minus { color: var(--del-ink); font-variant-numeric: tabular-nums; }
+details.more > summary { cursor: pointer; font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+.graph svg { display: block; width: 100%; height: auto; }
+.graph .node { cursor: pointer; }
+.graph .node:hover rect { stroke: var(--ink); }
+.graph text { font-family: var(--mono); font-size: 10.5px; fill: var(--ink); }
+.deps { display: grid; gap: 8px; margin-top: 10px; }
+.deps .grp { font-size: 12px; color: var(--muted); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.linklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.linklist button, .pathbtn { background: none; border: 0; padding: 1px 0; text-align: left; font-family: var(--mono); font-size: 12px; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; overflow-wrap: anywhere; }
+.linklist button:hover, .pathbtn:hover { text-decoration: underline; }
+.bad { color: var(--high) !important; }
+.ext { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.ext span { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); border-radius: 4px; padding: 0 6px; color: var(--muted); }
+.commits { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+.commits li { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 8px; }
+.commits .h, .commits .d { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+
+.verdicts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.verdicts button { border: 1px solid var(--rule); background: var(--surface); border-radius: 6px; padding: 5px 10px; font-size: 13px; }
+.verdicts button[aria-pressed="true"] { background: var(--v); border-color: var(--v); color: var(--surface); }
+textarea { width: 100%; min-height: 64px; resize: vertical; background: var(--ground); border: 1px solid var(--rule); border-radius: 6px; padding: 8px; }
+.savestate { font-size: 12px; color: var(--muted); margin-top: 6px; min-height: 18px; }
+
+/* ---------- other views ---------- */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.card h2 { font-size: 16px; font-weight: 600; }
+.card p { margin: 0; color: var(--muted); font-size: 14px; }
+.flow { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+.flow h2 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+.flow ol { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.flow li { counter-increment: step; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 4px 10px; padding: 8px 0; border-top: 1px solid var(--rule); }
+.flow li:first-child { border-top: 0; }
+.flow li::before { content: counter(step); color: var(--muted); font-size: 13px; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.flow .what { color: var(--muted); font-size: 14px; }
+.symname { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-left: 8px; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+table.data { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.data th, table.data td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+table.data th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+table.data tr:last-child td { border-bottom: 0; }
+table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
+table.data tr[data-row] td:first-child { white-space: nowrap; }
+table.data tr.clickable { cursor: pointer; }
+table.data tr.clickable:hover td { background: var(--sunk); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px; }
+@media (max-width: 520px) { .grid2, .cards { grid-template-columns: minmax(0, 1fr); } .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+h2.sect { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+p.sectsub { margin: 0 0 10px; color: var(--muted); font-size: 14px; max-width: 72ch; }
+.sevbar { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; font-size: 14px; }
+.sevbar b { font-size: 20px; font-variant-numeric: tabular-nums; margin-right: 4px; }
+.filelist { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+</style>
+</head>
+<body>
+<script type="application/json" id="atlas-data"></script>
+<header class="top">
+  <div class="titlebar"><h1 id="title">Module Map</h1><div class="meta" id="meta">Loading…</div></div>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+</header>
+<div class="wrap"><main id="view"></main></div>
+
+<script>
+(() => {
+  const VERDICTS = [
+    { id: "keep", label: "Looks right", color: "var(--ok)" },
+    { id: "move", label: "Move it", color: "var(--l2)" },
+    { id: "split", label: "Split it", color: "var(--l1)" },
+    { id: "rewrite", label: "Rewrite", color: "var(--l4)" },
+    { id: "question", label: "Question", color: "var(--l0)" },
+  ];
+  const SEV = { high: { label: "High", color: "var(--high)", rank: 0 }, medium: { label: "Medium", color: "var(--medium)", rank: 1 }, low: { label: "Low", color: "var(--low)", rank: 2 } };
+  const TABS = [
+    { id: "map", label: "Map" }, { id: "issues", label: "Issues" }, { id: "areas", label: "Feature areas" },
+    { id: "flows", label: "Control flows" }, { id: "hotspots", label: "Hotspots" }, { id: "branches", label: "Branches" }, { id: "marks", label: "Your marks" },
+  ];
+
+  const state = { atlas: null, tab: "map", selected: null, query: "", filter: "all", sevFilter: "all", marks: {}, db: null, saveMsg: "", pendingScroll: null };
+  const view = document.getElementById("view");
+  const byPath = new Map();
+  const layerColor = new Map();
+  const onBranch = new Map();
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const md = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+  const colorOf = (f) => layerColor.get(f?.layer) ?? "var(--l7)";
+  const base = (p) => p.split("/").pop();
+  const dir = (p) => p.split("/").slice(0, -1).join("/");
+  const docId = (p) => p.replaceAll("/", "~");
+  const verdictOf = (id) => VERDICTS.find((v) => v.id === id);
+  const worst = (f) => f.issues.reduce((w, i) => (w === null || SEV[i.severity].rank < SEV[w].rank ? i.severity : w), null);
+  const marksKey = () => `module-map-marks:${state.atlas?.title ?? ""}`;
+
+  // ---------- syntax highlighting (TS/JS, line by line) ----------
+  const KW = new Set("abstract as async await break case catch class const continue declare default delete do else enum export extends false finally for from function get if implements import in instanceof interface keyof let new null of private protected public readonly return satisfies set static super switch this throw true try type typeof undefined var void while yield".split(" "));
+  function highlightLines(code) {
+    let inBlock = false;
+    return code.split("\n").map((line) => {
+      let out = "", i = 0;
+      while (i < line.length) {
+        if (inBlock) {
+          const end = line.indexOf("*/", i);
+          const stop = end === -1 ? line.length : end + 2;
+          out += `<span class="c">${esc(line.slice(i, stop))}</span>`;
+          i = stop; if (end !== -1) inBlock = false; continue;
+        }
+        const rest = line.slice(i);
+        let m;
+        if (rest.startsWith("//")) { out += `<span class="c">${esc(rest)}</span>`; break; }
+        if (rest.startsWith("/*")) { inBlock = true; out += `<span class="c">/*</span>`; i += 2; continue; }
+        if ((m = rest.match(/^(["'`])(?:\\.|(?!\1).)*\1?/))) { out += `<span class="s">${esc(m[0])}</span>`; i += m[0].length; continue; }
+        if ((m = rest.match(/^\d[\d_.xXa-fA-FnbBoO]*/)) && !/[\w$]/.test(line[i - 1] ?? "")) { out += `<span class="n">${esc(m[0])}</span>`; i += m[0].length; continue; }
+        if ((m = rest.match(/^[A-Za-z_$][\w$]*/))) {
+          const w = m[0];
+          out += KW.has(w) ? `<span class="k">${w}</span>` : /^[A-Z]/.test(w) ? `<span class="t">${w}</span>` : esc(w);
+          i += w.length; continue;
+        }
+        out += esc(line[i]); i++;
+      }
+      return out || " ";
+    });
+  }
+  function codeBlock(code, start, highlight = []) {
+    const rows = highlightLines(code);
+    return `<div class="code"><table>${rows.map((h, n) => `<tr class="${highlight.includes(start + n) ? "hl" : ""}"><td class="ln">${start + n}</td><td class="src">${h}</td></tr>`).join("")}</table></div>`;
+  }
+  function diffBlock(hunks) {
+    const rows = [];
+    for (const h of hunks) {
+      rows.push(`<tr class="hunk"><td class="ln"></td><td class="sg"></td><td class="src">${esc(h.header)}</td></tr>`);
+      let [, oldLine, newLine] = h.header.match(/-(\d+)(?:,\d+)? \+(\d+)/) ?? [0, 0, 0];
+      oldLine = +oldLine; newLine = +newLine;
+      const body = highlightLines(h.lines.map((l) => l.slice(1)).join("\n"));
+      h.lines.forEach((l, i) => {
+        const kind = l[0] === "+" ? "add" : l[0] === "-" ? "del" : "";
+        const ln = kind === "del" ? oldLine++ : (kind === "add" ? newLine++ : (oldLine++, newLine++));
+        rows.push(`<tr class="${kind}"><td class="ln">${ln}</td><td class="sg">${l[0] === " " ? "" : esc(l[0])}</td><td class="src">${body[i]}</td></tr>`);
+      });
+    }
+    return `<div class="code"><table>${rows.join("")}</table></div>`;
+  }
+
+  // ---------- navigation ----------
+  function select(path, scrollTo) {
+    if (!byPath.has(path)) return;
+    state.selected = path; state.saveMsg = "";
+    state.tab = "map"; store.set("module-map-tab", "map");
+    state.pendingScroll = scrollTo ?? "top";
+    try { history.replaceState(null, "", `#file=${encodeURIComponent(path)}`); } catch {}
+    render();
+    document.querySelector(`.tile[data-path="${CSS.escape(path)}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  function tabs() {
+    const a = state.atlas;
+    const counts = a ? {
+      map: a.files.length, issues: a.files.reduce((n, f) => n + f.issues.length, 0), areas: a.areas.length, flows: a.flows.length,
+      branches: a.branches.filter((b) => b.status !== "merged").length, marks: Object.keys(state.marks).length,
+    } : {};
+    const nav = document.getElementById("tabs");
+    nav.innerHTML = TABS.map((t) => `<button role="tab" aria-selected="${state.tab === t.id}" data-tab="${t.id}">${t.label}${counts[t.id] ? `<span class="count">${counts[t.id]}</span>` : ""}</button>`).join("");
+    nav.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { state.tab = b.dataset.tab; store.set("module-map-tab", state.tab); render(); window.scrollTo(0, 0); }));
+  }
+
+  // ---------- map ----------
+  function matches(f) {
+    const q = state.query.trim().toLowerCase();
+    if (q && !(f.path.toLowerCase().includes(q) || f.purpose.toLowerCase().includes(q) || f.symbols.some((s) => s.name.toLowerCase().includes(q)))) return false;
+    if (state.filter === "issues") return f.issues.length > 0;
+    if (state.filter === "crossings") return f.violations.length > 0;
+    if (state.filter === "branch") return onBranch.has(f.path);
+    if (state.filter === "marked") return !!state.marks[f.path];
+    return true;
+  }
+  const tileWidth = (lines) => Math.round(Math.max(118, Math.min(330, 36 + Math.sqrt(lines) * 6.2)));
+  function tile(f) {
+    const mark = state.marks[f.path];
+    const w = worst(f);
+    const flags = [];
+    if (f.issues.length) flags.push(`<span class="badge" style="--sev:${SEV[w].color}" title="${f.issues.length} issue(s), worst ${w}">${f.issues.length}</span>`);
+    if (f.violations.length) flags.push(`<span class="dot" style="background:var(--high)" title="imports across the layer rule"></span>`);
+    if (onBranch.has(f.path)) flags.push(`<span class="dot" style="background:var(--branch)" title="changed on ${esc(onBranch.get(f.path).join(", "))}"></span>`);
+    return `<button class="tile${matches(f) ? "" : " dim"}" data-path="${esc(f.path)}" style="--layer:${colorOf(f)};width:${tileWidth(f.lines)}px;max-width:100%" aria-current="${state.selected === f.path}" title="${esc(f.path)}${f.purpose ? " — " + esc(f.purpose) : ""}">
+      <span class="name">${esc(base(f.path))}</span><span class="foot"><span class="loc">${f.lines.toLocaleString()} lines</span><span class="flags">${flags.join("")}</span></span>${mark ? `<span class="mark" style="background:${verdictOf(mark.verdict)?.color ?? "var(--muted)"}"></span>` : ""}</button>`;
+  }
+  function mapView() {
+    const a = state.atlas;
+    const strata = a.layers.map((l) => {
+      const inLayer = a.files.filter((f) => f.layer === l.id);
+      if (!inLayer.length) return "";
+      const dirs = [...new Set(inLayer.map((f) => dir(f.path)))];
+      const body = dirs.map((d) => {
+        const fs = inLayer.filter((f) => dir(f.path) === d);
+        return `${dirs.length > 1 ? `<div class="dirlabel">${esc(d)}/ · ${fs.reduce((n, f) => n + f.lines, 0).toLocaleString()} lines</div>` : ""}<div class="tiles">${fs.map(tile).join("")}</div>`;
+      }).join("");
+      return `<section class="stratum"><div class="stratum-head"><h2><span class="dot" style="background:${layerColor.get(l.id)}"></span>${esc(l.label)}</h2><span class="sub">${esc(l.sub)}</span>
+        <span class="num">${inLayer.length} files · ${inLayer.reduce((n, f) => n + f.lines, 0).toLocaleString()} lines</span></div>${body}</section>`;
+    }).join("");
+    const outside = a.outside.length ? `<section class="stratum"><div class="stratum-head"><h2><span class="dot" style="background:var(--l7)"></span>Outside the scan</h2></div>
+      <div class="table-wrap"><table class="data"><tbody>${a.outside.map((o) => `<tr><td class="mono" style="white-space:nowrap">${esc(o.path)}</td><td>${md(o.purpose)}${o.notes ? `<div style="color:var(--muted);font-size:13px">${md(o.notes)}</div>` : ""}</td></tr>`).join("")}</tbody></table></div></section>` : "";
+    const filters = [["all", "All"], ["issues", "Has issues"], ["crossings", "Layer crossings"], ["branch", "On a branch"], ["marked", "Marked by you"]];
+    const rule = a.layers.filter((l) => !l.mayImport.includes("*")).map((l) => `${esc(l.label)} → ${l.mayImport.length ? l.mayImport.map((id) => esc(a.layers.find((x) => x.id === id)?.label ?? id)).join(", ") : "nothing else"}`).join(" · ");
+    return `<p class="lede">Every scanned file, grouped by layer and directory, sized by length. ${rule ? `Allowed imports: ${rule}.` : ""} Pick a file for its review: what it does, its issues, the code that matters, what a branch changes, and where it sits.</p>
+      <div class="toolbar"><input type="search" id="q" placeholder="Filter by path, purpose or symbol" value="${esc(state.query)}" aria-label="Filter files">
+        ${filters.map(([id, label]) => `<button class="chip" data-filter="${id}" aria-pressed="${state.filter === id}">${label}</button>`).join("")}</div>
+      <div class="legend">
+        ${Object.entries(SEV).map(([, s]) => `<span><span class="badge" style="background:${s.color};color:var(--surface);font-size:10px;font-weight:700;padding:1px 4px;border-radius:3px">n</span>${s.label} issues</span>`).join("")}
+        <span><span class="dot" style="background:var(--high)"></span>layer crossing</span>
+        <span><span class="dot" style="background:var(--branch)"></span>changed on a branch</span>
+        ${VERDICTS.map((v) => `<span><span style="background:${v.color};height:4px;width:14px;border-radius:1px;display:inline-block"></span>${v.label}</span>`).join("")}
+      </div>
+      <div class="layout"><div>${strata}${outside}</div>${panel()}</div>`;
+  }
+
+  // ---------- panel ----------
+  function depGraph(f) {
+    const left = f.importedBy.slice(0, 9), right = f.imports.slice(0, 11);
+    const more = (all, shown) => (all.length > shown.length ? all.length - shown.length : 0);
+    const rows = Math.max(left.length + (more(f.importedBy, left) ? 1 : 0), right.length + (more(f.imports, right) ? 1 : 0), 1);
+    const H = Math.max(70, rows * 22 + 16), W = 560, bw = 170, cx = W / 2, cy = H / 2;
+    const yAt = (i, n) => (n <= 1 ? cy : 12 + i * ((H - 24) / (n - 1)));
+    const node = (p, x, y, anchor) => {
+      const g = byPath.get(p);
+      const label = base(p).length > 24 ? base(p).slice(0, 23) + "…" : base(p);
+      const bad = f.violations.includes(p);
+      return `<g class="node" data-go="${esc(p)}" role="button" tabindex="0" aria-label="${esc(p)}"><title>${esc(p)}</title>
+        <rect x="${anchor === "end" ? x - bw : x}" y="${y - 9}" width="${bw}" height="18" rx="3" fill="var(--surface)" stroke="${bad ? "var(--high)" : "var(--rule)"}"/>
+        <rect x="${anchor === "end" ? x - bw : x}" y="${y - 9}" width="3" height="18" fill="${colorOf(g)}"/>
+        <text x="${anchor === "end" ? x - bw + 8 : x + 8}" y="${y + 3.5}" ${bad ? 'style="fill:var(--high)"' : ""}>${esc(label)}</text></g>`;
+    };
+    const edge = (x1, y1, x2, y2, bad) => `<path d="M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}" fill="none" stroke="${bad ? "var(--high)" : "var(--rule)"}" stroke-width="${bad ? 1.5 : 1}" ${bad ? 'stroke-dasharray="4 3"' : ""}/>`;
+    const nl = left.length + (more(f.importedBy, left) ? 1 : 0), nr = right.length + (more(f.imports, right) ? 1 : 0);
+    let svg = "";
+    left.forEach((p, i) => { svg += edge(bw + 4, yAt(i, nl), cx - 50, cy, false); });
+    right.forEach((p, i) => { svg += edge(cx + 50, cy, W - bw - 4, yAt(i, nr), f.violations.includes(p)); });
+    left.forEach((p, i) => { svg += node(p, 0, yAt(i, nl), "start"); });
+    right.forEach((p, i) => { svg += node(p, W, yAt(i, nr), "end"); });
+    if (more(f.importedBy, left)) svg += `<text x="8" y="${yAt(nl - 1, nl) + 3.5}" style="fill:var(--muted)">+${more(f.importedBy, left)} more</text>`;
+    if (more(f.imports, right)) svg += `<text x="${W - bw + 8}" y="${yAt(nr - 1, nr) + 3.5}" style="fill:var(--muted)">+${more(f.imports, right)} more</text>`;
+    svg += `<rect x="${cx - 50}" y="${cy - 13}" width="100" height="26" rx="5" fill="${colorOf(f)}"/><text x="${cx}" y="${cy + 4}" text-anchor="middle" style="fill:var(--surface);font-weight:600">${esc(base(f.path).length > 14 ? base(f.path).slice(0, 13) + "…" : base(f.path))}</text>`;
+    svg += `<text x="0" y="${H + 12}" style="fill:var(--muted);font-family:var(--sans);font-size:10px">${f.importedBy.length ? "used by" : "no importers"}</text><text x="${W}" y="${H + 12}" text-anchor="end" style="fill:var(--muted);font-family:var(--sans);font-size:10px">${f.imports.length ? "imports" : "no internal imports"}</text>`;
+    return `<div class="graph"><svg viewBox="0 -4 ${W} ${H + 20}" role="img" aria-label="Dependency diagram">${svg}</svg></div>`;
+  }
+  function groupedList(paths, bad = []) {
+    if (!paths.length) return `<p style="color:var(--muted);font-size:13px">None</p>`;
+    return state.atlas.layers.map((l) => {
+      const ps = paths.filter((p) => byPath.get(p)?.layer === l.id);
+      if (!ps.length) return "";
+      return `<div><div class="grp"><span class="dot" style="background:${layerColor.get(l.id)}"></span>${esc(l.label)} · ${ps.length}</div>
+        <ul class="linklist">${ps.map((p) => `<li><button data-go="${esc(p)}" class="${bad.includes(p) ? "bad" : ""}">${esc(p)}</button></li>`).join("")}</ul></div>`;
+    }).join("");
+  }
+  function panel() {
+    const f = state.selected && byPath.get(state.selected);
+    if (!f) {
+      const top = [...state.atlas.files].filter((x) => x.issues.length).sort((a, b) => SEV[worst(a)].rank - SEV[worst(b)].rank || b.issues.length - a.issues.length).slice(0, 6);
+      return `<aside class="panel"><div class="empty"><p style="margin:0 0 10px">Pick a file on the map to review it here.</p>${top.length ? `<p style="margin:0 0 6px;font-size:13px">Files with the most pressing issues:</p><ul class="linklist">${top.map((x) => `<li><button data-go="${esc(x.path)}"><span class="dot" style="background:${SEV[worst(x)].color}"></span>${esc(x.path)} · ${x.issues.length}</button></li>`).join("")}</ul>` : ""}</div></aside>`;
+    }
+    const layer = state.atlas.layers.find((l) => l.id === f.layer);
+    const mark = state.marks[f.path];
+    const areas = state.atlas.areas.filter((a) => a.files.includes(f.path));
+    const issues = [...f.issues].sort((a, b) => SEV[a.severity].rank - SEV[b.severity].rank || a.line - b.line);
+    const jump = [
+      ["p-issues", "Issues", f.issues.length], ["p-code", "Key code", f.excerpts.length || f.symbols.length], ["p-diff", "Branch diff", f.diffs.length],
+      ["p-deps", "Dependencies", f.imports.length + f.importedBy.length], ["p-history", "History", f.history.length], ["p-call", "Your call", mark ? "✓" : ""],
+    ].filter(([id, , n]) => n || id === "p-deps" || id === "p-call");
+    const sections = [];
+
+    sections.push(`<section id="p-summary"><p class="purpose">${f.purpose ? md(f.purpose) : '<span style="color:var(--muted)">No summary yet.</span>'}</p>
+      ${f.notes ? `<p class="note">${md(f.notes)}</p>` : ""}
+      ${areas.length ? `<p class="areas">Part of: ${areas.map((a) => esc(a.title)).join(", ")}</p>` : ""}
+      <div class="metrics">
+        <div><b style="color:${f.issues.length ? SEV[worst(f)].color : "inherit"}">${f.issues.length}</b><span>issues</span></div>
+        <div><b>${f.imports.length}</b><span>imports</span></div>
+        <div><b>${f.importedBy.length}</b><span>used by</span></div>
+        <div><b style="color:${f.violations.length ? "var(--high)" : "inherit"}">${f.violations.length}</b><span>layer crossings</span></div>
+      </div>
+      <div class="markers">${state.atlas.markers.map((m) => `<span><b>${f.markers[m.id] ?? 0}</b> ${esc(m.label)}</span>`).join("")}</div></section>`);
+
+    if (issues.length) sections.push(`<section id="p-issues"><h3>Issues <span class="aside">${Object.keys(SEV).map((s) => { const n = issues.filter((i) => i.severity === s).length; return n ? `<span style="color:${SEV[s].color}">${n} ${s}</span>` : ""; }).filter(Boolean).join(" · ")}</span></h3>
+      ${issues.map((i, n) => `<article class="issue" id="issue-${n}" data-line="${i.line}" style="--sev:${SEV[i.severity].color}">
+        <div class="ih"><strong>${md(i.title)}</strong><span class="pill sev">${SEV[i.severity].label}</span>${i.category ? `<span class="lineref">${esc(i.category)}</span>` : ""}<span class="lineref">line ${i.line}</span></div>
+        <p class="detail">${md(i.detail)}</p>
+        <div style="margin:0 10px 10px">${codeBlock(i.snippet, i.snippetStart, Array.from({ length: i.span }, (_, k) => i.line + k))}</div>
+        ${i.suggestion ? `<p class="fix"><b>Suggested</b>${md(i.suggestion)}</p>` : ""}</article>`).join("")}</section>`);
+
+    if (f.symbols.length || f.excerpts.length) sections.push(`<section id="p-code"><h3>Key code</h3>
+      ${f.symbols.length ? `<div>${f.symbols.map((s) => { const ex = f.excerpts.findIndex((e) => e.start === s.line); return `<div class="sym"><span class="kind">${esc(s.kind || "sym")}</span><span class="nm">${ex >= 0 ? `<button data-excerpt="${ex}">${esc(s.name)}</button>` : esc(s.name)}</span><span class="lineref">:${s.line}</span>${s.summary ? `<span class="sm">${md(s.summary)}</span>` : ""}</div>`; }).join("")}</div>` : ""}
+      ${f.excerpts.map((e, n) => `<div class="excerpt" id="excerpt-${n}"><div class="et">${md(e.title)} <span class="lineref">lines ${e.start}–${e.start + e.code.split("\n").length - 1}</span></div>${e.why ? `<p class="ew">${md(e.why)}</p>` : ""}${codeBlock(e.code, e.start)}${e.clipped ? `<p class="clip">Clipped at 40 lines.</p>` : ""}</div>`).join("")}</section>`);
+
+    if (f.diffs.length) sections.push(`<section id="p-diff"><h3>Branch diff <span class="aside">against ${esc(state.atlas.base)}</span></h3>
+      ${f.diffs.map((d, n) => `<div ${n ? 'style="margin-top:14px"' : ""}><div class="diffhead"><span class="pill" style="color:var(--branch)">${esc(d.branch)}</span><span class="plus">+${d.added}</span><span class="minus">−${d.removed}</span></div>
+        ${d.hunks.length > 3 ? `${diffBlock(d.hunks.slice(0, 3))}<details class="more"><summary>${d.hunks.length - 3} more hunk(s)</summary>${diffBlock(d.hunks.slice(3))}</details>` : diffBlock(d.hunks)}
+        ${d.truncated ? `<p class="clip">Diff truncated at 400 lines.</p>` : ""}</div>`).join("")}</section>`);
+
+    sections.push(`<section id="p-deps"><h3>Dependencies</h3>${depGraph(f)}
+      ${f.violations.length ? `<p class="note" style="border-left:3px solid var(--high)">Crosses the layer rule (${esc(layer?.label ?? f.layer)} may import ${esc((layer?.mayImport ?? []).join(", ") || "nothing else")}): ${f.violations.map((v) => `<button class="pathbtn bad" data-go="${esc(v)}">${esc(v)}</button>`).join(", ")}</p>` : ""}
+      <details class="more"><summary>All ${f.imports.length} imports and ${f.importedBy.length} importers</summary>
+        <div class="deps"><h3 style="margin:8px 0 0">Imports</h3>${groupedList(f.imports, f.violations)}<h3 style="margin:8px 0 0">Used by</h3>${groupedList(f.importedBy)}</div></details>
+      ${f.external.length ? `<div class="ext">${f.external.map((e) => `<span>${esc(e)}</span>`).join("")}</div>` : ""}</section>`);
+
+    if (f.history.length) sections.push(`<section id="p-history"><h3>History <span class="aside">${f.churn} commit${f.churn === 1 ? "" : "s"} in ${state.atlas.historyDays} days</span></h3>
+      <ul class="commits">${f.history.map((c) => `<li><span class="h">${esc(c.hash)}</span><span class="d">${esc(c.date)}</span><span>${esc(c.subject)}</span></li>`).join("")}</ul></section>`);
+
+    sections.push(`<section id="p-call"><h3>Your call</h3>
+      <div class="verdicts">${VERDICTS.map((v) => `<button data-verdict="${v.id}" style="--v:${v.color}" aria-pressed="${mark?.verdict === v.id}">${v.label}</button>`).join("")}</div>
+      <textarea id="mark-note" aria-label="Note" placeholder="Where should it go, what's off, what to ask">${esc(mark?.note ?? "")}</textarea>
+      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><button class="chip" id="save-note">Save note</button>${mark ? `<button class="chip" id="clear-mark">Clear</button>` : ""}</div>
+      <div class="savestate">${esc(state.saveMsg || (state.db ? "" : "Marks stay in this browser; copy them from Your marks."))}</div></section>`);
+
+    return `<aside class="panel" aria-label="File review"><div class="phead">
+        <div class="row"><div class="path">${esc(f.path)}</div><button class="iconbtn" id="copy-path" title="Copy path">Copy</button><button class="iconbtn" id="wide" title="Widen the panel">${document.body.classList.contains("wide") ? "Narrow" : "Widen"}</button></div>
+        <div class="facts"><span class="pill" style="color:${colorOf(f)}">${esc(layer?.label ?? f.layer)}</span><span>${f.lines.toLocaleString()} lines</span>${f.churn ? `<span>${f.churn} commits / ${state.atlas.historyDays}d</span>` : ""}${onBranch.has(f.path) ? `<span style="color:var(--branch)">on ${esc(onBranch.get(f.path).join(", "))}</span>` : ""}</div>
+        <nav class="jump">${jump.map(([id, label, n]) => `<a href="#${id}" data-jump="${id}">${label}${n ? `<b>${n}</b>` : ""}</a>`).join("")}</nav>
+      </div>${sections.join("")}</aside>`;
+  }
+
+  // ---------- other views ----------
+  function issuesView() {
+    const all = state.atlas.files.flatMap((f) => [...f.issues].sort((a, b) => a.line - b.line).map((i, n) => ({ ...i, file: f.path })));
+    if (!all.length) return `<p class="lede">No issues recorded yet. The research pass adds them per file.</p>`;
+    const rows = all.filter((i) => state.sevFilter === "all" || i.severity === state.sevFilter).sort((a, b) => SEV[a.severity].rank - SEV[b.severity].rank || a.file.localeCompare(b.file));
+    const cats = [...new Set(all.map((i) => i.category).filter(Boolean))];
+    return `<p class="lede">Every issue the research pass found, most severe first. Each one quotes the current source; open it to see the code and the suggested change.</p>
+      <div class="sevbar">${Object.entries(SEV).map(([id, s]) => `<span style="color:${s.color}"><b>${all.filter((i) => i.severity === id).length}</b>${s.label}</span>`).join("")}${cats.length ? `<span style="color:var(--muted)">Categories: ${cats.map(esc).join(", ")}</span>` : ""}</div>
+      <div class="toolbar">${[["all", "All"], ["high", "High"], ["medium", "Medium"], ["low", "Low"]].map(([id, l]) => `<button class="chip" data-sev="${id}" aria-pressed="${state.sevFilter === id}">${l}</button>`).join("")}</div>
+      <div class="table-wrap"><table class="data"><thead><tr><th>Severity</th><th>Issue</th><th>File</th><th>Category</th></tr></thead><tbody>
+      ${rows.map((i) => `<tr class="clickable" data-issue-file="${esc(i.file)}" data-issue-line="${i.line}"><td><span class="pill" style="color:${SEV[i.severity].color}">${SEV[i.severity].label}</span></td><td><strong style="font-weight:500">${md(i.title)}</strong><div style="color:var(--muted);font-size:13px">${md(i.detail)}</div></td><td class="mono" style="white-space:nowrap">${esc(i.file)}:${i.line}</td><td>${esc(i.category)}</td></tr>`).join("")}
+      </tbody></table></div>`;
+  }
+  function areasView() {
+    if (!state.atlas.areas.length) return `<p class="lede">No feature areas recorded yet.</p>`;
+    return `<p class="lede">The same files cut by feature instead of layer.</p><div class="cards">${state.atlas.areas.map((a) => {
+      const loc = a.files.reduce((n, p) => n + (byPath.get(p)?.lines ?? 0), 0);
+      const iss = a.files.reduce((n, p) => n + (byPath.get(p)?.issues.length ?? 0), 0);
+      return `<article class="card"><h2>${esc(a.title)}</h2><p>${md(a.summary)}</p><div style="font-size:12px;color:var(--muted)">${a.files.length} files · ${loc.toLocaleString()} lines${iss ? ` · ${iss} issues` : ""}</div>
+        <ul class="linklist">${a.files.map((p) => `<li><button data-go="${esc(p)}"><span class="dot" style="background:${colorOf(byPath.get(p))}"></span>${esc(p)}</button></li>`).join("")}</ul></article>`;
+    }).join("")}</div>`;
+  }
+  function flowsView() {
+    if (!state.atlas.flows.length) return `<p class="lede">No control flows recorded yet.</p>`;
+    return `<p class="lede">Key paths through the code in call order. Line numbers are resolved from the current source.</p>${state.atlas.flows.map((fl) => `<article class="flow"><h2>${md(fl.title)}</h2><ol>${fl.steps.map((s) => `<li><div><button class="pathbtn" data-go="${esc(s.file)}"><span class="dot" style="background:${colorOf(byPath.get(s.file))}"></span>${esc(s.file)}${s.line ? `:${s.line}` : ""}</button><span class="symname">${esc(s.symbol ?? "")}</span><div class="what">${md(s.what)}</div></div></li>`).join("")}</ol></article>`).join("")}`;
+  }
+  function hotspotsView() {
+    const files = state.atlas.files;
+    const row = (f, cells) => `<tr class="clickable" data-row="${esc(f.path)}"><td><span class="pathbtn"><span class="dot" style="background:${colorOf(f)}"></span>${esc(f.path)}</span></td>${cells}</tr>`;
+    const table = (title, sub, head, list, cells) => list.length ? `<div><h2 class="sect">${title}</h2><p class="sectsub">${sub}</p><div class="table-wrap"><table class="data"><thead><tr><th>File</th>${head.map((h) => `<th style="text-align:right">${h}</th>`).join("")}</tr></thead><tbody>${list.map((f) => row(f, cells(f))).join("")}</tbody></table></div></div>` : "";
+    const markerTotal = (f) => state.atlas.markers.reduce((n, m) => n + (f.markers[m.id] ?? 0), 0);
+    const crossing = files.filter((f) => f.violations.length).sort((a, b) => b.violations.length - a.violations.length);
+    return `<p class="lede">Mechanical leads for the cleanup pass. Treat them as places to look, not verdicts.</p><div class="grid2">
+      ${table("Largest files", "Candidates for splitting into cohesive modules.", ["Lines"], [...files].sort((a, b) => b.lines - a.lines).slice(0, 15), (f) => `<td class="num">${f.lines.toLocaleString()}</td>`)}
+      ${table(`Most changed (${state.atlas.historyDays} days)`, "High churn plus size or issues usually marks the real pain.", ["Commits", "Issues"], [...files].filter((f) => f.churn).sort((a, b) => b.churn - a.churn).slice(0, 15), (f) => `<td class="num">${f.churn}</td><td class="num">${f.issues.length || ""}</td>`)}
+      ${table("Style markers", `Files with the most ${state.atlas.markers.map((m) => esc(m.label)).join(", ")}.`, state.atlas.markers.map((m) => esc(m.label)), [...files].filter((f) => markerTotal(f)).sort((a, b) => markerTotal(b) - markerTotal(a)).slice(0, 15), (f) => state.atlas.markers.map((m) => `<td class="num">${f.markers[m.id] || ""}</td>`).join(""))}
+      ${crossing.length ? `<div><h2 class="sect">Layer crossings</h2><p class="sectsub">${crossing.reduce((n, f) => n + f.violations.length, 0)} imports in ${crossing.length} files break the allowed-import rule.</p><div class="table-wrap"><table class="data"><thead><tr><th>File</th><th>Imports it shouldn't</th></tr></thead><tbody>${crossing.map((f) => `<tr><td><button class="pathbtn" data-go="${esc(f.path)}"><span class="dot" style="background:${colorOf(f)}"></span>${esc(f.path)}</button></td><td><div class="filelist">${f.violations.map((v) => `<button class="pathbtn bad" data-go="${esc(v)}">${esc(v)}</button>`).join("")}</div></td></tr>`).join("")}</tbody></table></div></div>` : ""}
+    </div>`;
+  }
+  function branchesView() {
+    const bs = state.atlas.branches;
+    if (!bs.length) return `<p class="lede">No branches configured. Add them under <code>branches</code> in the map config to see their diffs per file.</p>`;
+    return `<p class="lede">Work in progress against <code>${esc(state.atlas.base)}</code>. Files changed on an open branch show an amber dot on the map and a diff in their panel.</p>
+      <div class="table-wrap"><table class="data"><thead><tr><th>Branch</th><th>Status</th><th>What it does</th></tr></thead><tbody>${bs.map((b) => `<tr><td class="mono">${esc(b.name)}</td><td><span class="pill" style="color:${b.status === "merged" ? "var(--ok)" : "var(--branch)"}">${esc(b.status)}</span></td><td>${md(b.summary ?? "")}${b.head ? `<div class="mono" style="color:var(--muted);font-size:12px;margin-top:4px">${esc(b.head)}</div>` : ""}${b.files?.length ? `<div class="filelist" style="margin-top:6px">${b.files.map((p) => { const d = byPath.get(p)?.diffs.find((x) => x.branch === b.name); return `<button class="pathbtn" data-go="${esc(p)}" data-scroll="p-diff"><span class="dot" style="background:var(--branch)"></span>${esc(p)}${d ? ` <span class="plus">+${d.added}</span> <span class="minus">−${d.removed}</span>` : ""}</button>`; }).join("")}</div>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  function marksView() {
+    const entries = Object.values(state.marks).sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""));
+    const where = state.db ? "Marks are stored with the page, so Claude can read them back." : "Marks are kept in this browser. Copy them and paste them to Claude to act on.";
+    if (!entries.length) return `<p class="lede">No marks yet. Open a file and choose a call with a note. ${where}</p>`;
+    return `<p class="lede">${where}</p><div class="toolbar"><button class="chip" id="copy-marks">Copy marks as JSON</button><span id="copy-state" class="meta"></span></div>
+      <div class="table-wrap"><table class="data"><thead><tr><th>File</th><th>Call</th><th>Note</th></tr></thead><tbody>${entries.map((e) => { const v = verdictOf(e.verdict); return `<tr><td><button class="pathbtn" data-go="${esc(e.path)}"><span class="dot" style="background:${colorOf(byPath.get(e.path))}"></span>${esc(e.path)}</button></td><td>${v ? `<span class="pill" style="color:${v.color}">${v.label}</span>` : ""}</td><td>${esc(e.note ?? "")}</td></tr>`; }).join("")}</tbody></table></div>`;
+  }
+
+  // ---------- marks ----------
+  async function saveMark(path, patch) {
+    const next = { ...(state.marks[path] ?? { path }), ...patch, path, updatedAt: new Date().toISOString() };
+    state.marks[path] = next;
+    if (!state.db) { store.set(marksKey(), JSON.stringify(state.marks)); state.saveMsg = "Saved in this browser"; render(); return; }
+    state.saveMsg = "Saving…"; render();
+    try { await state.db.collection("marks").doc(docId(path)).set(next); state.saveMsg = "Saved"; }
+    catch (e) { state.saveMsg = `Not saved: ${e?.message ?? e?.code ?? "the store refused the write"}`; }
+    render();
+  }
+  async function clearMark(path) {
+    delete state.marks[path]; state.saveMsg = "";
+    if (!state.db) { store.set(marksKey(), JSON.stringify(state.marks)); render(); return; }
+    render();
+    try { await state.db.collection("marks").doc(docId(path)).delete(); state.saveMsg = "Cleared"; }
+    catch (e) { state.saveMsg = `Not cleared: ${e?.message ?? e?.code ?? "refused"}`; }
+    render();
+  }
+
+  // ---------- wiring ----------
+  function bind() {
+    view.querySelectorAll(".tile[data-path]").forEach((el) => el.addEventListener("click", () => select(el.dataset.path)));
+    view.querySelectorAll("[data-go]").forEach((el) => {
+      const go = () => select(el.dataset.go, el.dataset.scroll);
+      el.addEventListener("click", go);
+      if (el.tagName === "g") el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    });
+    view.querySelectorAll("tr[data-row]").forEach((el) => el.addEventListener("click", () => select(el.dataset.row)));
+    view.querySelectorAll("tr[data-issue-file]").forEach((el) => el.addEventListener("click", () => select(el.dataset.issueFile, `line:${el.dataset.issueLine}`)));
+    view.querySelectorAll("[data-filter]").forEach((el) => el.addEventListener("click", () => { state.filter = el.dataset.filter; render(); }));
+    view.querySelectorAll("[data-sev]").forEach((el) => el.addEventListener("click", () => { state.sevFilter = el.dataset.sev; render(); }));
+    view.querySelectorAll("[data-jump]").forEach((el) => el.addEventListener("click", (e) => { e.preventDefault(); scrollPanelTo(document.getElementById(el.dataset.jump)); }));
+    view.querySelectorAll("[data-excerpt]").forEach((el) => el.addEventListener("click", () => scrollPanelTo(document.getElementById(`excerpt-${el.dataset.excerpt}`))));
+    const q = document.getElementById("q");
+    if (q) q.addEventListener("input", () => { state.query = q.value; view.querySelectorAll(".tile").forEach((t) => t.classList.toggle("dim", !matches(byPath.get(t.dataset.path)))); });
+    view.querySelectorAll("[data-verdict]").forEach((el) => el.addEventListener("click", () => saveMark(state.selected, { verdict: el.dataset.verdict, note: document.getElementById("mark-note")?.value ?? "" })));
+    document.getElementById("save-note")?.addEventListener("click", () => saveMark(state.selected, { note: document.getElementById("mark-note").value }));
+    document.getElementById("clear-mark")?.addEventListener("click", () => clearMark(state.selected));
+    document.getElementById("wide")?.addEventListener("click", () => { document.body.classList.toggle("wide"); store.set("module-map-wide", document.body.classList.contains("wide") ? "1" : ""); render(); });
+    document.getElementById("copy-path")?.addEventListener("click", (e) => { navigator.clipboard?.writeText(state.selected).then(() => { e.target.textContent = "Copied"; }, () => {}); });
+    document.getElementById("copy-marks")?.addEventListener("click", () => {
+      navigator.clipboard?.writeText(JSON.stringify(Object.values(state.marks), null, 2)).then(() => { document.getElementById("copy-state").textContent = "Copied"; }, () => { document.getElementById("copy-state").textContent = "Copy failed; select the table instead."; });
+    });
+  }
+  function scrollPanelTo(el) {
+    const p = document.querySelector(".panel");
+    if (!el || !p) return;
+    if (getComputedStyle(p).position !== "sticky") { el.scrollIntoView({ block: "start", behavior: "smooth" }); return; }
+    const head = p.querySelector(".phead")?.offsetHeight ?? 0;
+    p.scrollTo({ top: el.offsetTop - head - 4, behavior: "smooth" });
+  }
+
+  function render() {
+    tabs();
+    const a = state.atlas;
+    if (!a) return;
+    const loc = a.files.reduce((n, f) => n + f.lines, 0);
+    document.getElementById("meta").innerHTML = `<code>${esc(a.commit)}</code> · ${a.files.length} files · ${loc.toLocaleString()} lines · built ${esc(new Date(a.generatedAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }))}`;
+    const scrollY = window.scrollY;
+    const oldPanel = document.querySelector(".panel");
+    const samePanel = oldPanel?.dataset.path === state.selected;
+    const panelScroll = oldPanel?.scrollTop ?? 0;
+    const views = { map: mapView, issues: issuesView, areas: areasView, flows: flowsView, hotspots: hotspotsView, branches: branchesView, marks: marksView };
+    view.innerHTML = (views[state.tab] ?? mapView)();
+    const p = document.querySelector(".panel");
+    if (p) { p.dataset.path = state.selected ?? ""; p.scrollTop = samePanel ? panelScroll : 0; }
+    window.scrollTo(0, scrollY);
+    bind();
+    if (state.pendingScroll && p) {
+      const target = state.pendingScroll;
+      state.pendingScroll = null;
+      if (target.startsWith("line:")) {
+        const el = p.querySelector(`.issue[data-line="${target.slice(5)}"]`);
+        if (el) { scrollPanelTo(el); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
+      } else if (target !== "top") scrollPanelTo(document.getElementById(target));
+    }
+  }
+
+  async function boot() {
+    try {
+      const inline = document.getElementById("atlas-data").textContent.trim();
+      state.atlas = inline ? JSON.parse(inline) : await (await fetch("atlas.json", { cache: "no-store" })).json();
+    } catch {
+      view.innerHTML = `<p class="lede">The map data didn't load. Rebuild the page with scripts/build.ts.</p>`;
+      return;
+    }
+    const a = state.atlas;
+    document.getElementById("title").textContent = a.title;
+    a.layers.forEach((l, i) => layerColor.set(l.id, `var(--l${Math.min(i, 7)})`));
+    for (const f of a.files) byPath.set(f.path, f);
+    for (const b of a.branches) if (b.status !== "merged") for (const p of b.files ?? []) onBranch.set(p, [...(onBranch.get(p) ?? []), b.name]);
+    try { state.marks = JSON.parse(store.get(marksKey()) ?? "{}") ?? {}; } catch { state.marks = {}; }
+    if (store.get("module-map-wide")) document.body.classList.add("wide");
+    const fromHash = decodeURIComponent((location.hash.match(/file=([^&]+)/) ?? [])[1] ?? "");
+    const savedTab = store.get("module-map-tab");
+    if (TABS.some((t) => t.id === savedTab)) state.tab = savedTab;
+    if (byPath.has(fromHash)) { state.selected = fromHash; state.tab = "map"; }
+    render();
+    try {
+      const db = await window.claude?.use?.("db");
+      if (!db) return;
+      state.db = db;
+      db.collection("marks").onSnapshot((snap) => {
+        const next = {};
+        for (const d of snap.docs) { const v = d.data(); if (v?.path) next[v.path] = v; }
+        state.marks = next; render();
+      }, () => { state.saveMsg = "The store stopped responding; reload to reconnect."; render(); });
+    } catch {}
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

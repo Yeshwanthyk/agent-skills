@@ -27,7 +27,6 @@ REQUIRED_ROUTER_DOCS = (
     "SKILL.md",
     "methods.md",
     "principle-triggers.md",
-    "classifier-contract.md",
 )
 SHARED_REFERENCES = ("delegation.md", "session-records.md")
 
@@ -473,12 +472,6 @@ def _check_method_catalog(root: Path, errors: list[str]) -> None:
             errors.append(
                 f"Method catalog lists target more than once: {_display(target, root)}"
             )
-
-    classifier = (root / ROUTER_REL / "classifier-contract.md").resolve()
-    if classifier in targets:
-        errors.append(
-            f"{_display(catalog, root)} treats docs-only classifier-contract.md as a method"
-        )
 
     all_top_level_skills = {
         path.resolve()

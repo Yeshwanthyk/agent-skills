@@ -7,6 +7,8 @@ description: Model authority, transitions, concurrency, and recovery for a state
 
 Build the system model around **authoritative state**.
 
+**Scope:** modeling ends with the model. "Model X" or "model X in <file>" asks for the model below, not a code change. Edit code or tests only when the user asks to implement, fix, or change them; otherwise offer implementation as a next step.
+
 ## Process
 
 1. Find the source of truth and its owner.
@@ -32,7 +34,7 @@ For implementation work, reuse the project's runner and generators, bound the ex
 
 ## Output
 
-Return the authoritative state, transition graph, invariant set, boundary contracts, representative scenarios, and proof strategy. Include implementation and rollout shape when the request covers delivery.
+Return the authoritative state, transition graph, invariant set, boundary contracts, representative scenarios, and proof strategy. Include implementation and rollout shape when implementation is requested.
 
 ## Completion
 

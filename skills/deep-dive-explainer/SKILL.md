@@ -1,6 +1,6 @@
 ---
 name: deep-dive-explainer
-description: Research a topic and write a connected, long-form explainer with a reusable standalone HTML reading layout. Use for deep dives into technology, science, history, institutions, or practical processes; interactive simulations belong elsewhere.
+description: Research a topic and write a long-form, connected explainer as a standalone HTML article. Use for deep dives into technology, science, history, or processes; not for interactive simulations.
 ---
 
 # Deep Dive Explainer

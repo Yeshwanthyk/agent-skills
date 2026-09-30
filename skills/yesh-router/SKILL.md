@@ -41,6 +41,6 @@ When delegating work, follow the shared [delegation contract](../references/dele
 
 ## Finish
 
-Finish with the requested result, relevant evidence, and material limits. An optional [classifier contract](classifier-contract.md) may advise method selection when present; it is advisory, disabled by default, and never overrides scope, permissions, or the normal route.
+Finish with the requested result, relevant evidence, and material limits.
 
 Skills remain usable directly without activating the router. `yesh-router` is the sole activation name.

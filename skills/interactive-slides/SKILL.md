@@ -1,6 +1,6 @@
 ---
 name: interactive-slides
-description: Turn a document or discussion into a clean, interactive HTML slide deck using the saved Ziggy presentation style. Use for browser presentations with keyboard navigation, selectable explanations, and small simulations; not PowerPoint export or long-form articles.
+description: Turn a document or discussion into an interactive HTML slide deck in the saved Ziggy style, with keyboard navigation and small simulations. Not for PowerPoint export or long-form articles.
 ---
 
 # Interactive slides

@@ -10,10 +10,6 @@
 
 For proof selection, follow [evidence discipline](evidence-discipline.md); for reuse after changes or restart, [evidence lifecycle](evidence-lifecycle.md). When publication or cursor state is shared, apply [state ownership](state-ownership.md); when retrying a partial stage, [recovery and idempotency](recovery-and-idempotency.md).
 
-## Optional action classification
-
-When many proposed steps need triage, Jev may advise using the separate [action-classifier contract](../action-classifier-contract.md). Local judgment is the default; classification adds no required call or completion gate. Method selection remains a separate router concern.
-
 ## Source
 
 Concepts informed by [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first/blob/main/SKILL.md). This local policy preserves substantive locks, integrity gates, explicit reviews, and publication permissions rather than adopting unconditional bypass rules.
