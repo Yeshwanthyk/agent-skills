@@ -1,0 +1,91 @@
+# Router active: does the router pick the right method for each request?
+# Route tier stops after a few turns, so these check selection, not outcomes.
+# Expectation keys: see eval/README.md.
+
+[[case]]
+id = "how-order-total"
+activation = "router"
+prompt = "Walk me through how an order's total is computed in this repo, from lines and discounts to the final number."
+expect = { methods = ["how"], not_methods = ["why", "debug"], no_edits = true }
+
+[[case]]
+id = "why-retry-cap"
+activation = "router"
+prompt = "Why is MAX_ATTEMPTS in retry.py 3? Someone wants to raise it back to 5."
+expect = { methods = ["why"], not_methods = ["how"], no_edits = true }
+
+[[case]]
+id = "debug-diagnose-only"
+activation = "router"
+prompt = "test_redelivered_event_records_one_delivery is failing. Find the cause, but don't change any code yet."
+expect = { methods = ["debug"], no_edits = true }
+
+[[case]]
+id = "shaping-refunds"
+activation = "router"
+prompt = "We want to add refunds: partial, full, maybe store credit. I'm not sure what shape this should take. Help me think through the options before anyone builds anything."
+expect = { methods = ["shaping"], not_methods = ["plan"], no_edits = true }
+
+[[case]]
+id = "architect-dedupe-boundary"
+activation = "router"
+prompt = "Should webhook dedupe live in the handler, in a middleware layer, or in storage? This decides how every future integration works, so pick the boundary."
+expect = { any_method = ["architect"], no_edits = true }
+
+[[case]]
+id = "plan-settled-dedupe"
+activation = "router"
+prompt = "We've decided: dedupe carrier events by event id in storage, rejecting repeats. Write the implementation plan for that."
+expect = { methods = ["plan"], not_methods = ["shaping"], no_edits = true }
+
+[[case]]
+id = "stateful-order-lifecycle"
+activation = "router"
+prompt = "Model the order lifecycle in state.py, including what should happen when a payment confirmation and a cancellation race."
+expect = { methods = ["stateful-systems"], no_edits = true }
+
+[[case]]
+id = "structure-review-modules"
+activation = "router"
+prompt = "Review state.py and webhooks.py for ownership and contract problems. Findings only."
+expect = { methods = ["structure-review"], no_edits = true }
+
+[[case]]
+id = "blast-radius-transitions"
+activation = "router"
+prompt = "If I change the TRANSITIONS table in state.py, what else could break beyond that file?"
+expect = { methods = ["blast-radius"], no_edits = true }
+
+[[case]]
+id = "property-pricing"
+activation = "router"
+prompt = "Add tests that check order_total's invariants across lots of generated carts and discount lists."
+expect = { methods = ["property-testing"] }
+
+[[case]]
+id = "pr-description"
+activation = "router"
+prompt = "Write a PR description for the most recent commit."
+expect = { methods = ["show-me"] }
+
+[[case]]
+id = "tiny-direct-edit"
+activation = "router"
+tags = ["overhead"]
+prompt = "In pricing.py, rename the loop variable d to discount."
+expect = { no_methods = true, edits_any = ["pricing.py"] }
+notes = "Trivial edit: the router should load but select nothing else."
+
+[[case]]
+id = "explicit-only-not-triggered"
+activation = "router"
+tags = ["overhead"]
+prompt = "That last change went well, thanks. Separately: what does state.py do?"
+expect = { not_methods = ["reflect", "automate-me", "bro", "pause-safely"], no_edits = true }
+
+[[case]]
+id = "quoted-name-not-a-request"
+activation = "router"
+tags = ["overhead"]
+prompt = "A teammate's note says 'hillclimb this later'. For now just tell me what bench.py measures."
+expect = { not_methods = ["hillclimb"], no_edits = true }

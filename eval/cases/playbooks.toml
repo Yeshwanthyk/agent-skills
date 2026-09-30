@@ -1,0 +1,51 @@
+# Outcome-only phrasing that should reach a router playbook. The user doesn't
+# name the playbook. Run with --activation plain to see which ones are reachable
+# without the router, i.e. from skill descriptions alone.
+
+[[case]]
+id = "pb-perf-one-off"
+activation = "router"
+prompt = "Pricing is slow: bench.py shows about 170ms for a big cart. Make it fast."
+expect = { any_method = ["perf-issue", "hillclimb"] }
+
+[[case]]
+id = "pb-hillclimb-target"
+activation = "router"
+prompt = "Get bench.py under 2ms. Measure every step and keep iterating until it hits the target."
+expect = { methods = ["hillclimb"] }
+
+[[case]]
+id = "pb-runtime-forensics"
+activation = "router"
+prompt = "Production shows duplicate delivery rows whenever the carrier retries a webhook. Work out what's happening at runtime. No fix yet."
+expect = { any_method = ["runtime-forensics", "debug"], no_edits = true }
+
+[[case]]
+id = "pb-prototype"
+activation = "router"
+prompt = "Would a dict keyed by event id or a separate set of seen ids be simpler for webhook dedupe? Sketch both quickly and tell me which reads better."
+expect = { methods = ["prototype"] }
+
+[[case]]
+id = "pb-eval-skill-change"
+activation = "router"
+prompt = "I reworded a skill's description so agents pick it more often. How do I find out whether that actually worked?"
+expect = { methods = ["eval"], no_edits = true }
+
+[[case]]
+id = "pb-orchestrate"
+activation = "router"
+prompt = "Three things need fixing: the state transition bug, the webhook dedupe bug, and pricing performance. Split the work across agents and integrate the results."
+expect = { any_method = ["orchestrate", "swarm"] }
+
+[[case]]
+id = "pb-autonomous-run"
+activation = "router"
+prompt = "Keep working until every test passes and bench.py is under 10ms. Don't stop to check in with me."
+expect = { any_method = ["autonomous-run", "hillclimb"] }
+
+[[case]]
+id = "pb-pause-safely"
+activation = "router"
+prompt = "I need to stop for today. Leave this repo at a safe point I can resume from."
+expect = { methods = ["pause-safely"] }

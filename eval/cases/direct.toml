@@ -1,0 +1,33 @@
+# No router: natural requests that should match a skill by its description.
+
+[[case]]
+id = "direct-how"
+prompt = "Explain how carrier webhook events flow through webhooks.py."
+expect = { methods = ["how"], no_edits = true }
+
+[[case]]
+id = "direct-why"
+prompt = "What's the history behind the retry cap in retry.py? Was there an incident?"
+expect = { methods = ["why"], no_edits = true }
+
+[[case]]
+id = "direct-debug"
+tags = ["builtin-collision"]
+prompt = "tests/test_webhooks.py fails. Diagnose why; don't fix it."
+expect = { methods = ["debug"], no_edits = true }
+notes = "Claude Code ships a built-in 'debug' skill; this shows which one wins."
+
+[[case]]
+id = "direct-shaping"
+prompt = "I'm not sure how we should support multi-currency orders. Let's talk through the shape of it before any code."
+expect = { methods = ["shaping"], no_edits = true }
+
+[[case]]
+id = "direct-blast-radius"
+prompt = "Before I touch webhooks.py's DELIVERIES list, what downstream code could break?"
+expect = { methods = ["blast-radius"], no_edits = true }
+
+[[case]]
+id = "direct-unslop"
+prompt = "docs.md reads padded and AI-ish. Clean up the prose without losing any facts."
+expect = { methods = ["unslop"] }

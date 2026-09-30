@@ -1,0 +1,55 @@
+# Full runs: the right method AND the right outcome. Slower and costlier;
+# run with --tier task or --file tasks.
+
+[[case]]
+id = "task-why-retry-answer"
+tier = "task"
+activation = "router"
+prompt = "Why is MAX_ATTEMPTS in retry.py 3 and not 5? Is it safe to raise it?"
+expect = { methods = ["why"], no_edits = true, answer = ["INC-212", "(fraud|suspen)"] }
+notes = "The reason lives in commit history and docs.md; a code-only reading misses it."
+
+[[case]]
+id = "task-debug-fix"
+tier = "task"
+activation = "router"
+prompt = "tests/test_webhooks.py is failing. Fix it."
+expect = { methods = ["debug"], edits_any = ["webhooks.py"], answer = ["(event.?id|dedup)"] }
+
+[[case]]
+id = "task-stateful-implement"
+activation = "router"
+tier = "task"
+prompt = "Model the order lifecycle, including a payment confirmation racing a cancellation, then implement it in state.py with tests."
+expect = { methods = ["stateful-systems"], edits_any = ["state.py"] }
+notes = "Guards the modeling-scope fix: an explicit implementation ask must still edit."
+
+# Mid-task switching: the prompt names a symptom, not the method. The right
+# playbook only becomes clear once the agent inspects the repo.
+
+[[case]]
+id = "mid-broken-is-slow"
+activation = "router"
+tier = "task"
+tags = ["midtask"]
+prompt = "Customers say checkout is broken for big orders. Figure out what's wrong and fix it."
+expect = { any_method = ["perf-issue", "trace-forensics", "hillclimb"], edits_any = ["pricing.py"] }
+notes = "Reads like a bug; the cause is quadratic pricing. Should move from debug to perf-issue."
+
+[[case]]
+id = "mid-dup-deliveries-observe"
+activation = "router"
+tier = "task"
+tags = ["midtask"]
+prompt = "Sometimes customers get two delivery records for one shipment. Find out what's going on, but don't change anything yet."
+expect = { any_method = ["runtime-forensics", "debug"], no_edits = true }
+notes = "The fixture's failing test reproduces it, so debug (diagnose only) is right; the check that matters is no edits."
+
+[[case]]
+id = "mid-slow-find-profile"
+activation = "router"
+tier = "task"
+tags = ["midtask"]
+prompt = "Big-cart checkout got slow after the discount change. Figure out why."
+expect = { any_method = ["trace-forensics", "perf-issue"], no_edits = true }
+notes = "A captured profile sits in profiles/; finding it should pull in trace-forensics."

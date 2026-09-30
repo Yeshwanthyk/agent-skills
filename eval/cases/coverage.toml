@@ -1,0 +1,75 @@
+# Methods that had no case. Router on; outcome phrasing, method not named
+# (except explicit-only methods, which must be asked for).
+
+[[case]]
+id = "cov-trace-forensics"
+activation = "router"
+prompt = "profiles/bench.prof.txt is a profile I captured from bench.py. Tell me where the time goes. Don't change any code."
+expect = { any_method = ["trace-forensics"], no_edits = true }
+
+[[case]]
+id = "cov-breadboarding"
+activation = "router"
+prompt = "We're adding a refund button to the admin UI. Lay out the screens, UI actions, code actions, and data stores it involves and how they connect."
+expect = { methods = ["breadboarding"], no_edits = true }
+
+[[case]]
+id = "cov-interrogate"
+activation = "router"
+prompt = "I'm about to ship storage-level dedupe keyed by event id for carrier webhooks. Get independent reviewers to poke holes in that design before I commit to it."
+expect = { methods = ["interrogate"], no_edits = true }
+
+[[case]]
+id = "cov-figure-it-out"
+activation = "router"
+prompt = "Big one: replace the dict-based orders throughout this repo with a typed Order model, keeping every behaviour identical. Work out how to approach it."
+expect = { any_method = ["figure-it-out", "plan", "orchestrate"] }
+notes = "Several methods are defensible; this records which one wins."
+
+[[case]]
+id = "cov-arena"
+activation = "router"
+prompt = "Build two complete, different fixes for the webhook dedupe bug, compare them, and merge the best parts into one final fix."
+expect = { any_method = ["arena", "swarm"] }
+
+[[case]]
+id = "cov-show-me-your-work"
+activation = "router"
+prompt = "Fix the paid to pending transition bug in state.py, and keep an evidence-linked decision trail I can review later."
+expect = { methods = ["show-me-your-work"] }
+
+[[case]]
+id = "cov-interactive-explainer"
+activation = "router"
+prompt = "Build me an interactive HTML page where I can step an order through its states and see which transitions state.py allows."
+expect = { methods = ["interactive-explainer"] }
+
+[[case]]
+id = "cov-deep-dive"
+activation = "router"
+prompt = "Write a long-form explainer article on idempotent webhook handling, as a standalone HTML page I can read later."
+expect = { methods = ["deep-dive-explainer"] }
+
+[[case]]
+id = "cov-fuzz"
+activation = "router"
+prompt = "handle_carrier_event receives untrusted JSON from the carrier. Throw lots of malformed and random payloads at it and find what crashes."
+expect = { any_method = ["fuzz-testing", "property-testing"] }
+
+[[case]]
+id = "cov-reflect-explicit"
+activation = "router"
+prompt = "Reflect on this session and extract any lessons worth keeping."
+expect = { methods = ["reflect"] }
+
+[[case]]
+id = "cov-bro-explicit"
+activation = "router"
+prompt = "Switch to bro mode for the rest of this chat. First question: what does retry.py do?"
+expect = { methods = ["bro"], no_edits = true }
+
+[[case]]
+id = "cov-automate-me-explicit"
+activation = "router"
+prompt = "Make me a personal mode from my preferences: terse answers, tests before code, never commit without asking."
+expect = { methods = ["automate-me"] }
