@@ -102,7 +102,7 @@ A method is a skill or a router playbook. The expectations below apply to both.
 | `no_methods = true` | Nothing besides the router was used. Use this for trivial requests. |
 | `no_edits = true` | The workspace is unchanged. Changes are detected from `git status`, so shell edits count. |
 | `edits_any = [...]` | Some changed path contains one of the listed substrings. |
-| `reads = [...]` | Some skill file read contains each listed substring, for example `references/principles/prove-it-works.md`. |
+| `reads = [...]` | Some skill file read contains each listed substring, for example `yesh-router/references/principles/prove-it-works.md`. |
 | `answer = [...]` | Each regex matches the final answer. Case-insensitive. |
 | `max_skill_files = N` | At most N skill files were read. This is a cost and overhead check. |
 

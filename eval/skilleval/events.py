@@ -59,7 +59,7 @@ def _skill_refs(text: str, known: set[str], via: str) -> list[Event]:
             continue  # inside "<skill>/...", already counted by the outer match
         if name == "playbooks":
             name, rest = "yesh-router", f"playbooks/{rest}"
-        if name not in known and name != "references":
+        if name not in known:
             continue
         out.append(Event("read", f"{name}/{rest}", via))
         if rest == "SKILL.md":

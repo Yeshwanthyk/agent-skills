@@ -20,7 +20,7 @@ Build the system model around **authoritative state**.
 7. Derive proportionate boundary tests from the transitions, invariants, races, replay, and recovery in scope. Use the testing handoff below when generated exploration would strengthen a specific claim.
 8. Use [`references/formal-modeling.md`](references/formal-modeling.md) when critical or concurrent behavior remains ambiguous after the transition model.
 
-When modeling stage cursors, publication, or metadata-driven replay, use [forward implementation first](../references/principles/forward-implementation-first.md) to distinguish administrative records from authoritative controls.
+When modeling stage cursors, publication, or metadata-driven replay, use [forward implementation first](../yesh-router/references/principles/forward-implementation-first.md) to distinguish administrative records from authoritative controls.
 
 ## Testing handoff
 

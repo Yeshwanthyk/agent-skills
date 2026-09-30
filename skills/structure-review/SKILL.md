@@ -11,12 +11,12 @@ Trace enough of the production path and its checks to understand the affected bo
 
 Use the relevant shared principles to examine a real design choice:
 
-- [Simplicity](../references/principles/simplicity.md): does a layer hide useful complexity or merely pass it on?
-- [Boundary discipline](../references/principles/boundary-discipline.md): what prevents invalid input or state at the boundary?
-- [Type-system discipline](../references/principles/type-system-discipline.md): do the types make invalid combinations unrepresentable?
-- [State ownership](../references/principles/state-ownership.md): who owns each value, transition, and cleanup?
-- [Recovery and idempotency](../references/principles/recovery-and-idempotency.md): what happens after interruption or repeated delivery?
-- [Prove it works](../references/principles/prove-it-works.md): what evidence supports the behavior claim?
+- [Simplicity](../yesh-router/references/principles/simplicity.md): does a layer hide useful complexity or merely pass it on?
+- [Boundary discipline](../yesh-router/references/principles/boundary-discipline.md): what prevents invalid input or state at the boundary?
+- [Type-system discipline](../yesh-router/references/principles/type-system-discipline.md): do the types make invalid combinations unrepresentable?
+- [State ownership](../yesh-router/references/principles/state-ownership.md): who owns each value, transition, and cleanup?
+- [Recovery and idempotency](../yesh-router/references/principles/recovery-and-idempotency.md): what happens after interruption or repeated delivery?
+- [Prove it works](../yesh-router/references/principles/prove-it-works.md): what evidence supports the behavior claim?
 
 Read only the notes that help assess the change. Consider other quality concerns when the code and task make them relevant.
 

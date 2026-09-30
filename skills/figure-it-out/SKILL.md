@@ -17,13 +17,13 @@ Break the task into meaningful units with a clear dependency order. Sequence the
 
 Record the workflow in the task's existing checklist, plan, or decision trail. Read [`show-me-your-work`](../show-me-your-work/SKILL.md) when a long-running or unattended task needs its durable audit format.
 
-For staged workflows or administrative blockers, apply [forward implementation first](../references/principles/forward-implementation-first.md) to select meaningful units and bound replay.
+For staged workflows or administrative blockers, apply [forward implementation first](../yesh-router/references/principles/forward-implementation-first.md) to select meaningful units and bound replay.
 
 ## Run and adapt
 
-For each meaningful unit, state the hypothesis or intended observable result, make the smallest change, inspect the artifact, and run the relevant check before building on it. Use the [evidence-discipline principle](../references/principles/evidence-discipline.md) to match proof to the claim. A unit can be marked verified, not verified, or inconclusive; an observation-method failure is not a product pass. If a plan changes because evidence disagrees, record the decision and continue from the new constraint.
+For each meaningful unit, state the hypothesis or intended observable result, make the smallest change, inspect the artifact, and run the relevant check before building on it. Use the [evidence-discipline principle](../yesh-router/references/principles/evidence-discipline.md) to match proof to the claim. A unit can be marked verified, not verified, or inconclusive; an observation-method failure is not a product pass. If a plan changes because evidence disagrees, record the decision and continue from the new constraint.
 
-Use the [delegation contract](../references/delegation.md) for delegated roles and reconcile their artifacts. Remove temporary probes. Keep the task within its stated scope and stop when the outcome is proven or a concrete blocker requires a decision.
+Use the [delegation contract](../yesh-router/references/delegation.md) for delegated roles and reconcile their artifacts. Remove temporary probes. Keep the task within its stated scope and stop when the outcome is proven or a concrete blocker requires a decision.
 
 ## Close
 

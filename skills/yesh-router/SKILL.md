@@ -37,7 +37,7 @@ After a context gap or handoff, recover router activation, the selected workflow
 
 Before a consequential decision, consult [principle-triggers.md](principle-triggers.md) and read the applicable principle notes. They are shared references, not review-only rules: read only the notes whose conditions apply, and report the decision and evidence rather than a checklist of principle names.
 
-When delegating work, follow the shared [delegation contract](../references/delegation.md). When locating or reconciling sessions, follow the shared [session-records contract](../references/session-records.md). Both are portable and harness-neutral; model and effort defaults belong to host configuration, not to these notes.
+When delegating work, follow the shared [delegation contract](references/delegation.md). When locating or reconciling sessions, follow the shared [session-records contract](references/session-records.md). Both are portable and harness-neutral; model and effort defaults belong to host configuration, not to these notes.
 
 ## Finish
 

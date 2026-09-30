@@ -15,7 +15,7 @@ Read the current implementation and relevant tests when changing an existing sys
 
 Start with what changes, who benefits, why the shape fits, and the tradeoffs that matter. Keep this orientation short.
 
-For staged delivery, replay, or metadata gates, apply [forward implementation first](../references/principles/forward-implementation-first.md) when selecting work and proof. Name the affected dependency cone and replay conditions rather than making administrative completion a prerequisite.
+For staged delivery, replay, or metadata gates, apply [forward implementation first](../yesh-router/references/principles/forward-implementation-first.md) when selecting work and proof. Name the affected dependency cone and replay conditions rather than making administrative completion a prerequisite.
 
 ## Build the packet
 
@@ -27,11 +27,11 @@ For staged delivery, replay, or metadata gates, apply [forward implementation fi
 6. Describe migration, compatibility, rollout, observability, recovery, and rollback only where they affect delivery.
 7. End with open decisions and the chunks or gates they block.
 
-Use [`change-shape.md`](references/change-shape.md) for feature/refactoring guidance. Use [`program-template.md`](references/program-template.md) when the work spans phases, stacked changes, or multiple owners. Delegate distinct read-only exploration through the [shared delegation contract](../references/delegation.md) when it reduces risk; reconcile reports against the source.
+Use [`change-shape.md`](references/change-shape.md) for feature/refactoring guidance. Use [`program-template.md`](references/program-template.md) when the work spans phases, stacked changes, or multiple owners. Delegate distinct read-only exploration through the [shared delegation contract](../yesh-router/references/delegation.md) when it reduces risk; reconcile reports against the source.
 
 ## Verification matrix
 
-For broad input/transition contracts or malformed-input boundaries, consult the [evidence-discipline principle](../references/principles/evidence-discipline.md) to select property or fuzz testing. Specify the invariant, generator or target, budget, and replay plan within the applicable lane; planning alone does not execute it.
+For broad input/transition contracts or malformed-input boundaries, consult the [evidence-discipline principle](../yesh-router/references/principles/evidence-discipline.md) to select property or fuzz testing. Specify the invariant, generator or target, budget, and replay plan within the applicable lane; planning alone does not execute it.
 
 Match checks to changed behavior. Name a concrete scenario, command or driving procedure, artifact/output, and pass predicate for each applicable lane:
 

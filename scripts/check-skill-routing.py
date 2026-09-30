@@ -19,7 +19,7 @@ from urllib.parse import unquote, urlsplit
 
 ROUTER_REL = Path("skills/yesh-router")
 RETIRED_ROUTER_REL = Path("skills/yesh-mode")
-SHARED_REL = Path("skills/references")
+SHARED_REL = Path("skills/yesh-router/references")
 PRINCIPLES_REL = SHARED_REL / "principles"
 RETIRED_PATH_POLICY = "retired-router-paths-forbidden"
 
@@ -34,7 +34,7 @@ SHARED_REFERENCES = ("delegation.md", "session-records.md")
 # spelling even when an old path is temporarily a symlink to its replacement.
 LEGACY_PREFIXES = (RETIRED_ROUTER_REL,)
 LEGACY_FILES = {
-    Path("skills/references/agent-routing.md"),
+    SHARED_REL / "agent-routing.md",
 }
 
 _FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
@@ -326,7 +326,7 @@ def _legacy_reason(root: Path, link: MarkdownLink) -> Optional[str]:
             continue
         if relative in LEGACY_FILES:
             if relative.name == "agent-routing.md":
-                return "agent-routing.md was replaced by references/delegation.md"
+                return "agent-routing.md was replaced by yesh-router/references/delegation.md"
             return "session-records.md must live in shared references"
         for prefix in LEGACY_PREFIXES:
             if relative == prefix or prefix in relative.parents:
