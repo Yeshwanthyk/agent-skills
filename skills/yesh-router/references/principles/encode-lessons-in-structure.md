@@ -7,4 +7,4 @@
 - Reflection-only work proposes this change; it does not authorize implementation.
 - Do not paper over symptoms with an instruction: if the fix is structural, use the structural fix.
 
-**Limits:** a one-off tool for the work in front of you is [build-the-lever](build-the-lever.md).
+**Limits:** a one-off tool for the work in front of you is [build-the-lever](build-the-lever.md). Mining a repo's history for repeated agent mistakes and fixing them in bulk is the [correct](../../../correct/SKILL.md) skill.

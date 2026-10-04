@@ -2,7 +2,7 @@
 
 Choose by the requested outcome, following the selection rules in the router policy. These sections are actual navigation groups, not execution stages. Select a main workflow and supporting methods by these conditions, then read their target files. The same entry can own a task or support one step of another workflow. Other installed skills remain eligible through the host's catalog and their invocation rules. A supporting method inherits the task's scope.
 
-This catalog is authoritative for router method IDs and eligibility. Entry IDs are the method names exactly as written in the Method column; entries marked **explicit request** need the user to ask for that activity and are excluded otherwise. Catalog version: v4 — increment it when method IDs or eligibility change.
+This catalog is authoritative for router method IDs and eligibility. Entry IDs are the method names exactly as written in the Method column; entries marked **explicit request** need the user to ask for that activity and are excluded otherwise. Catalog version: v6 — increment it when method IDs or eligibility change.
 
 ## Understand and diagnose
 
@@ -41,8 +41,10 @@ For an ordinary feature or refactoring with a settled shape, implement directly.
 | Explore parser or untrusted-input boundaries with coverage feedback | [fuzz-testing](../fuzz-testing/SKILL.md) |
 | Create a reusable verifier for a real application surface | [create-verification-skill](../create-verification-skill/SKILL.md) |
 | Audit or repair an existing application verification skill | [maintain-verification-skill](../maintain-verification-skill/SKILL.md) |
+| Vet a measured performance number before reporting or acting on it | [benchmark-checklist](../benchmark-checklist/SKILL.md) |
 | Prove visual equivalence against a reference implementation | [visual-parity](playbooks/visual-parity.md) |
 | Evaluate whether a skill or prompt change improves agent behavior | [eval](playbooks/eval.md) |
+| User asks to stop agents repeating the same mistakes in a repo — **explicit request** | [correct](../correct/SKILL.md) |
 
 ## Coordinate and continue
 
@@ -60,13 +62,14 @@ For an ordinary feature or refactoring with a settled shape, implement directly.
 
 | Use when | Method |
 | --- | --- |
+| Teach a body of work so the user understands it, escalating to visual or interactive artifacts when they land faster | [teach](../teach/SKILL.md) |
 | Create or update a PR description (always include a visual change outline), or explain the current topic with a concise diagram or code sketch | [show-me](../show-me/SKILL.md) |
 | Turn a document or discussion into an interactive browser slide deck | [interactive-slides](../interactive-slides/SKILL.md) |
 | Build an interactive HTML model of behavior or state | [interactive-explainer](../interactive-explainer/SKILL.md) |
 | Build a narrated motion explainer or explainer video | [motion-explainer](../motion-explainer/SKILL.md) |
 | Map a codebase's modules and review its structure file by file | [module-map](../module-map/SKILL.md) |
 | Research and write a connected long-form HTML article | [deep-dive-explainer](../deep-dive-explainer/SKILL.md) |
-| Clean padded prose while preserving facts and voice | [unslop](../unslop/SKILL.md) |
+| Write or clean prose, docs, PR bodies, or commits so they read clearly on first pass | [unslop](../unslop/SKILL.md) |
 | Switch the conversation to Bro's plain-English style — **explicit request** | [bro](../bro/SKILL.md) |
 
 ## Improve the working method

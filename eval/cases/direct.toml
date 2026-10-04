@@ -29,5 +29,12 @@ expect = { methods = ["blast-radius"], no_edits = true }
 
 [[case]]
 id = "direct-unslop"
+tags = ["port"]
 prompt = "docs.md reads padded and AI-ish. Clean up the prose without losing any facts."
 expect = { methods = ["unslop"] }
+
+[[case]]
+id = "correct-findings-only"
+tags = ["port"]
+prompt = "Use the correct skill on this repo. Report the repeated mistake classes and the level you'd fix each at, but don't change anything yet."
+expect = { methods = ["correct"], no_edits = true }

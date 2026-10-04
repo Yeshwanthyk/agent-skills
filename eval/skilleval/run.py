@@ -145,7 +145,7 @@ def evaluate(case: Case, harness: str, activation: str, stream: str, known: set[
         tr.error = f"timed out after {TIERS[case.tier]['timeout_s']}s"
     checks = grade(tr, case.expect, activation)
     # Account limits and outages say nothing about the skills; report them apart.
-    infra = bool(re.search(r"session limit|usage limit|rate.?limit|overloaded", tr.error or "", re.I))
+    infra = bool(re.search(r"session limit|usage limit|rate.?limit|overloaded|model is not supported|model_not_found|unknown model", tr.error or "", re.I))
     return {
         "id": case.id, "file": case.file, "tier": case.tier, "activation": activation,
         "passed": all(c.passed for c in checks),

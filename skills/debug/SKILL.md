@@ -21,7 +21,7 @@ One mechanism must explain how the symptom occurs. A plausible story without a c
 
 ## Correct
 
-A diagnosis-only request ends with the cause and evidence. When a fix is requested, change the first evidenced divergence. Consult [`architect`](../architect/SKILL.md) when the target shape is unsettled. Preserve the red signal when a cheap test can pin it. Keep validation at boundaries and migrate evidenced sibling callers within scope. Do not add speculative guards, retries, or compatibility branches.
+A diagnosis-only request ends with the cause and evidence. When a fix is requested, change the first evidenced divergence. Consult [`architect`](../architect/SKILL.md) when the target shape is unsettled. When a cheap local test can pin the red signal, write it before the fix and run it: it must fail for the intended reason, not a setup or unrelated error. Prefer no new test over a bad one: a test of mocks, implementation details, timing, or expensive infrastructure for a small fix. Then use the closest executable check instead (a script, reproduction command, or browser drive). Never edit or weaken a test to match a wrong implementation. Keep validation at boundaries and migrate evidenced sibling callers within scope. Do not add speculative guards, retries, or compatibility branches.
 
 Delegation is optional. If useful, follow the [shared delegation contract](../yesh-router/references/delegation.md), assign a precise read-only diagnosis or disjoint edit, then inspect the actual diff and proof yourself.
 

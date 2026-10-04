@@ -24,6 +24,7 @@ The loading map for the shared principle notes. Before a consequential decision,
 | Claiming completion, or verifying a change or delegated result | [prove-it-works](references/principles/prove-it-works.md) |
 | Choosing what a test or check should assert | [test-behavior](references/principles/test-behavior.md) |
 | Debugging a reproducible failure or recurring incidents | [fix-root-causes](references/principles/fix-root-causes.md) |
+| Trusting, reporting, or acting on a measured number (speedup, regression, latency, eval result) | [explain-the-number](references/principles/explain-the-number.md) |
 | Matching proof to a claim, or deciding when evidence is enough | [evidence-discipline](references/principles/evidence-discipline.md) |
 | Resuming prior work or trusting prior records | [evidence-lifecycle](references/principles/evidence-lifecycle.md) |
 | Improving a workflow where a recurring instruction repeats | [encode-lessons-in-structure](references/principles/encode-lessons-in-structure.md) |

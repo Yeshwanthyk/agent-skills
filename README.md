@@ -11,9 +11,11 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`architect`](./skills/architect) | Chooses a target architecture from live contracts, execution paths, state ownership, and constraints. |
 | [`arena`](./skills/arena) | Runs complete competing candidates, cross-judges them, and grafts the best result into one verified artifact. |
 | [`automate-me`](./skills/automate-me) | Turns repeated working preferences into a reviewed personal mode skill. |
+| [`benchmark-checklist`](./skills/benchmark-checklist) | Vets a performance number (limiter, tuning, limits, errors, repeatability, relevance, whether the work ran) before it is reported or acted on. |
 | [`blast-radius`](./skills/blast-radius) | Finds what a change could break beyond grep and proves the main safety facts. |
 | [`breadboarding`](./skills/breadboarding) | Maps operator workflows into UI, code, stores, and explicit control and data wiring. |
 | [`bro`](./skills/bro) | Switches the conversation to short, plain, unambiguous English. |
+| [`correct`](./skills/correct) | Finds mistakes agents keep repeating in a repo and makes each impossible through architecture, types, checks, or tests. |
 | [`create-verification-skill`](./skills/create-verification-skill) | Creates and proves a project-local skill that drives one real application surface. |
 | [`deep-dive-explainer`](./skills/deep-dive-explainer) | Researches mechanisms, evidence, alternatives, and limits, then renders a connected long-form article with a reusable offline layout. |
 | [`debug`](./skills/debug) | Reproduces failures, finds the first contract divergence, and applies and proves the smallest coherent fix when requested. |
@@ -35,7 +37,8 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`show-me-your-work`](./skills/show-me-your-work) | Keeps an auditable decision trail for long, unattended, or later-reviewed work. |
 | [`stateful-systems`](./skills/stateful-systems) | Models authoritative state, transitions, invariants, concurrency, replay, and recovery. |
 | [`swarm`](./skills/swarm) | Runs one bounded parallel coverage pass or solution race and synthesizes its evidence. |
-| [`unslop`](./skills/unslop) | Cleans padded or AI-sounding prose without changing its facts or voice. |
+| [`teach`](./skills/teach) | Teaches a body of work in layers, combining `how` and `why` and escalating to diagrams, interactive models, or narrated explainers. |
+| [`unslop`](./skills/unslop) | Writes and cleans prose, docs, PR bodies, and commits so they read clearly on first pass, with a technical-writing standard for documentation. |
 | [`why`](./skills/why) | Investigates the evidence behind existing code and shipped technical, product, or operational decisions. |
 | [`structure-review`](./skills/structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
 | [`yesh-router`](./skills/yesh-router) | Routes tasks across the collection and applies relevant engineering principles on explicit activation. |

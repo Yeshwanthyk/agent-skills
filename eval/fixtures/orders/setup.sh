@@ -16,6 +16,7 @@ cat > README.md <<'MD'
 Tiny order service: pricing, payment retries, order state, and carrier webhooks.
 Run tests with `python3 -m unittest`. Run the pricing benchmark with `python3 bench.py`.
 MD
+printf '__pycache__/\n*.pyc\n' > .gitignore
 cat > orders/__init__.py <<'PY'
 PY
 cat > orders/pricing.py <<'PY'

@@ -4,12 +4,14 @@
 
 [[case]]
 id = "pb-perf-one-off"
+tags = ["port"]
 activation = "router"
 prompt = "Pricing is slow: bench.py shows about 170ms for a big cart. Make it fast."
 expect = { any_method = ["perf-issue", "hillclimb"] }
 
 [[case]]
 id = "pb-hillclimb-target"
+tags = ["port"]
 activation = "router"
 prompt = "Get bench.py under 2ms. Measure every step and keep iterating until it hits the target."
 expect = { methods = ["hillclimb"] }

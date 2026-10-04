@@ -1,0 +1,32 @@
+# Skills changed in the pstack 0.15.9 port. Activation is left to --activation
+# so each case runs both with and without the router.
+
+[[case]]
+id = "port-teach-state"
+tags = ["port"]
+prompt = "I'm reviewing a change to state.py next week. Help me really understand the order state machine: what it is, how it works, and why it's shaped this way."
+expect = { methods = ["teach"], no_edits = true }
+
+[[case]]
+id = "port-correct-natural"
+tags = ["port"]
+prompt = "I keep correcting agents in this repo for the same kinds of mistakes. Find the recurring patterns in the history and tell me how you'd make each one impossible to repeat. Don't change anything yet."
+expect = { methods = ["correct"], no_edits = true }
+
+[[case]]
+id = "port-unslop-new-doc"
+tags = ["port"]
+prompt = "Write a short how-to section in README.md for running the pricing benchmark and reading its output."
+expect = { methods = ["unslop"], edits_any = ["README.md"] }
+
+[[case]]
+id = "port-vet-speedup"
+tags = ["port"]
+prompt = "I tweaked pricing and bench.py dropped from 170ms to 0.4ms. Before I put that number in the PR, is it trustworthy? Don't change code."
+expect = { methods = ["benchmark-checklist"], no_edits = true }
+
+[[case]]
+id = "port-architect-agent-proof"
+tags = ["port"]
+prompt = "Agents keep adding new order states by editing TRANSITIONS in one place and forgetting the others. Pick a structure for the state machine that makes that mistake impossible. Design only."
+expect = { any_method = ["architect", "correct"], no_edits = true }

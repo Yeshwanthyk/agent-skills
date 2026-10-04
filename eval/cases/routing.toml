@@ -16,6 +16,7 @@ expect = { methods = ["why"], not_methods = ["how"], no_edits = true }
 
 [[case]]
 id = "debug-diagnose-only"
+tags = ["port"]
 activation = "router"
 prompt = "test_redelivered_event_records_one_delivery is failing. Find the cause, but don't change any code yet."
 expect = { methods = ["debug"], no_edits = true }
@@ -28,6 +29,7 @@ expect = { methods = ["shaping"], not_methods = ["plan"], no_edits = true }
 
 [[case]]
 id = "architect-dedupe-boundary"
+tags = ["port"]
 activation = "router"
 prompt = "Should webhook dedupe live in the handler, in a middleware layer, or in storage? This decides how every future integration works, so pick the boundary."
 expect = { any_method = ["architect"], no_edits = true }
@@ -79,9 +81,9 @@ notes = "Trivial edit: the router should load but select nothing else."
 [[case]]
 id = "explicit-only-not-triggered"
 activation = "router"
-tags = ["overhead"]
+tags = ["port", "overhead"]
 prompt = "That last change went well, thanks. Separately: what does state.py do?"
-expect = { not_methods = ["reflect", "automate-me", "bro", "pause-safely"], no_edits = true }
+expect = { not_methods = ["reflect", "automate-me", "bro", "pause-safely", "correct"], no_edits = true }
 
 [[case]]
 id = "quoted-name-not-a-request"
@@ -89,3 +91,10 @@ activation = "router"
 tags = ["overhead"]
 prompt = "A teammate's note says 'hillclimb this later'. For now just tell me what bench.py measures."
 expect = { not_methods = ["hillclimb"], no_edits = true }
+
+[[case]]
+id = "teach-retry-flow"
+tags = ["port"]
+activation = "router"
+prompt = "I'm new to this repo and about to change the retry logic. Help me really understand how retries work here and why they're built this way."
+expect = { methods = ["teach"], no_edits = true }
