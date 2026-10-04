@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 390">
+  <rect width="800" height="390" rx="12" fill="#f4f4ef"/>
+  <g font-family="sans-serif" fill="#253831">
+    <text x="48" y="48" font-size="15" letter-spacing="1.5">PROCESSES</text>
+    <text x="496" y="48" font-size="15" letter-spacing="1.5">DESTINATIONS</text>
+    <rect x="48" y="90" width="198" height="80" rx="6" fill="#e1ebe5" stroke="#557260" stroke-width="2"/>
+    <rect x="48" y="242" width="198" height="80" rx="6" fill="#e1ebe5" stroke="#557260" stroke-width="2"/>
+    <text x="147" y="138" text-anchor="middle" font-size="24">Build A</text>
+    <text x="147" y="290" text-anchor="middle" font-size="24">Build B</text>
+    <rect x="496" y="166" width="256" height="80" rx="6" fill="#f3e8ce" stroke="#927348" stroke-width="2"/>
+    <text x="624" y="213" text-anchor="middle" font-family="monospace" font-size="22">output.zip</text>
+  </g>
+  <g stroke="#927348" stroke-width="2.5" fill="none" stroke-linejoin="round">
+    <path d="M246 130H362V206H478M246 282H362V206"/>
+    <path d="M468 198L478 206L468 214"/>
+  </g>
+  <text x="496" y="287" font-family="sans-serif" font-size="17" fill="#735c3b">Both writes target this path.</text>
+</svg>

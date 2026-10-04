@@ -1,6 +1,6 @@
 ---
 name: deep-dive-explainer
-description: Research a topic and write a long-form, connected explainer as a standalone HTML article. Use for deep dives into technology, science, history, or processes; not for interactive simulations.
+description: Research a topic and write a long-form, connected explainer as a standalone HTML article, with illustrated or animated explanations when they help teach the mechanism. Use for deep dives into technology, science, history, or processes; not for standalone interactive simulations.
 ---
 
 # Deep Dive Explainer
@@ -16,6 +16,14 @@ Produce an original, source-grounded article that teaches how the pieces connect
 5. Draft using the language and section guidance below. Each section answers a different reader question. Give a mechanism its full explanation in one home; later sections link back and add a new consequence or application. The opening promises the explanation; the ending gives a judgment rather than repeating the article.
 6. Review the draft in reader order: define core terms before the mechanisms that depend on them, and remove caveats that merely repeat an earlier explanation. Audit adoption-changing claims and exact runtime guarantees against the notes; check broad words such as “always,” “bounded,” and “in order” against failure and concurrency paths. Put descriptive source links beside supported claims. Distinguish provider claims, measured results, proposals, and deductions in ordinary prose. Resolve contradictory sources or name the exact uncertainty. Cite benchmarks with workload and environment; compare costs with assumptions and operator costs.
 7. For HTML, read [the content contract](references/content.md), write `article.json`, then execute the bundled renderer. Do not read or regenerate the renderer or stylesheet during ordinary authoring. They own layout, escaping, navigation, and print styles. Revise content and rerender; alter the shared assets only when explicitly asked to change the reusable design.
+
+## Illustrated and animated explanations
+
+When adding illustrations, state changes, or motion, read [the visual explanation workflow](references/visual-explanations.md) before making assets. Start from a reader question and storyboard the causal steps. Choose the drawing method from the subject and reference; a color palette alone does not reproduce an illustration style. Keep one visual model stable as the explanation grows, and give each state a concrete observation, explanation, and relevant prediction or comparison.
+
+Use the renderer's `sequence` block for a finite walkthrough with authored frames, editable captions, optional code, and questions. It supplies manual navigation, opt-in playback, reduced-motion behavior, and a readable transcript. Choose states and pacing for the lesson; do not impose a fixed count or animate every section. A continuous simulation with free inputs belongs to the interactive-explainer workflow. In either case, research remains the authority for what the visual claims.
+
+Inspect the complete figure at its article width, including its least convenient state and a narrow layout. Revise incoherent perspective, uneven line weight, cramped labels, illegible text, and decorative movement before delivery. Verify state behavior separately from visual quality. Passing a renderer check proves structure; learner understanding requires reader evidence.
 
 ## Language and composition
 

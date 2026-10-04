@@ -1,0 +1,23 @@
+.explanation-sequence{margin:2rem 0;padding:1.1rem;border:1px solid var(--line)}
+.explanation-sequence>figcaption{font:inherit;font-size:.85rem;margin:0 0 1rem;color:var(--text)}
+.sequence-controls{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.sequence-controls[hidden]{display:none}.sequence-controls button{min-height:42px;font-size:.75rem}
+.sequence-controls label{display:flex;align-items:center;gap:.5rem;font-size:.75rem}
+.sequence-controls input{max-width:130px;accent-color:var(--link)}
+.sequence-controls span{font-size:.75rem;color:var(--muted)}
+.sequence-controls button:disabled{opacity:.5;cursor:default}
+.sequence-controls input:focus-visible{outline:2px solid var(--link);outline-offset:3px}
+.sequence-image{display:block;width:100%;height:auto;margin-bottom:1rem}
+.sequence-viewport{overflow-x:auto;margin-bottom:1rem}.sequence-viewport .sequence-image{min-width:var(--sequence-min-width);margin-bottom:0}
+.sequence-stage h3{margin:1rem 0 .6rem}.sequence-stage p{margin-bottom:.8rem}
+.sequence-change{font-size:.85rem;color:var(--link)}
+.sequence-code>span,.sequence-source{font-size:.75rem;color:var(--muted)}
+.sequence-code pre{margin:.5rem 0 1rem}.sequence-stage details{margin:.75rem 0}
+.sequence-stage details summary{color:var(--link)}.sequence-stage details p{margin-top:.6rem}
+[data-sequence-transcript]{margin-top:1rem;font-size:.85rem}
+[data-sequence-transcript] li{margin-bottom:2rem}[data-sequence-transcript] h3{margin-top:1rem}
+.sequence-announcement{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(prefers-reduced-motion:no-preference){.sequence-enter .sequence-image{animation:sequence-settle 220ms ease-out}@keyframes sequence-settle{from{opacity:.82}to{opacity:1}}}
+@media(prefers-reduced-motion:reduce){.explanation-sequence *{animation:none!important;transition:none!important}}
+@media(max-width:600px){.explanation-sequence{padding:.75rem}.sequence-controls label{flex-basis:100%}.sequence-controls input{max-width:180px}}
+@media print{.sequence-controls,.sequence-stage,.sequence-announcement{display:none!important}[data-sequence-transcript]>ol{display:block!important}[data-sequence-transcript]>summary{display:none}[data-sequence-transcript] details>p{display:block!important}[data-sequence-transcript] li{break-inside:avoid}.explanation-sequence{border:0;padding:0}.sequence-image{max-height:65vh;object-fit:contain}.sequence-viewport{overflow:visible}.sequence-viewport .sequence-image{min-width:0}}

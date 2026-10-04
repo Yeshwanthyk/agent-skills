@@ -1,0 +1,26 @@
+{
+  "interval_ms": 9000,
+  "min_width": 600,
+  "states": [
+    {
+      "title": "Two builds share one destination",
+      "image": "shared.svg",
+      "alt": "Build A and build B both point to the same output.zip path.",
+      "explanation": "The processes are separate, but their destination is shared. Either can replace the other's archive in this design.",
+      "changed": "Watch the destination paths, not the process names.",
+      "question": {"prompt": "Would launching a second process give it a different output file?", "answer": "Only if the design gives it a different path. Here both processes write to output.zip."},
+      "code": "build A -> output.zip\nbuild B -> output.zip",
+      "language": "text"
+    },
+    {
+      "title": "Give each run a separate destination",
+      "image": "separate.svg",
+      "alt": "Build A points to run-a/output.zip; build B points to run-b/output.zip. The build boxes retain their positions.",
+      "explanation": "Keep the processes and change the paths. Each archive now has its own destination, so these two writes no longer target the same file.",
+      "changed": "The paths change. Shared inputs and publication still need separate rules.",
+      "question": {"prompt": "Does this also prove that the builds share no other state?", "answer": "No. The figure describes output destinations. It says nothing about caches, inputs, or a later publication step."},
+      "code": "build A -> run-a/output.zip\nbuild B -> run-b/output.zip",
+      "language": "text"
+    }
+  ]
+}

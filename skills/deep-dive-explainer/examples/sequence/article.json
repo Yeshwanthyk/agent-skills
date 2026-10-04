@@ -1,0 +1,15 @@
+{
+  "title": "Two builds, two destinations",
+  "summary": "Change one part of an illustrative build design and see which problem it solves.",
+  "date": "2026-09-30",
+  "intro": [
+    "Imagine two processes producing an archive at the same time. This small design example asks where each process writes its output.",
+    {"sequence": "walkthrough.json", "caption": "Keep the processes in place; change their destinations."}
+  ],
+  "sections": [
+    {"heading": "What does a separate path establish?", "blocks": [
+      "In the second design, the two archive paths are different. That separates these output files. It does not establish how inputs are shared or how a later publication step chooses an archive. Those are different relationships to explain.",
+      "The drawings are authored states of an illustrative design. Playback shows the comparison; it does not execute a build."
+    ]}
+  ]
+}

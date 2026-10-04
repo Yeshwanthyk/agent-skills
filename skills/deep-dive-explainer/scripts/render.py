@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import sys
 from urllib.parse import urlsplit
+from sequences import render_sequence
 
 
 def string(value):
@@ -35,6 +36,7 @@ def render(data, source_dir=None):
     keys(data, ('title', 'summary', 'date', 'intro', 'sections'), ('author',))
     datetime.date.fromisoformat(string(data['date']))
     ids, fragments, toc = set(), set(), []
+    sequence_count = 0
 
     def inline(value):
         value = string(value)
@@ -59,6 +61,7 @@ def render(data, source_dir=None):
         return ''.join(result)
 
     def blocks(values):
+        nonlocal sequence_count
         output = []
         for value in sequence(values, nonempty=False):
             if isinstance(value, str):
@@ -73,6 +76,9 @@ def render(data, source_dir=None):
                 keys(value, ('code',), ('language',))
                 label = html.escape(string(value.get('language', 'text')))
                 output.append(f'<figure><figcaption>{label}</figcaption><pre tabindex="0"><code>{html.escape(string(value["code"]))}</code></pre></figure>')
+            elif isinstance(value, dict) and 'sequence' in value:
+                sequence_count += 1
+                output.append(render_sequence(value, source_dir, sequence_count, inline, keys, string, sequence))
             elif isinstance(value, dict) and 'mermaid' in value:
                 keys(value, ('mermaid', 'svg', 'caption', 'alt'))
                 if source_dir is None:
@@ -132,6 +138,9 @@ def render(data, source_dir=None):
     assets = Path(__file__).resolve().parent.parent / 'assets'
     css = (assets / 'reading.css').read_text()
     script = (assets / 'reading.js').read_text() + '\n' + (assets / 'annotations.js').read_text()
+    if sequence_count:
+        css += '\n' + (assets / 'sequences.css').read_text()
+        script += '\n' + (assets / 'sequences.js').read_text()
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title><style>{css}</style></head>
 <body><a class="skip" href="#article">Skip to article</a><div class="layout"><aside><nav aria-label="In this article"><details open><summary>In this article</summary><ol>{''.join(toc)}</ol></details><details class="reading-controls" data-reading-controls hidden><summary>Keyboard reading</summary><label><input type="checkbox" data-reading-keys checked> Enable shortcuts</label><p><kbd>j</kbd> / <kbd>k</kbd> down / up<br><kbd>d</kbd> / <kbd>u</kbd> half page<br><kbd>gg</kbd> top · <kbd>G</kbd> bottom</p><p>Ctrl+D / Ctrl+U also work. Browser Find stays available.</p></details></nav></aside><main id="article"><header><h1>{title}</h1><p class="meta">{author}<time datetime="{data['date']}">{data['date']}</time></p><p class="summary">{summary}</p></header><article>{intro}{body}</article><footer><a href="#article">Back to top ↑</a></footer></main></div><script>{script}</script></body></html>'''
