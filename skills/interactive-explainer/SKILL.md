@@ -1,6 +1,6 @@
 ---
 name: interactive-explainer
-description: Build a source-grounded interactive HTML explanation of behavior or state.
+description: Build a source-grounded interactive HTML explanation of behavior or state. For a narrated, timeline-driven explainer or a video, use motion-explainer.
 ---
 
 # Interactive Explainer
@@ -15,13 +15,14 @@ Build an **inspectable model**: every interaction should reveal behavior grounde
 4. Model entities, transitions, and scenarios as data consumed by a shared renderer.
 5. Show source state and derived state as distinct concepts. Mark boundary crossings with their contract, owner, state change, failure behavior, and proof point.
 6. Cite behavioral claims with file paths and line numbers.
-7. Use the requested visual direction when specified. Otherwise follow the project's visual system when one exists, or choose simple legible defaults.
+7. Use the requested visual direction when specified. Otherwise use the starter's systems look: near-black, monospace, hairline boxes joined by wires, amber for active, coral for failure, green for healthy, a packet labelled with its payload on each hop, and a callout on each derived or lagging state.
 8. Keep the HTML self-contained and preserve semantic controls, keyboard access, readable contrast, and reduced-motion behavior.
 9. Save the artifact at the requested or clearly named workspace path, run the validator, open the page, and exercise its primary interaction.
 
 ## Supporting Files
 
 - Use [`assets/starter.html`](assets/starter.html) as the base for scenario-driven explainers and as the visual-token reference for other forms.
+- When the explainer should play over time, with narration, a scrubber, or MP4 output, use [`../motion-explainer`](../motion-explainer/SKILL.md) instead. It shares this look and builds an HTML file you can edit.
 - Run `python3 scripts/validate_explainer.py <path-to-html>` before delivery.
 - The validator catches common structural and dependency mistakes. It is not a complete network or accessibility check; exercise the rendered page too.
 

@@ -1,0 +1,132 @@
+/* motion-explainer engine styles. Scenes restyle through these variables. */
+:root {
+  --mx-bg: #0a0a0a;
+  --mx-ink: #e9e6e1;
+  --mx-dim: #8a857e;
+  --mx-faint: #57534e;
+  --mx-line: rgba(255, 255, 255, 0.13);
+  --mx-amber: #e6b04f;
+  --mx-coral: #e0736a;
+  --mx-green: #9cc48a;
+  --mx-blue: #86aee0;
+  --mx-mono: "MX Plex Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #050505; color: var(--mx-ink); font-family: var(--mx-mono); overflow: hidden; }
+body { display: grid; grid-template-rows: 1fr auto; }
+
+#mx-viewport { position: relative; overflow: hidden; }
+#mx-stage {
+  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: 0 0;
+  background: var(--mx-bg); overflow: hidden; letter-spacing: 0.02em;
+}
+#mx-stage::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background: radial-gradient(ellipse 75% 70% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+}
+#mx-world { position: absolute; inset: 0; transform-origin: 960px 540px; }
+#mx-fx { position: absolute; inset: 0; width: 100%; height: 100%; }
+#mx-grain { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.035; pointer-events: none; mix-blend-mode: screen; z-index: 4; }
+#mx-dom { position: absolute; inset: 0; }
+
+/* chrome: title, act pill, caption */
+#mx-title { position: absolute; left: 140px; top: 74px; font-size: 30px; white-space: pre; z-index: 6; }
+#mx-title .k { color: var(--mx-amber); }
+.mx-cursor { display: inline-block; width: 0.58em; height: 1.05em; margin-left: 2px; vertical-align: -0.17em; background: var(--mx-amber); }
+#mx-pill {
+  position: absolute; right: 125px; top: 76px; height: 40px; padding: 0 20px 0 18px; z-index: 6;
+  border: 1px solid var(--mx-line); border-radius: 999px; display: flex; align-items: center; gap: 12px;
+  font-size: 21px; background: rgba(255, 255, 255, 0.02); white-space: pre;
+}
+#mx-pill i { width: 9px; height: 9px; border-radius: 50%; background: var(--mx-dim); }
+#mx-caption { position: absolute; left: 140px; top: 975px; font-size: 26px; white-space: pre; z-index: 6; }
+#mx-caption em { font-style: normal; color: var(--mx-amber); }
+
+/* elements: every element is absolutely placed by its center */
+.mx-el { position: absolute; left: 0; top: 0; will-change: transform, opacity; }
+.mx-box {
+  padding: 14px 26px; min-width: 200px; text-align: center;
+  border: 1px solid var(--mx-line); border-radius: 12px;
+  background: linear-gradient(180deg, #151515, #0d0d0d);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.mx-box .t { font-size: 26px; white-space: nowrap; }
+.mx-box .s { font-size: 18px; margin-top: 4px; color: var(--mx-dim); white-space: nowrap; }
+.mx-box.sm { padding: 12px 14px; min-width: 0; width: 178px; text-align: left; border-radius: 10px; }
+.mx-box.sm .t { font-size: 13px; color: var(--mx-amber); }
+.mx-box.sm .s { font-size: 14px; line-height: 1.35; color: var(--mx-ink); white-space: normal; min-height: 2.7em; }
+.mx-spin { display: inline-block; width: 1em; text-align: center; margin-right: 0.35em; }
+
+.mx-orb-label { text-align: center; white-space: nowrap; }
+.mx-orb-label .t { font-size: 22px; }
+.mx-orb-label .s { font-size: 17px; margin-top: 4px; color: var(--mx-dim); }
+.mx-orb-label .s b { font-weight: 400; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; vertical-align: 2px; background: currentColor; }
+.mx-orb-label.right { text-align: left; }
+.mx-orb-label.right .t { font-size: 13px; color: var(--mx-amber); }
+.mx-orb-label.right .s { font-size: 14px; line-height: 1.35; color: var(--mx-ink); width: 250px; white-space: normal; margin-top: 2px; }
+.mx-hit { position: absolute; border-radius: 50%; }
+
+.mx-tag {
+  padding: 7px 14px; border: 1px solid var(--mx-line); border-radius: 7px;
+  background: rgba(12, 12, 12, 0.92); font-size: 20px; color: var(--mx-dim); white-space: pre;
+}
+.mx-tag em { font-style: normal; color: var(--mx-amber); }
+.mx-gauge {
+  padding: 9px 20px; border: 1px solid var(--mx-line); border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02); font-size: 24px; color: var(--mx-dim); white-space: pre;
+}
+.mx-gauge em { font-style: normal; color: var(--mx-amber); font-variant-numeric: tabular-nums; }
+.mx-text { font-size: 22px; white-space: pre; }
+.mx-text em { font-style: normal; color: var(--mx-amber); }
+
+.mx-diff {
+  width: 1500px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; overflow: hidden;
+  background: #0e0e0e; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+.mx-diff .h { height: 60px; padding: 0 22px; display: flex; align-items: center; gap: 14px; background: #1a1a1a; color: var(--mx-dim); font-size: 19px; }
+.mx-diff .h b { width: 7px; height: 7px; border-radius: 50%; background: var(--mx-green); }
+.mx-diff .b { padding: 40px 0 60px; min-height: 380px; }
+.mx-diff .l { position: relative; height: 44px; line-height: 44px; padding-left: 66px; font-size: 26px; white-space: pre; overflow: visible; }
+.mx-diff .l .g { position: absolute; left: 24px; color: var(--mx-dim); }
+.mx-diff .l.add { background: rgba(255, 255, 255, 0.055); box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.25); }
+.mx-diff .l.del { background: rgba(224, 115, 106, 0.16); box-shadow: inset 3px 0 0 var(--mx-coral); }
+.mx-diff .note { display: inline-flex; align-items: center; margin-left: 8px; color: var(--mx-dim); font-size: 22px; vertical-align: top; }
+.mx-diff .note i { display: inline-block; width: 62px; height: 1px; background: var(--mx-dim); margin-right: 10px; position: relative; }
+.mx-diff .note i::before { content: ""; position: absolute; left: -5px; top: -5px; width: 9px; height: 9px; border: 1px solid var(--mx-dim); border-radius: 50%; }
+.mx-diff .note span { padding: 0 14px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); line-height: 40px; }
+.mx-diff .note em { font-style: normal; color: var(--mx-ink); }
+.mx-diff .kw { color: #b3a6d8; } .mx-diff .fn { color: var(--mx-amber); } .mx-diff .str { color: #b9c99a; }
+.mx-diff .cm { color: var(--mx-dim); } .mx-diff .num { color: var(--mx-coral); }
+
+/* explorer */
+.mx-explore [data-mx] { cursor: pointer; }
+#mx-inspector {
+  position: absolute; width: 420px; padding: 16px 18px; z-index: 7; pointer-events: none; opacity: 0;
+  border: 1px solid var(--mx-line); border-radius: 10px; background: rgba(14, 14, 14, 0.96);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); font-size: 15px; line-height: 1.5; transition: opacity 0.15s;
+}
+#mx-inspector .k { color: var(--mx-amber); }
+#mx-inspector .d { color: var(--mx-dim); }
+#mx-inspector .row { white-space: pre-wrap; }
+#mx-inspector hr { border: 0; border-top: 1px solid var(--mx-line); margin: 10px 0; }
+
+#mx-controls {
+  display: flex; align-items: center; gap: 18px; height: 64px; padding: 0 22px; user-select: none;
+  background: #0b0b0b; border-top: 1px solid rgba(255, 255, 255, 0.07); font-size: 13px; color: var(--mx-dim);
+}
+#mx-controls button { all: unset; cursor: pointer; color: var(--mx-ink); padding: 6px 10px; border-radius: 6px; border: 1px solid transparent; font: inherit; }
+#mx-controls button:hover, #mx-controls button:focus-visible { border-color: var(--mx-line); }
+#mx-controls button.on { color: var(--mx-amber); }
+#mx-play { width: 22px; text-align: center; font-size: 15px; }
+#mx-time { min-width: 116px; font-variant-numeric: tabular-nums; }
+#mx-scrub { position: relative; flex: 1; height: 40px; cursor: pointer; }
+#mx-scrub .track { position: absolute; left: 0; right: 0; top: 24px; height: 3px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+#mx-scrub .fill { position: absolute; left: 0; top: 24px; height: 3px; background: var(--mx-amber); border-radius: 2px; }
+#mx-scrub .head { position: absolute; top: 19px; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 50%; background: var(--mx-ink); box-shadow: 0 0 0 4px rgba(230, 176, 79, 0.18); }
+#mx-scrub .chap { position: absolute; top: 2px; font-size: 11px; color: var(--mx-faint); white-space: nowrap; padding-left: 6px; border-left: 1px solid rgba(255, 255, 255, 0.12); height: 30px; }
+#mx-scrub .chap.on { color: var(--mx-ink); }
+#mx-scrub .word { position: absolute; top: 30px; width: 1px; height: 6px; background: rgba(255, 255, 255, 0.14); }
+#mx-hint { color: var(--mx-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.mx-record #mx-controls, .mx-record #mx-inspector { display: none; }
+.mx-orb-label.right .s b { display: none; }

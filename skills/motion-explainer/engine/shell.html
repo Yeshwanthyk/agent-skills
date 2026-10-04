@@ -1,0 +1,17 @@
+<!-- mx shell: the stage and the explorer controls. The engine fills these; mx build inlines this file. -->
+  <div id="mx-viewport"><div id="mx-stage">
+    <div id="mx-world"><canvas id="mx-fx" width="1920" height="1080"></canvas><div id="mx-dom"></div></div>
+    <canvas id="mx-grain" width="960" height="540"></canvas>
+    <div id="mx-title"><span class="k"></span><span class="r"></span><span class="mx-cursor"></span></div>
+    <div id="mx-pill"><i></i><span></span></div>
+    <div id="mx-caption"></div>
+    <div id="mx-inspector"></div>
+  </div></div>
+  <div id="mx-controls">
+    <button id="mx-play" aria-label="play or pause">▶</button>
+    <span id="mx-time"></span>
+    <div id="mx-scrub" role="slider" aria-label="timeline" tabindex="0"><div class="track"></div><div class="fill"></div><div class="head"></div></div>
+    <button id="mx-speed" aria-label="speed">1×</button>
+    <button id="mx-mute" class="on" aria-label="sound">sound</button>
+    <span id="mx-hint">hover to trace · click to inspect · space · ←/→ · [ ]</span>
+  </div>

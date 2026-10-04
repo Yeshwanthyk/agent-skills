@@ -21,6 +21,7 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`how`](./skills/how) | Explains current systems through execution paths, ownership, inventories, contrasts, and optional architecture critique. |
 | [`interactive-slides`](./skills/interactive-slides) | Builds clean interactive HTML slide decks from documents and discussions, with a saved reference and stable controls. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded interactive HTML models of behavior, state, sequences, and comparisons. |
+| [`motion-explainer`](./skills/motion-explainer) | Builds narrated, timeline-driven systems explainers as playable HTML, optionally rendered to MP4 with a local voice. |
 | [`module-map`](./skills/module-map) | Builds an interactive map of a codebase's modules by layer, with a per-file review of issues, key code, branch diffs and dependencies. |
 | [`interrogate`](./skills/interrogate) | Runs independent adversarial reviews and returns one evidence-checked judgment. |
 | [`maintain-verification-skill`](./skills/maintain-verification-skill) | Audits and repairs a project-local verification skill against current source and live behavior. |

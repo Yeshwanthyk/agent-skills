@@ -1,0 +1,1 @@
+A request reaches the gateway. The gateway checks the cache first. On a miss, it asks the database, and the answer flows back.

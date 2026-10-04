@@ -1,0 +1,263 @@
+#!/usr/bin/env node
+// mx: build, voice, check and record motion explainers. Run `mx help`.
+import { spawnSync, spawn } from "node:child_process";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, cpSync, rmSync, watch } from "node:fs";
+import { createServer } from "node:http";
+import { createRequire } from "node:module";
+import { availableParallelism, homedir, tmpdir, platform, arch } from "node:os";
+import { basename, dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const SKILL = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const ENGINE = join(SKILL, "engine");
+const CACHE = join(homedir(), ".cache", "motion-explainer");
+const VOICE = { voice: "af_heart", speed: 0.95 };
+const APPLE = platform() === "darwin" && arch() === "arm64";
+const KOKORO = APPLE ? ["mlx-audio", "misaki[en]", "soundfile"] : ["kokoro-onnx", "soundfile"];
+
+const [cmd = "help", ...rest] = process.argv.slice(2);
+const flags = Object.fromEntries(rest.filter((a) => a.startsWith("--")).map((a) => { const [k, v] = a.slice(2).split("="); return [k, v ?? true]; }));
+const args = rest.filter((a) => !a.startsWith("--"));
+const say = (...m) => console.log(...m);
+const die = (m) => { console.error(`mx: ${m}`); process.exit(1); };
+const has = (bin, ...a) => spawnSync(bin, a.length ? a : ["--version"], { stdio: "ignore" }).status === 0;
+const run = (bin, a, o = {}) => { const r = spawnSync(bin, a, { stdio: "inherit", ...o }); if (r.status !== 0) die(`${bin} ${a.slice(0, 3).join(" ")}… failed`); };
+
+function sceneDir(p = args[0]) {
+  if (!p) die("which scene? pass a directory containing scene.js");
+  const dir = resolve(p);
+  if (!existsSync(join(dir, "scene.js"))) die(`${dir} has no scene.js (start one with: mx new ${p})`);
+  return dir;
+}
+const work = (dir) => { const w = join(dir, ".mx"); mkdirSync(w, { recursive: true }); return w; };
+// narration.txt: plain prose; [shown](spoken) fixes a pronunciation, e.g. [SIGKILL](sig kill)
+const narrationRaw = (dir) => (existsSync(join(dir, "narration.txt")) ? readFileSync(join(dir, "narration.txt"), "utf8").split(/\s+/).filter(Boolean).join(" ") : "");
+const narrationOf = (dir) => narrationRaw(dir).replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1");
+const spokenOf = (dir) => narrationRaw(dir).replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2");
+
+// ─── tools ──────────────────────────────────────────────────────────────────
+function playwright() {
+  for (const base of [join(CACHE, "package.json"), join(process.cwd(), "package.json")]) {
+    try { return createRequire(base)("playwright"); } catch {}
+  }
+  return null;
+}
+function doctor() {
+  const rows = [
+    ["node ≥ 22", Number(process.versions.node.split(".")[0]) >= 22, "everything", "install Node 22+ (https://nodejs.org)"],
+    ["ffmpeg", has("ffmpeg", "-version"), "video, compressed audio, contact sheets", platform() === "darwin" ? "brew install ffmpeg" : "apt install ffmpeg"],
+    ["uv", has("uv"), "the Kokoro voice and Whistle timings", "curl -LsSf https://astral.sh/uv/install.sh | sh"],
+    ["playwright", !!playwright(), "video, check, sheet", "mx doctor --install"],
+  ];
+  for (const [name, ok, needed, fix] of rows) say(`${ok ? "✓" : "✗"} ${name.padEnd(11)} ${ok ? "" : `needed for ${needed} → ${fix}`}`);
+  say(`  voice      ${APPLE ? "Kokoro on MLX (Apple silicon)" : "Kokoro on ONNX"}; Whistle word timings; models download on first use`);
+  if (flags.install) {
+    if (!playwright()) {
+      mkdirSync(CACHE, { recursive: true });
+      if (!existsSync(join(CACHE, "package.json"))) writeFileSync(join(CACHE, "package.json"), '{ "private": true }\n');
+      run("npm", ["install", "--silent", "--prefix", CACHE, "playwright@1"]);
+    }
+    run(join(CACHE, "node_modules", ".bin", "playwright"), ["install", "chromium"]);
+    say("✓ playwright ready");
+  }
+  say("\nWithout uv the explainer is silent with estimated word timing; without playwright or ffmpeg you still get the playable HTML.");
+}
+
+// ─── voice: Kokoro speaks, Whistle times each word; cached by content ──────
+function voice(dir, { force = false, quiet = false } = {}) {
+  const text = spokenOf(dir);
+  if (!text) return null;
+  const w = work(dir), key = createHash("sha1").update(JSON.stringify([text, VOICE, KOKORO])).digest("hex").slice(0, 12);
+  const tfile = join(w, "timings.json");
+  if (!force && existsSync(tfile)) { const t = JSON.parse(readFileSync(tfile, "utf8")); if (t.key === key) return t; }
+  if (!has("uv") || flags.silent) { if (!quiet) say("· no uv: silent build, estimated timing (mx doctor)"); return null; }
+  say("· speaking narration with Kokoro…");
+  writeFileSync(join(w, "narration.txt"), text);
+  const env = { ...process.env, NEEDLE_TELEMETRY: "0" };
+  run("uv", ["run", "-q", "--python", "3.12", ...KOKORO.flatMap((p) => ["--with", p]), "python", join(SKILL, "scripts", "speak.py"),
+    join(w, "narration.txt"), w, "--engine", APPLE ? "mlx" : "onnx", "--voice", VOICE.voice, "--speed", String(VOICE.speed)], { env });
+  const segments = JSON.parse(readFileSync(join(w, "segments.json"), "utf8"));
+  let words, heard = "";
+  say("· timing words with Whistle…");
+  const r = spawnSync("uv", ["run", "-q", "--python", "3.13", "--with", "cactus-needle", "python", join(SKILL, "scripts", "hear.py"), w], { stdio: "inherit", env });
+  if (r.status === 0) ({ words, heard } = JSON.parse(readFileSync(join(w, "heard.json"), "utf8")));
+  else { // fallback: spread each sentence's span over its words by length
+    say("· Whistle unavailable: splitting sentence spans by word length");
+    words = segments.flatMap((seg) => {
+      const ws = seg.text.split(/\s+/), total = ws.reduce((n, x) => n + x.length + 1, 0); let at = seg.s;
+      return ws.map((x) => { const d = ((seg.e - seg.s) * (x.length + 1)) / total, o = { w: x, s: +at.toFixed(3), e: +(at + d).toFixed(3) }; at += d; return o; });
+    });
+  }
+  const dur = Number(spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", join(w, "narration.wav")], { encoding: "utf8" }).stdout) || segments.at(-1).e + 0.3;
+  const t = { key, duration: +dur.toFixed(3), text, heard, words };
+  writeFileSync(tfile, JSON.stringify(t, null, 1));
+  if (has("ffmpeg", "-version")) run("ffmpeg", ["-v", "error", "-y", "-i", join(w, "narration.wav"), "-c:a", "aac", "-b:a", "64k", "-ac", "1", join(w, "narration.m4a")]);
+  return t;
+}
+
+// ─── build: one self-contained, editable HTML file ──────────────────────────
+const SCENE_OPEN = "/* ── mx:scene · edit freely, then reload. Word cues must match narration.txt (rebuild after changing it). ── */";
+function build(dir, { dev = false } = {}) {
+  const timings = voice(dir, { quiet: dev });
+  const w = work(dir);
+  const font = (wt) => `@font-face{font-family:"MX Plex Mono";font-weight:${wt};font-display:block;src:url(data:font/woff2;base64,${readFileSync(join(ENGINE, "fonts", `plex-mono-${wt}.woff2`)).toString("base64")}) format("woff2")}`;
+  let audio = "";
+  if (timings && !flags.silent) {
+    const m4a = join(w, "narration.m4a"), wav = join(w, "narration.wav");
+    if (existsSync(m4a)) audio = `data:audio/mp4;base64,${readFileSync(m4a).toString("base64")}`;
+    else if (existsSync(wav)) audio = `data:audio/wav;base64,${readFileSync(wav).toString("base64")}`;
+  }
+  const scene = readFileSync(join(dir, "scene.js"), "utf8").trim();
+  const title = (/title:\s*\[?\s*["'`]([^"'`]+)["'`](?:\s*,\s*["'`]([^"'`]+)["'`])?/.exec(scene) ?? []).slice(1).filter(Boolean).join(" · ") || basename(dir);
+  const json = (x) => JSON.stringify(x).replace(/</g, "\\u003c");
+  const live = dev ? `<script>let v;setInterval(async()=>{try{const n=await(await fetch("/__v")).text();if(v&&n!==v)location.reload();v=n}catch{}},400)</script>` : "";
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title.replace(/</g, "&lt;")}</title>
+<style>${font(400)}${font(500)}</style>
+<style>
+${readFileSync(join(ENGINE, "engine.css"), "utf8")}</style>
+</head>
+<body>
+${readFileSync(join(ENGINE, "shell.html"), "utf8")}
+<script>window.MX_NARRATION = ${json(narrationOf(dir))}; window.MX_TIMINGS = ${json(timings ? { duration: timings.duration, words: timings.words } : null)};</script>
+<script>window.MX_AUDIO = ${json(audio)};</script>
+<script>
+${readFileSync(join(ENGINE, "engine.js"), "utf8")}</script>
+<script id="mx-scene">
+${SCENE_OPEN}
+${scene}
+</script>
+${live}
+</body>
+</html>
+`;
+  const out = dev ? join(w, "dev.html") : join(dir, "index.html");
+  writeFileSync(out, html);
+  return { out, timings, bytes: Buffer.byteLength(html) };
+}
+
+// ─── headless page ──────────────────────────────────────────────────────────
+async function page(dir, { width = 1920, height = 1080 } = {}) {
+  const pw = playwright();
+  if (!pw) die("playwright is missing: run `mx doctor --install`");
+  const { out } = build(dir);
+  const browsers = [];
+  const open = async () => { // one browser per page: screenshots serialise inside a browser
+    const b = await pw.chromium.launch(); browsers.push(b);
+    const p = await b.newPage({ viewport: { width, height } });
+    const errors = [];
+    p.on("pageerror", (e) => errors.push(e.message));
+    p.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+    await p.goto(`${pathToFileURL(out).href}?record`);
+    const end = await p.evaluate(() => window.mx.ready).catch((e) => die(`scene failed to load: ${errors[0] ?? e.message}`));
+    if (errors.length) die(`scene error: ${errors[0]}`);
+    return { p, end };
+  };
+  return { browser: { close: () => Promise.all(browsers.map((b) => b.close())) }, open };
+}
+
+async function check(dir) {
+  const { browser, open } = await page(dir);
+  const { p, end } = await open();
+  const found = await p.evaluate(() => window.mx.check());
+  await browser.close();
+  if (!found.length) say(`✓ ${basename(dir)} · ${end.toFixed(1)}s · no problems`);
+  else { for (const f of found) say(`✗ ${f}`); process.exitCode = 1; }
+}
+
+async function sheet(dir) {
+  if (!has("ffmpeg", "-version")) die("ffmpeg is missing (mx doctor)");
+  const { browser, open } = await page(dir);
+  const { p, end } = await open();
+  const acts = await p.evaluate(() => window.mx.acts);
+  const times = flags.at ? String(flags.at).split(",").map(Number) : Array.from({ length: 9 }, (_, i) => +((end * (i + 0.5)) / 9).toFixed(2));
+  const tmp = join(tmpdir(), `mx-sheet-${process.pid}`); mkdirSync(tmp, { recursive: true });
+  for (const [i, t] of times.entries()) { await p.evaluate((t) => window.mx.seek(t), t); await p.screenshot({ path: join(tmp, `${String(i).padStart(2, "0")}.png`) }); }
+  await browser.close();
+  const out = join(work(dir), "sheet.png"), cols = Math.min(3, times.length);
+  run("ffmpeg", ["-v", "error", "-y", "-pattern_type", "glob", "-i", join(tmp, "*.png"), "-vf", `scale=640:-1,tile=${cols}x${Math.ceil(times.length / cols)}:padding=4:color=0x222222`, "-frames:v", "1", out]);
+  if (flags.keep) say(`frames: ${tmp}`); else rmSync(tmp, { recursive: true, force: true });
+  say(`✓ ${out}`); say(`  tiles in order at ${times.map((t) => `${t}s`).join(" ")}`);
+  if (acts.length) say(`  acts: ${acts.map((a) => `${a.name}@${a.t.toFixed(1)}s`).join(" · ")}`);
+}
+
+async function record(dir) {
+  if (!has("ffmpeg", "-version")) die("ffmpeg is missing (mx doctor)");
+  const fps = Number(flags.fps ?? 60);
+  const { browser, open } = await page(dir);
+  const first = await open();
+  const n = Math.ceil(first.end * fps), workers = Math.max(1, Math.min(Number(flags.workers ?? Math.floor(availableParallelism() / 2)), 6));
+  const tmp = join(tmpdir(), `mx-frames-${process.pid}`); mkdirSync(tmp, { recursive: true });
+  const t0 = Date.now(); let done = 0;
+  const pages = [first, ...(await Promise.all(Array.from({ length: workers - 1 }, open)))];
+  await Promise.all(pages.map(async ({ p }, k) => {
+    for (let i = k; i < n; i += workers) {
+      await p.evaluate((t) => window.mx.seek(t), i / fps);
+      await p.screenshot({ path: join(tmp, `${String(i).padStart(6, "0")}.jpg`), type: "jpeg", quality: 94 });
+      if (++done % fps === 0) process.stdout.write(`\r· frame ${done}/${n}`);
+    }
+  }));
+  await browser.close();
+  const w = work(dir), wav = join(w, "narration.wav"), out = join(dir, `${basename(dir)}.mp4`);
+  const audio = existsSync(wav) && !flags.silent && narrationOf(dir) ? ["-i", wav] : [];
+  run("ffmpeg", ["-v", "error", "-y", "-framerate", String(fps), "-i", join(tmp, "%06d.jpg"), ...audio,
+    "-c:v", "libx264", "-preset", "slow", "-crf", "14", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+    ...(audio.length ? ["-c:a", "aac", "-b:a", "192k", "-af", "apad", "-shortest"] : []), out]);
+  rmSync(tmp, { recursive: true, force: true });
+  say(`\r✓ ${out} · ${n} frames at ${fps}fps · ${((Date.now() - t0) / 1000).toFixed(0)}s`);
+}
+
+function serve(dir) {
+  let v = Date.now(), last = "";
+  const rebuild = () => { try { build(dir, { dev: true }); last = ""; } catch (e) { last = e.message; } v = Date.now(); };
+  rebuild();
+  const watched = ["scene.js", "narration.txt"].map((f) => join(dir, f)).filter(existsSync);
+  for (const f of [...watched, ...["engine.js", "engine.css", "shell.html"].map((f) => join(ENGINE, f))]) watch(f, () => rebuild());
+  const port = Number(flags.port ?? 4180);
+  createServer((req, res) => {
+    if (req.url.startsWith("/__v")) return res.end(String(v));
+    if (last) return res.end(`<pre style="color:#e0736a;background:#0a0a0a;padding:2em">${last}</pre><script>setTimeout(()=>location.reload(),1500)</script>`);
+    res.setHeader("content-type", "text/html; charset=utf-8");
+    res.end(readFileSync(join(dir, ".mx", "dev.html")));
+  }).listen(port, () => say(`· serving ${basename(dir)} at http://localhost:${port} · rebuilds on save`));
+}
+
+function scaffold(target) {
+  if (!target) die("usage: mx new <dir> [--from=optmem]");
+  const dir = resolve(target);
+  if (existsSync(join(dir, "scene.js"))) die(`${dir}/scene.js already exists`);
+  const from = join(SKILL, "examples", String(flags.from ?? "starter"));
+  if (!existsSync(from)) die(`no example "${flags.from}"; have: ${readdirSync(join(SKILL, "examples")).join(", ")}`);
+  mkdirSync(dir, { recursive: true });
+  for (const f of ["scene.js", "narration.txt"]) if (existsSync(join(from, f))) cpSync(join(from, f), join(dir, f));
+  say(`✓ ${dir}: edit narration.txt and scene.js, then mx serve ${target}`);
+}
+
+const HELP = `mx · motion explainers: one scene file → a playable HTML explorer, optionally a narrated video
+
+  mx new <dir> [--from=example]   start a scene (examples: ${existsSync(join(SKILL, "examples")) ? readdirSync(join(SKILL, "examples")).join(", ") : ""})
+  mx serve <dir> [--port=4180]    live explorer, rebuilds when scene.js or narration.txt changes
+  mx build <dir> [--video]        write <dir>/index.html (self-contained, scene inline); --video also records the mp4
+  mx check <dir>                  unknown word cues, safe area, overlaps, overflow
+  mx sheet <dir> [--at=1,2.5]     contact sheet of frames → <dir>/.mx/sheet.png
+  mx record <dir> [--fps=60]      render <dir>/<dir>.mp4 with narration
+  mx voice <dir> [--force]        re-speak narration.txt (Kokoro) and re-time words (Whistle)
+  mx doctor [--install]           check tools; --install fetches playwright + chromium
+  flags: --silent (no voice or audio)`;
+
+switch (cmd) {
+  case "doctor": doctor(); break;
+  case "new": scaffold(args[0]); break;
+  case "voice": { const t = voice(sceneDir(), { force: !!flags.force }); say(t ? `✓ ${t.duration}s · ${t.words.length} words${t.heard ? `\n  heard: ${t.heard}` : ""}` : "· no narration.txt"); break; }
+  case "build": { const dir = sceneDir(), { out, bytes, timings } = build(dir); say(`✓ ${out} · ${(bytes / 1024).toFixed(0)} KB · ${timings ? "narrated" : "silent"}`); if (flags.video) await record(dir); break; }
+  case "serve": serve(sceneDir()); break;
+  case "check": await check(sceneDir()); break;
+  case "sheet": await sheet(sceneDir()); break;
+  case "record": await record(sceneDir()); break;
+  default: say(HELP);
+}

@@ -1,0 +1,1 @@
+Before the fix, stop read service dot json to find the old server. But the file can disappear before the process exits. Stop saw no file, returned early, and the restart collided with the old pid. After the fix, stop watches the pid it signalled, and sends [SIGKILL](sig kill) if the grace period runs out. The new server binds cleanly. Here is the whole change.

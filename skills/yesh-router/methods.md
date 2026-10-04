@@ -63,6 +63,7 @@ For an ordinary feature or refactoring with a settled shape, implement directly.
 | Create or update a PR description (always include a visual change outline), or explain the current topic with a concise diagram or code sketch | [show-me](../show-me/SKILL.md) |
 | Turn a document or discussion into an interactive browser slide deck | [interactive-slides](../interactive-slides/SKILL.md) |
 | Build an interactive HTML model of behavior or state | [interactive-explainer](../interactive-explainer/SKILL.md) |
+| Build a narrated motion explainer or explainer video | [motion-explainer](../motion-explainer/SKILL.md) |
 | Map a codebase's modules and review its structure file by file | [module-map](../module-map/SKILL.md) |
 | Research and write a connected long-form HTML article | [deep-dive-explainer](../deep-dive-explainer/SKILL.md) |
 | Clean padded prose while preserving facts and voice | [unslop](../unslop/SKILL.md) |

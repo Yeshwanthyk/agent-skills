@@ -5,145 +5,369 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>System explainer</title>
   <style>
+    /* Visual system shared with motion-explainer: near-black, mono, hairlines, amber for attention,
+       coral for failure, green for healthy. Restyle through these variables. */
     :root {
       color-scheme: dark;
-      --bg: #17191c;
-      --surface: #202328;
-      --surface-active: #272d36;
-      --text: #f1f3f5;
-      --muted: #a7afb9;
-      --line: #343a43;
-      --accent: #75a7ff;
-      --accent-strong: #9bc0ff;
+      --bg: #0a0a0a;
+      --panel: linear-gradient(180deg, #161616, #0d0d0d);
+      --ink: #e9e6e1;
+      --dim: #8a857e;
+      --faint: #57534e;
+      --line: rgba(255, 255, 255, .13);
+      --amber: #e6b04f;
+      --coral: #e0736a;
+      --green: #9cc48a;
+      --mono: "IBM Plex Mono", "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--mono); letter-spacing: .01em; }
+    body::after { /* vignette */
+      content: ""; position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 80% 75% at 50% 45%, transparent 45%, rgba(0, 0, 0, .55) 100%);
     }
-    main {
-      width: min(920px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 56px 0 72px;
-    }
-    header { max-width: 720px; margin-bottom: 32px; }
-    h1 { margin: 0 0 10px; font-size: clamp(2rem, 6vw, 4.5rem); line-height: 1; letter-spacing: -0.04em; font-weight: 600; }
-    p { margin: 0; }
-    .lede { color: var(--muted); font-size: 1.08rem; }
-    code, .eyebrow, button, dt {
-      font-family: "Berkeley Mono", "BerkeleyMono Nerd Font", ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-    .eyebrow { color: var(--accent); margin-bottom: 12px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
-    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    main { width: min(1200px, calc(100% - 40px)); margin: 0 auto; padding: 44px 0 60px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
+    h1 { margin: 0; font-size: clamp(1.2rem, 2.6vw, 1.75rem); font-weight: 400; white-space: nowrap; min-height: 1.5em; }
+    h1 .k { color: var(--amber); margin-right: .6em; }
+    .pill { display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; border: 1px solid var(--line); border-radius: 999px; white-space: nowrap; background: rgba(255, 255, 255, .02); }
+    .pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); box-shadow: 0 0 10px currentColor; transition: background .3s; }
+
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .controls .sep { flex: 1; }
     button {
-      appearance: none;
-      border: 1px solid var(--line);
-      background: transparent;
-      color: var(--muted);
-      padding: 9px 12px;
-      border-radius: 6px;
-      cursor: pointer;
+      appearance: none; font: inherit; color: var(--dim); background: transparent; cursor: pointer;
+      border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; transition: color .2s, border-color .2s, box-shadow .2s;
     }
-    button:hover { color: var(--text); border-color: var(--accent); }
-    button[aria-pressed="true"] { color: var(--text); background: var(--surface-active); border-color: var(--accent); }
-    button:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
-    .view { border-top: 1px solid var(--line); padding-top: 26px; }
-    .path { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
-    .node { min-height: 124px; padding: 16px; background: var(--surface); border-radius: 8px; }
-    .node strong { display: block; margin-bottom: 8px; font-weight: 600; }
-    .node span { color: var(--muted); }
-    .node[data-active="true"] { box-shadow: inset 0 0 0 1px var(--accent); background: var(--surface-active); }
-    dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 18px; margin: 0; }
-    dt { color: var(--muted); }
-    dd { margin: 0; }
-    .source { margin-top: 24px; color: var(--muted); }
-    .source code { color: var(--accent-strong); }
-    @media (max-width: 680px) {
-      main { padding-top: 32px; }
-      .path { grid-template-columns: 1fr; }
-      dl { grid-template-columns: 1fr; gap: 2px; }
-      dd { margin-bottom: 10px; }
+    button:hover { color: var(--ink); border-color: rgba(255, 255, 255, .25); }
+    button[aria-pressed="true"] { color: var(--ink); border-color: rgba(230, 176, 79, .55); box-shadow: 0 0 18px rgba(230, 176, 79, .14); }
+    button:focus-visible { outline: 1px solid var(--amber); outline-offset: 2px; }
+    button:disabled { opacity: .35; cursor: default; }
+    #step-count { color: var(--faint); min-width: 4.5em; text-align: center; font-variant-numeric: tabular-nums; }
+
+    /* the system: html boxes over a canvas that draws wires, packets, orbs and effects */
+    .frame {
+      position: relative; border: 1px solid rgba(255, 255, 255, .07); border-radius: 14px; overflow: hidden;
+      background: radial-gradient(rgba(255, 255, 255, .045) 1px, transparent 1.2px) 0 0 / 24px 24px, #0b0b0b;
     }
-    @media (prefers-reduced-motion: no-preference) {
-      .node, button { transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease; }
+    .stage { position: relative; width: 1200px; height: 400px; transform-origin: 0 0; }
+    #fx { position: absolute; inset: 0; width: 1200px; height: 400px; }
+    #grain { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .04; mix-blend-mode: screen; pointer-events: none; }
+    .node {
+      position: absolute; transform: translate(-50%, -50%); min-width: 180px; padding: 12px 22px; text-align: center; cursor: pointer;
+      border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+      box-shadow: 0 12px 34px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .04);
+      transition: border-color .35s, box-shadow .35s, background .35s, opacity .3s;
     }
+    .node strong { display: block; font-weight: 400; font-size: 19px; white-space: nowrap; }
+    .node span { display: block; margin-top: 2px; font-size: 14px; color: var(--dim); white-space: nowrap; transition: color .3s; }
+    .node.amber { border-color: rgba(230, 176, 79, .7); box-shadow: 0 0 26px rgba(230, 176, 79, .22), 0 12px 34px rgba(0, 0, 0, .55); }
+    .node.amber span { color: var(--amber); }
+    .node.coral { border-color: rgba(224, 115, 106, .8); background: linear-gradient(180deg, #2a1514, #1a0e0d); box-shadow: 0 0 30px rgba(224, 115, 106, .25); }
+    .node.coral strong, .node.coral span { color: var(--coral); }
+    .node.green { border-color: rgba(156, 196, 138, .6); box-shadow: 0 0 24px rgba(156, 196, 138, .16); }
+    .node.green span { color: var(--green); }
+    .node.orb { min-width: 0; padding: 0; border: 0; border-radius: 50%; background: none; box-shadow: none; }
+    .node.orb .label { position: absolute; left: 50%; top: calc(100% + 14px); transform: translateX(-50%); }
+    .node:focus-visible { outline: none; }
+    .dimmed { opacity: .25; }
+    .callout { position: absolute; transform: translateY(-50%); padding: 6px 13px; border: 1px solid var(--line); border-radius: 7px; background: rgba(12, 12, 12, .94); color: var(--dim); white-space: nowrap; opacity: 0; transition: opacity .3s; }
+    .callout em { font-style: normal; color: var(--amber); }
+
+    .caption { min-height: 2.6em; margin: 22px 0 0; font-size: clamp(1rem, 1.8vw, 1.3rem); }
+    .caption em { font-style: normal; color: var(--amber); }
+    .caption.in { animation: rise .45s cubic-bezier(.2, .7, .2, 1); }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); filter: blur(3px); } }
+    .inspector { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 6px 18px; margin: 18px 0 0; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .07); }
+    .inspector dt { color: var(--faint); }
+    .inspector dd { margin: 0; }
+    .inspector code { font: inherit; color: var(--amber); }
+    .hint { margin-top: 26px; color: var(--faint); font-size: 13px; }
+    @media (max-width: 680px) { header { flex-wrap: wrap; } .inspector { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { .caption.in { animation: none; } }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <p class="eyebrow">Inspectable model</p>
-      <h1>Follow the behavior.</h1>
-      <p class="lede">Choose a scenario to see the execution path, state transition, and boundary contract change together.</p>
+      <h1 id="title"><span class="k"></span><span></span></h1>
+      <span class="pill" aria-live="polite"><i id="pill-dot"></i><span id="pill-text"></span></span>
     </header>
 
     <div class="controls" aria-label="Scenarios">
-      <button type="button" aria-controls="scenario-view" aria-pressed="true" data-scenario="success">Successful request</button>
-      <button type="button" aria-controls="scenario-view" aria-pressed="false" data-scenario="recovery">Recovery path</button>
+      <button type="button" aria-controls="scenario-view" data-scenario="hit">cache hit</button>
+      <button type="button" aria-controls="scenario-view" data-scenario="miss">cache miss</button>
+      <span class="sep"></span>
+      <button type="button" id="play" aria-controls="scenario-view" aria-pressed="false">▶ play</button>
+      <button type="button" id="prev" aria-controls="scenario-view" aria-label="previous step">◂</button>
+      <span id="step-count"></span>
+      <button type="button" id="next" aria-controls="scenario-view" aria-label="next step">▸</button>
     </div>
 
-    <section class="view" id="scenario-view" aria-live="polite">
-      <div class="path" id="execution-path"></div>
-      <dl>
-        <dt>Authoritative state</dt><dd id="state-value"></dd>
-        <dt>Boundary contract</dt><dd id="contract-value"></dd>
-        <dt>Proof</dt><dd id="proof-value"></dd>
+    <section id="scenario-view" aria-live="polite">
+      <div class="frame" id="frame"><div class="stage" id="stage"><canvas id="fx" aria-hidden="true"></canvas></div><canvas id="grain" width="600" height="200" aria-hidden="true"></canvas></div>
+      <p class="caption" id="caption"></p>
+      <dl class="inspector">
+        <dt>selected</dt><dd id="i-title"></dd>
+        <dt>authoritative state</dt><dd id="i-state"></dd>
+        <dt>contract</dt><dd id="i-contract"></dd>
+        <dt>source</dt><dd><code id="i-source"></code></dd>
       </dl>
-      <p class="source">Source: <code id="source-value"></code></p>
+      <p class="hint">←/→ steps · space plays · click a box to inspect it · hover to trace its wires</p>
     </section>
   </main>
 
   <script>
+    // ─── the model: edit this. Boxes (`r` makes an orb, for the live store), wires, and scenarios as steps.
+    // A step sends a packet along a wire; its `set`, `fail` and `callout` land when the packet arrives.
+    const title = ['#explainer', 'follow the request'];
+    const nodes = {
+      client:  { title: 'client',   status: 'idle',      x: 170, y: 250, state: 'none',             contract: 'GET /user/:id → User',    source: 'src/client.ts:18' },
+      gateway: { title: 'gateway',  status: 'listening', x: 560, y: 250, state: 'stateless',        contract: 'Request → Response',      source: 'src/gateway.ts:42' },
+      cache:   { title: 'cache',    status: 'warm',      x: 560, y: 86,  state: 'derived, TTL 60s', contract: 'get(key) → value | miss', source: 'src/cache.ts:12' },
+      db:      { title: 'database', status: 'primary',   x: 990, y: 196, r: 72, state: 'authoritative', contract: 'SELECT by id → row',  source: 'src/db.ts:30' },
+    };
+    const wires = { cg: ['client', 'gateway'], gc: ['gateway', 'cache'], gd: ['gateway', 'db'] };
     const scenarios = {
-      success: {
-        path: [
-          ['Entrypoint', 'Parses the request'],
-          ['Domain', 'Applies the transition'],
-          ['Store', 'Commits authoritative state']
-        ],
-        active: 2,
-        state: 'pending → active',
-        contract: 'ActivateCommand → ActivationResult',
-        proof: 'Focused command test and persisted row',
-        source: 'src/system.ts:42'
-      },
-      recovery: {
-        path: [
-          ['Entrypoint', 'Replays the request'],
-          ['Domain', 'Recognizes the idempotency key'],
-          ['Store', 'Returns the committed result']
-        ],
-        active: 1,
-        state: 'active → active',
-        contract: 'Repeated command → existing result',
-        proof: 'Replay test and stable version',
-        source: 'src/system.ts:87'
-      }
+      hit: { name: 'cache hit', steps: [
+        { caption: 'A request reaches the <em>gateway</em>.', send: ['cg', 'GET /user/42'], set: { client: ['waiting', 'amber'], gateway: ['routing', 'amber'] } },
+        { caption: 'The gateway checks the <em>cache first</em>.', send: ['gc', 'get 42'], set: { cache: ['42 → hit', 'green'] } },
+        { caption: 'A hit answers without touching the database.', send: ['cg', 'user 42', true], set: { client: ['user 42', 'green'], gateway: ['200 OK', 'green'] } },
+      ] },
+      miss: { name: 'cache miss', steps: [
+        { caption: 'A request reaches the <em>gateway</em>.', send: ['cg', 'GET /user/42'], set: { client: ['waiting', 'amber'], gateway: ['routing', 'amber'] } },
+        { caption: 'The cache has nothing for 42: a <em>miss</em>.', send: ['gc', 'get 42'], fail: 'gc', set: { cache: ['miss', 'coral'] }, callout: ['cache', 'derived', 'may lag the database'] },
+        { caption: 'The gateway asks the <em>source of truth</em>.', send: ['gd', 'SELECT id=42'], set: { db: ['reading', 'amber'] } },
+        { caption: 'The row flows back and <em>warms the cache</em>.', send: ['gd', 'row 42', true], set: { db: ['primary', 'green'], cache: ['42 → stored', 'green'], gateway: ['200 OK', 'green'], client: ['user 42', 'green'] } },
+      ] },
     };
 
-    const controls = [...document.querySelectorAll('[data-scenario]')];
-    const path = document.getElementById('execution-path');
+    // ─── renderer: everything below reads the model
+    const $ = (id) => document.getElementById(id);
+    const stage = $('stage'), fx = $('fx'), ctx = fx.getContext('2d');
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const TONE = { ink: [236, 220, 212], amber: [230, 176, 79], coral: [224, 115, 106], green: [156, 196, 138] };
+    const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+    const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const inOut = (u) => (u < .5 ? 4 * u ** 3 : 1 - (-2 * u + 2) ** 3 / 2);
+    const rng = (s) => () => ((s = Math.imul(s ^ (s >>> 15), 1 | s) + 0x6d2b79f5 | 0) >>> 0) / 4294967296;
+    const GLYPHS = 'abcdefghijklmnopqrstuvwxyz#_·';
+    const ui = { scenario: 'miss', step: 0, selected: 'gateway', hover: null, t0: 0, landed: true, playing: 0, view: null };
+    const boot = performance.now(), ARRIVE = .9;
 
-    function renderScenario(id) {
-      const scenario = scenarios[id];
-      path.replaceChildren(...scenario.path.map(([name, detail], index) => {
-        const node = document.createElement('div');
-        node.className = 'node';
-        node.dataset.active = String(index === scenario.active);
-        node.innerHTML = `<strong>${name}</strong><span>${detail}</span>`;
-        return node;
-      }));
-      document.getElementById('state-value').textContent = scenario.state;
-      document.getElementById('contract-value').textContent = scenario.contract;
-      document.getElementById('proof-value').textContent = scenario.proof;
-      document.getElementById('source-value').textContent = scenario.source;
-      controls.forEach((control) => control.setAttribute('aria-pressed', String(control.dataset.scenario === id)));
+    { const g = $('grain').getContext('2d'), img = g.createImageData(600, 200), r = rng(42); // grain, drawn once
+      for (let i = 0; i < img.data.length; i += 4) { img.data[i] = img.data[i + 1] = img.data[i + 2] = r() * 255; img.data[i + 3] = 255; }
+      g.putImageData(img, 0, 0); }
+
+    // text that scrambles into place: register it, and the frame loop resolves it left to right
+    const typing = new Map();
+    function type(el, text, dur = 420) { if (el.dataset.v === text) return; el.dataset.v = text; if (still) el.textContent = text; else typing.set(el, { text, t: performance.now(), dur }); }
+    function resolveText(now) {
+      for (const [el, s] of typing) {
+        const u = (now - s.t) / s.dur;
+        if (u >= 1) { el.textContent = s.text; typing.delete(el); continue; }
+        const fixed = Math.floor(s.text.length * u), shown = Math.ceil(s.text.length * Math.min(1, u * 2.5));
+        el.textContent = s.text.slice(0, fixed) + s.text.slice(fixed, shown).replace(/\S/g, () => GLYPHS[Math.random() * GLYPHS.length | 0]);
+      }
     }
 
-    controls.forEach((control) => control.addEventListener('click', () => renderScenario(control.dataset.scenario)));
-    renderScenario('success');
+    for (const [id, n] of Object.entries(nodes)) {
+      n.el = Object.assign(document.createElement('div'), { className: n.r ? 'node orb' : 'node', tabIndex: 0 });
+      n.el.innerHTML = n.r ? '<div class="label"><strong></strong><span></span></div>' : '<strong></strong><span></span>';
+      if (n.r) Object.assign(n.el.style, { width: `${n.r * 2}px`, height: `${n.r * 2}px` });
+      n.el.style.left = `${n.x}px`; n.el.style.top = `${n.y}px`;
+      n.el.setAttribute('role', 'button'); n.el.setAttribute('aria-label', `inspect ${n.title}`);
+      n.el.addEventListener('click', () => select(id));
+      n.el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); select(id); } });
+      n.el.addEventListener('pointerenter', () => trace(id));
+      n.el.addEventListener('pointerleave', () => trace(null));
+      n.el.querySelector('strong').textContent = n.title;
+      n.base = n.status; n.tone = '';
+      stage.appendChild(n.el);
+      if (n.r) n.pts = Array.from({ length: 320 }, (_, k) => { const y = 1 - (2 * (k + .5)) / 320, r = Math.sqrt(1 - y * y), p = k * 2.399963; return [Math.cos(p) * r, y, Math.sin(p) * r]; });
+    }
+    const callout = Object.assign(document.createElement('div'), { className: 'callout' });
+    stage.appendChild(callout);
+
+    // wire geometry: a cubic between facing edges
+    const half = (n) => (n.r ? [n.r, n.r] : [n.el.offsetWidth / 2, n.el.offsetHeight / 2]);
+    const anchor = (n, to) => { const [w, h] = half(n); return Math.abs(to.x - n.x) > Math.abs(to.y - n.y) ? [n.x + Math.sign(to.x - n.x) * w, n.y] : [n.x, n.y + Math.sign(to.y - n.y) * h]; };
+    function curve(id) {
+      const [a, b] = wires[id], A = anchor(nodes[a], nodes[b]), B = anchor(nodes[b], nodes[a]);
+      const horiz = Math.abs(B[0] - A[0]) >= Math.abs(B[1] - A[1]), k = (horiz ? B[0] - A[0] : B[1] - A[1]) / 2;
+      return [A, horiz ? [A[0] + k, A[1]] : [A[0], A[1] + k], horiz ? [B[0] - k, B[1]] : [B[0], B[1] - k], B];
+    }
+    const at = ([p0, p1, p2, p3], u) => [0, 1].map((i) => (1 - u) ** 3 * p0[i] + 3 * (1 - u) ** 2 * u * p1[i] + 3 * (1 - u) * u * u * p2[i] + u ** 3 * p3[i]);
+    const near = (id) => !ui.hover || id === ui.hover || Object.values(wires).some((w) => w.includes(id) && w.includes(ui.hover));
+    const wireAlpha = (wid) => (!ui.hover || wires[wid].includes(ui.hover) ? 1 : .25);
+
+    // state at step k is every step up to k, applied in order: steps stay reversible
+    function stateAt(k) {
+      const s = { nodes: {}, wires: {}, callout: null };
+      for (const [id, n] of Object.entries(nodes)) s.nodes[id] = [n.base, ''];
+      for (const step of scenarios[ui.scenario].steps.slice(0, k + 1)) {
+        Object.assign(s.nodes, step.set);
+        if (step.send) s.wires[step.send[0]] = 'amber';
+        if (step.fail) s.wires[step.fail] = 'coral';
+        if (step.callout) s.callout = step.callout;
+      }
+      return s;
+    }
+    const current = () => scenarios[ui.scenario].steps[ui.step];
+    function apply(s) {
+      ui.view = s;
+      for (const [id, [status, tone]] of Object.entries(s.nodes)) {
+        const n = nodes[id]; n.status = status; n.tone = tone;
+        n.el.classList.remove('amber', 'coral', 'green'); if (tone) n.el.classList.add(tone);
+        type(n.el.querySelector('span'), status);
+      }
+      callout.style.opacity = s.callout ? 1 : 0;
+      if (s.callout) { const n = nodes[s.callout[0]]; callout.innerHTML = `<em>${s.callout[1]}</em> · ${s.callout[2]}`; callout.style.left = `${n.x + half(n)[0] + 70}px`; callout.style.top = `${n.y - 34}px`; }
+      inspect();
+    }
+
+    function render() {
+      const sc = scenarios[ui.scenario], step = current();
+      ui.t0 = performance.now(); ui.landed = !step.send || still;
+      apply(stateAt(ui.landed ? ui.step : ui.step - 1)); // effects wait for the packet
+      const cap = $('caption'); cap.innerHTML = step.caption; cap.classList.remove('in'); void cap.offsetWidth; cap.classList.add('in');
+      type($('pill-text'), sc.name);
+      const dot = step.fail ? 'var(--coral)' : ui.step === sc.steps.length - 1 ? 'var(--green)' : 'var(--amber)';
+      Object.assign($('pill-dot').style, { background: dot, color: dot });
+      $('step-count').textContent = `${ui.step + 1} / ${sc.steps.length}`;
+      $('prev').disabled = ui.step === 0; $('next').disabled = ui.step === sc.steps.length - 1;
+      document.querySelectorAll('[data-scenario]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.scenario === ui.scenario)));
+      if (still) draw(performance.now());
+    }
+    function select(id) { ui.selected = id; inspect(); if (still) draw(performance.now()); }
+    function inspect() {
+      const n = nodes[ui.selected];
+      $('i-title').textContent = `${n.title} · ${n.status}`;
+      $('i-state').textContent = n.state; $('i-contract').textContent = n.contract; $('i-source').textContent = n.source;
+    }
+    function trace(id) { // hover: keep the box, its wires, and its neighbours
+      ui.hover = id;
+      for (const [nid, n] of Object.entries(nodes)) n.el.classList.toggle('dimmed', !near(nid));
+      callout.classList.toggle('dimmed', !!id && ui.view.callout?.[0] !== id);
+      if (still) draw(performance.now());
+    }
+
+    // ─── the canvas: wires, packets, impact sparks, orbs, callout leader, focus ring
+    const sparks = (() => { const r = rng(7); return Array.from({ length: 160 }, () => ({ a: r() * Math.PI * 2, sp: 30 + r() * r() * 150, life: .4 + r() * .9, size: .6 + r() * 1.6 })); })();
+    function draw(now) {
+      const t = still ? 99 : (now - boot) / 1000, T = still ? 99 : (now - ui.t0) / 1000, step = current();
+      if (!ui.landed && T >= ARRIVE) { ui.landed = true; apply(stateAt(ui.step)); }
+      ctx.setTransform(fx.width / 1200, 0, 0, fx.height / 400, 0, 0);
+      ctx.clearRect(0, 0, 1200, 400);
+
+      Object.keys(wires).forEach((id, i) => { // wires draw on at load, flash on failure
+        const c = curve(id), show = inOut(clamp((t - .25 - i * .18) / .7)), tone = ui.view.wires[id], a = wireAlpha(id);
+        if (show <= 0) return;
+        const flash = step.fail === id ? Math.exp(-(((T - ARRIVE) / .25) ** 2)) : 0;
+        ctx.strokeStyle = tone ? rgba(TONE[tone], (.6 + .4 * flash) * a) : `rgba(255,255,255,${(.22 + .3 * flash) * a})`;
+        ctx.lineWidth = 1.2 + flash * 2;
+        ctx.beginPath(); ctx.moveTo(...c[0]); for (let u = .02; u < show; u += .02) ctx.lineTo(...at(c, u)); ctx.lineTo(...at(c, show)); ctx.stroke();
+        ctx.fillStyle = rgba(tone ? TONE[tone] : [200, 190, 180], .85 * a); ctx.beginPath(); ctx.arc(...c[0], 2.4, 0, 7); ctx.fill();
+        if (show < 1) { ctx.fillStyle = 'rgba(255,215,150,.95)'; ctx.beginPath(); ctx.arc(...at(c, show), 2.6, 0, 7); ctx.fill(); }
+      });
+
+      if (step.send && !still) { // the packet: a hot head, a fading trail, its payload riding above
+        const [wid, label, back] = step.send, c = curve(wid), u = T / ARRIVE, tc = TONE[step.fail ? 'coral' : 'amber'], a = wireAlpha(wid);
+        const fade = 1 - clamp((u - 1) / .6), pos = back ? 1 - inOut(clamp(u)) : inOut(clamp(u));
+        if (fade > 0) {
+          ctx.globalCompositeOperation = 'lighter';
+          for (let k = 0; k < 16; k++) { ctx.fillStyle = rgba(tc, (.5 - k * .03) * fade * a); ctx.beginPath(); ctx.arc(...at(c, clamp(back ? pos + k * .012 : pos - k * .012)), 3.2 - k * .15, 0, 7); ctx.fill(); }
+          const [x, y] = at(c, pos), g = ctx.createRadialGradient(x, y, 0, x, y, 20);
+          g.addColorStop(0, rgba(tc, .4 * fade * a)); g.addColorStop(1, rgba(tc, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 20, 0, 7); ctx.fill();
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.fillStyle = `rgba(255,240,220,${fade * a})`; ctx.beginPath(); ctx.arc(x, y, 3.4, 0, 7); ctx.fill();
+          ctx.font = `14px ${getComputedStyle(document.body).fontFamily}`; ctx.textAlign = 'center';
+          ctx.fillStyle = rgba(tc, fade * a); ctx.fillText(label, x, y - 15);
+        }
+      }
+
+      if (step.fail && !still) { // impact: a shockwave and sparks where the failing packet lands
+        const n = nodes[wires[step.fail][step.send?.[2] ? 0 : 1]], bu = T - ARRIVE, [w, h] = half(n);
+        if (bu > 0 && bu < 1.4) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.strokeStyle = rgba(TONE.coral, .55 * (1 - bu / 1.4)); ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(n.x - w - bu * 60, n.y - h - bu * 60, (w + bu * 60) * 2, (h + bu * 60) * 2, 12 + bu * 40); ctx.stroke();
+          for (const p of sparks) {
+            const life = bu / p.life; if (life >= 1) continue;
+            const d = p.sp * (1 - Math.exp(-bu * 3)), x = n.x + Math.cos(p.a) * (w * .6 + d), y = n.y + Math.sin(p.a) * (h * .6 + d) + 30 * bu * bu;
+            ctx.fillStyle = rgba([255, 150 + 70 * (1 - life), 110], (1 - life) * .9); ctx.fillRect(x, y, p.size, p.size);
+          }
+          ctx.globalCompositeOperation = 'source-over';
+        }
+      }
+
+      for (const [id, n] of Object.entries(nodes)) { // orbs: a turning dotted sphere that builds in, tinted by tone
+        if (!n.r) continue;
+        const a = near(id) ? 1 : .25, th = still ? .6 : t * .35, tilt = .35, show = inOut(clamp((t - .1) / 1.1));
+        const tone = n.tone ? TONE[n.tone].map((v, i) => v * .6 + TONE.ink[i] * .4) : TONE.ink;
+        if (n.tone) { const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 2); g.addColorStop(0, rgba(TONE[n.tone], (.12 + .05 * Math.sin(t * 3)) * a)); g.addColorStop(1, rgba(TONE[n.tone], 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 2, 0, 7); ctx.fill(); }
+        ctx.globalCompositeOperation = 'lighter';
+        n.pts.forEach(([px, py, pz], k) => {
+          if (k / n.pts.length > show) return;
+          const x1 = px * Math.cos(th) + pz * Math.sin(th), z1 = -px * Math.sin(th) + pz * Math.cos(th);
+          const y2 = py * Math.cos(tilt) - z1 * Math.sin(tilt), depth = (py * Math.sin(tilt) + z1 * Math.cos(tilt) + 1) / 2;
+          ctx.fillStyle = rgba(tone, (.15 + .85 * depth) * a); ctx.beginPath(); ctx.arc(n.x + x1 * n.r, n.y + y2 * n.r, .7 + 1.3 * depth, 0, 7); ctx.fill();
+        });
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      if (ui.view.callout) { // callout leader: an elbow drawn from the box to the tag
+        const n = nodes[ui.view.callout[0]], p = step.callout && !still ? inOut(clamp((T - ARRIVE) / .4)) : 1;
+        const ax = n.x + half(n)[0], ay = n.y, tx = parseFloat(callout.style.left), ty = parseFloat(callout.style.top), mx = ax + (tx - ax) * .5;
+        const s1 = Math.hypot(mx - ax, ty - ay), L = (s1 + tx - mx) * p, a = !ui.hover || ui.hover === ui.view.callout[0] ? 1 : .25;
+        ctx.strokeStyle = rgba(TONE.amber, .8 * a); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(ax, ay);
+        if (L <= s1) ctx.lineTo(ax + (mx - ax) * L / s1, ay + (ty - ay) * L / s1); else { ctx.lineTo(mx, ty); ctx.lineTo(mx + L - s1, ty); }
+        ctx.stroke(); ctx.beginPath(); ctx.arc(ax, ay, 5, 0, 7); ctx.stroke();
+        ctx.fillStyle = rgba(TONE.amber, a); ctx.beginPath(); ctx.arc(ax, ay, 2, 0, 7); ctx.fill();
+      }
+
+      { const n = nodes[ui.selected], [w, h] = half(n); // focus ring, marching
+        ctx.strokeStyle = 'rgba(230,176,79,.65)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.lineDashOffset = still ? 0 : -t * 12; ctx.beginPath();
+        if (n.r) ctx.arc(n.x, n.y, n.r + 12, 0, 7); else ctx.roundRect(n.x - w - 8, n.y - h - 8, w * 2 + 16, h * 2 + 16, 15);
+        ctx.stroke(); ctx.setLineDash([]); }
+
+      resolveText(now);
+    }
+    const loop = (now) => { draw(now); requestAnimationFrame(loop); };
+
+    const scale = () => $('frame').clientWidth / 1200;
+    function fit() {
+      const s = scale(), dpr = Math.min(2, devicePixelRatio * s);
+      stage.style.transform = `scale(${s})`; $('frame').style.height = `${400 * s}px`;
+      fx.width = 1200 * dpr; fx.height = 400 * dpr;
+      if (still && ui.view) draw(performance.now());
+    }
+    const last = () => scenarios[ui.scenario].steps.length - 1;
+    const go = (k) => { ui.step = clamp(k, 0, last()); render(); };
+    function play(on = !ui.playing) {
+      clearInterval(ui.playing); ui.playing = 0;
+      $('play').textContent = on ? '❚❚ pause' : '▶ play'; $('play').setAttribute('aria-pressed', String(on));
+      if (!on) return;
+      if (ui.step === last()) go(0);
+      ui.playing = setInterval(() => (ui.step >= last() ? play(false) : go(ui.step + 1)), 2400);
+    }
+    const stepTo = (k) => { play(false); if (clamp(k, 0, last()) !== ui.step) go(k); };
+    document.querySelectorAll('[data-scenario]').forEach((b) => b.addEventListener('click', () => { play(false); ui.scenario = b.dataset.scenario; go(0); }));
+    $('prev').addEventListener('click', () => stepTo(ui.step - 1));
+    $('next').addEventListener('click', () => stepTo(ui.step + 1));
+    $('play').addEventListener('click', () => play());
+    addEventListener('keydown', (e) => {
+      if (e.target.closest?.('button, .node')) return;
+      if (e.key === 'ArrowRight') stepTo(ui.step + 1);
+      if (e.key === 'ArrowLeft') stepTo(ui.step - 1);
+      if (e.key === ' ') { e.preventDefault(); play(); }
+    });
+    addEventListener('resize', fit);
+
+    fit(); render();
+    type($('title').children[0], title[0], 500);
+    setTimeout(() => type($('title').children[1], title[1], 700), still ? 0 : 250);
+    if (still) draw(performance.now()); else requestAnimationFrame(loop);
   </script>
 </body>
 </html>

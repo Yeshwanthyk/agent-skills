@@ -1,0 +1,1 @@
+Every memory is one line, appended forever. When two neighbours exist, the agent folds them into one summary. Then summaries fold too, and the tree grows upward.
