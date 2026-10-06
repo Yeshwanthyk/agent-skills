@@ -18,6 +18,7 @@ Use this reference when work is handed to another worker: a dispatched agent, a 
 
 - An explicit user override wins. Use the current harness's existing configuration for model and effort defaults; do not invent a new configuration system.
 - Use the current harness's native dispatch mechanism. Use an external runtime only when the user requests it; inspect its current interface before dispatch.
+- Resolve dispatch actions through the matching file in [`hosts/`](hosts/). For an unlisted host, discover its capabilities and report gaps.
 - If a requested choice or capability is unavailable, report that limit instead of silently substituting. If the harness offers no suitable worker, do the work directly and say so.
 
 For a restart, replacement, or transfer to a receiver without the working context, use the [handoffs principle](principles/handoffs.md).
