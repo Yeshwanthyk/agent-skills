@@ -21,14 +21,12 @@ This catalog is authoritative for router method IDs and eligibility. Entry IDs a
 
 | Use when | Method |
 | --- | --- |
-| Negotiate an unsettled problem and competing solution shapes | [shaping](../shaping/SKILL.md) |
 | Settle a consequential architectural boundary from live contracts | [architect](../architect/SKILL.md) |
-| Map UI/code actions, stores, and their wiring | [breadboarding](../breadboarding/SKILL.md) |
 | Model authoritative state, transitions, concurrency, or recovery | [stateful-systems](../stateful-systems/SKILL.md) |
 | Turn a settled approach into an execution plan | [plan](../plan/SKILL.md) |
 | Resolve an empirical design question with a throwaway sketch | [prototype](playbooks/prototype.md) |
 
-For an ordinary feature or refactoring with a settled shape, implement directly. Consult the [change-shape reference](../plan/references/change-shape.md) when behavior versus equivalence affects the work; this does not require a separate planning phase. A speculative plan is not a plan yet: settle the approach with shaping or architect first, then use plan.
+For an ordinary feature or refactoring with a settled shape, implement directly. Consult the [change-shape reference](../plan/references/change-shape.md) when behavior versus equivalence affects the work; this does not require a separate planning phase. A speculative plan is not a plan yet: settle the approach with architect first, then use plan.
 
 ## Review and verify
 
@@ -64,10 +62,8 @@ For an ordinary feature or refactoring with a settled shape, implement directly.
 | --- | --- |
 | Teach a body of work so the user understands it, escalating to visual or interactive artifacts when they land faster | [teach](../teach/SKILL.md) |
 | Create or update a PR description (always include a visual change outline), or explain the current topic with a concise diagram or code sketch | [show-me](../show-me/SKILL.md) |
-| Turn a document or discussion into an interactive browser slide deck | [interactive-slides](../interactive-slides/SKILL.md) |
 | Build an interactive HTML model of behavior or state | [interactive-explainer](../interactive-explainer/SKILL.md) |
 | Build a narrated motion explainer or explainer video | [motion-explainer](../motion-explainer/SKILL.md) |
-| Map a codebase's modules and review its structure file by file | [module-map](../module-map/SKILL.md) |
 | Research and write a connected long-form HTML article | [deep-dive-explainer](../deep-dive-explainer/SKILL.md) |
 | Write or clean prose, docs, PR bodies, or commits so they read clearly on first pass | [unslop](../unslop/SKILL.md) |
 | Switch the conversation to Bro's plain-English style — **explicit request** | [bro](../bro/SKILL.md) |

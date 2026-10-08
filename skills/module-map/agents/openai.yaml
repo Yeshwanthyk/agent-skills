@@ -1,6 +1,0 @@
-interface:
-  display_name: "Module Map"
-  short_description: "Map a codebase's modules for architecture review"
-  default_prompt: "Use $module-map to build an interactive module map of this repository with per-file review."
-policy:
-  allow_implicit_invocation: true

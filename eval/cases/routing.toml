@@ -22,12 +22,6 @@ prompt = "test_redelivered_event_records_one_delivery is failing. Find the cause
 expect = { methods = ["debug"], no_edits = true }
 
 [[case]]
-id = "shaping-refunds"
-activation = "router"
-prompt = "We want to add refunds: partial, full, maybe store credit. I'm not sure what shape this should take. Help me think through the options before anyone builds anything."
-expect = { methods = ["shaping"], not_methods = ["plan"], no_edits = true }
-
-[[case]]
 id = "architect-dedupe-boundary"
 tags = ["port"]
 activation = "router"
@@ -38,7 +32,7 @@ expect = { any_method = ["architect"], no_edits = true }
 id = "plan-settled-dedupe"
 activation = "router"
 prompt = "We've decided: dedupe carrier events by event id in storage, rejecting repeats. Write the implementation plan for that."
-expect = { methods = ["plan"], not_methods = ["shaping"], no_edits = true }
+expect = { methods = ["plan"], not_methods = ["architect"], no_edits = true }
 
 [[case]]
 id = "stateful-order-lifecycle"

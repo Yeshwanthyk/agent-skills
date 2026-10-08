@@ -13,7 +13,6 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`automate-me`](./skills/automate-me) | Turns repeated working preferences into a reviewed personal mode skill. |
 | [`benchmark-checklist`](./skills/benchmark-checklist) | Vets a performance number (limiter, tuning, limits, errors, repeatability, relevance, whether the work ran) before it is reported or acted on. |
 | [`blast-radius`](./skills/blast-radius) | Finds what a change could break beyond grep and proves the main safety facts. |
-| [`breadboarding`](./skills/breadboarding) | Maps operator workflows into UI, code, stores, and explicit control and data wiring. |
 | [`bro`](./skills/bro) | Switches the conversation to short, plain, unambiguous English. |
 | [`correct`](./skills/correct) | Finds mistakes agents keep repeating in a repo and makes each impossible through architecture, types, checks, or tests. |
 | [`create-verification-skill`](./skills/create-verification-skill) | Creates and proves a project-local skill that drives one real application surface. |
@@ -21,10 +20,8 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`debug`](./skills/debug) | Reproduces failures, finds the first contract divergence, and applies and proves the smallest coherent fix when requested. |
 | [`figure-it-out`](./skills/figure-it-out) | Designs and runs an auditable custom workflow for a large task that has no focused playbook. |
 | [`how`](./skills/how) | Explains current systems through execution paths, ownership, inventories, contrasts, and optional architecture critique. |
-| [`interactive-slides`](./skills/interactive-slides) | Builds clean interactive HTML slide decks from documents and discussions, with a saved reference and stable controls. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded interactive HTML models of behavior, state, sequences, and comparisons. |
 | [`motion-explainer`](./skills/motion-explainer) | Builds narrated, timeline-driven systems explainers as playable HTML, optionally rendered to MP4 with a local voice. |
-| [`module-map`](./skills/module-map) | Builds an interactive map of a codebase's modules by layer, with a per-file review of issues, key code, branch diffs and dependencies. |
 | [`interrogate`](./skills/interrogate) | Runs independent adversarial reviews and returns one evidence-checked judgment. |
 | [`maintain-verification-skill`](./skills/maintain-verification-skill) | Audits and repairs a project-local verification skill against current source and live behavior. |
 | [`property-testing`](./skills/property-testing) | Generates contract tests, shrinks failures, and preserves replayable regressions. |
@@ -32,7 +29,6 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`plan`](./skills/plan) | Turns a settled approach into an implementation-ready packet with chunks, dependencies, risks, and proof. |
 | [`recall`](./skills/recall) | Reconstructs recent project work from sessions and current repository state. |
 | [`reflect`](./skills/reflect) | Extracts reusable lessons from a session and applies only user-approved skill changes. |
-| [`shaping`](./skills/shaping) | Negotiates requirements and competing solution shapes until one mechanism fits. |
 | [`show-me`](./skills/show-me) | Explains a topic visually with diagrams, code-shape sketches, calldiff views, and focused HTML. |
 | [`show-me-your-work`](./skills/show-me-your-work) | Keeps an auditable decision trail for long, unattended, or later-reviewed work. |
 | [`stateful-systems`](./skills/stateful-systems) | Models authoritative state, transitions, invariants, concurrency, replay, and recovery. |
@@ -79,8 +75,6 @@ These are the command-line tools named by the skill instructions. Roles are opti
 Meat is never authoritative: its reading diff can omit imports and security-relevant context. The `show-me` PR workflow requires explicit full-diff coverage for meaningful import, dependency, authentication/authorization, secrets, or other security changes. Mermaid diagrams still require actual GitHub render validation; if GitHub rendering cannot be verified, use the required text or diff fallback.
 
 ## Acknowledgments
-
-The owned `shaping` and `breadboarding` workflows draw on [Shape Up](https://basecamp.com/shapeup) and concepts explored by [rjs/shaping-skills](https://github.com/rjs/shaping-skills). Their skill text, structure, examples, and completion gates are original to this repository.
 
 The router and the adapted playbook, principle, review, and verification workflows draw on the MIT-licensed [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack). The portable instructions are harness-neutral; model preferences live in the host configuration. The upstream source and license remain at that repository.
 

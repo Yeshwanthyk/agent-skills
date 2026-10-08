@@ -18,11 +18,6 @@ expect = { methods = ["debug"], no_edits = true }
 notes = "Claude Code ships a built-in 'debug' skill; this shows which one wins."
 
 [[case]]
-id = "direct-shaping"
-prompt = "I'm not sure how we should support multi-currency orders. Let's talk through the shape of it before any code."
-expect = { methods = ["shaping"], no_edits = true }
-
-[[case]]
 id = "direct-blast-radius"
 prompt = "Before I touch webhooks.py's DELIVERIES list, what downstream code could break?"
 expect = { methods = ["blast-radius"], no_edits = true }

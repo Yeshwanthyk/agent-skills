@@ -8,12 +8,6 @@ prompt = "profiles/bench.prof.txt is a profile I captured from bench.py. Tell me
 expect = { any_method = ["trace-forensics"], no_edits = true }
 
 [[case]]
-id = "cov-breadboarding"
-activation = "router"
-prompt = "We're adding a refund button to the admin UI. Lay out the screens, UI actions, code actions, and data stores it involves and how they connect."
-expect = { methods = ["breadboarding"], no_edits = true }
-
-[[case]]
 id = "cov-interrogate"
 activation = "router"
 prompt = "I'm about to ship storage-level dedupe keyed by event id for carrier webhooks. Get independent reviewers to poke holes in that design before I commit to it."

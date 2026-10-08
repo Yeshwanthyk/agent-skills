@@ -1,6 +1,0 @@
-interface:
-  display_name: "Shaping"
-  short_description: "Negotiate requirements and solution shapes"
-  default_prompt: "Use $shaping to develop the requirements, compare solution shapes, and expose the next unresolved decision."
-policy:
-  allow_implicit_invocation: true
