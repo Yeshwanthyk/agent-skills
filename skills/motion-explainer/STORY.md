@@ -15,6 +15,7 @@ Two to four acts, one name each. Act names go in the pill: lowercase, two or thr
 ## Narration
 
 - One claim per sentence, 8–16 words. 20–35 seconds total is a good length; Whistle hears at most 30 seconds per sentence.
+- Say what a domain word means the first time it is spoken, in the viewer's words.
 - Use concrete nouns the scene can cue on (*the file*, *the old pid*, *SIGKILL*). Every visual beat needs a word to hang from, and that word should be one unlikely to repeat nearby.
 - Use verbs that animate: *reads*, *folds*, *collides*, *sends*, *binds*. Wire a packet to *sends*, a burst to *runs out*, a coral flash to *collided*.
 - Kokoro reads symbols literally. Write `service dot json`, and use `[SIGKILL](sig kill)` when the caption should differ from the speech.

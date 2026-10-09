@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Validate the structural contract of a self-contained interactive explainer."""
+"""Validate the structural contract of a self-contained interactive explainer.
+
+--allow-local-assets accepts relative local CSS and JS (multi-page sites that share files); remote URLs still fail.
+"""
 
 from __future__ import annotations
 
@@ -10,8 +13,9 @@ from pathlib import Path
 
 
 class ExplainerParser(HTMLParser):
-    def __init__(self) -> None:
+    def __init__(self, allow_local: bool = False) -> None:
         super().__init__(convert_charrefs=True)
+        self.allow_local = allow_local
         self.tags: dict[str, int] = {}
         self.ids: set[str] = set()
         self.duplicate_ids: set[str] = set()
@@ -50,11 +54,11 @@ class ExplainerParser(HTMLParser):
             self.interactive_count += 1
 
         src = values.get("src")
-        if src and not embedded(src):
+        if src and not embedded(src, self.allow_local):
             self.external_assets.append(f"<{tag} src={src!r}>")
 
         href = values.get("href")
-        if tag == "link" and href and not embedded(href):
+        if tag == "link" and href and not embedded(href, self.allow_local):
             self.external_assets.append(f"<link href={href!r}>")
 
     def handle_endtag(self, tag: str) -> None:
@@ -68,14 +72,17 @@ class ExplainerParser(HTMLParser):
             self.styles.append(data)
 
 
-def embedded(value: str) -> bool:
-    return value.strip().lower().startswith(("data:", "#"))
+def embedded(value: str, allow_local: bool = False) -> bool:
+    value = value.strip().lower()
+    if value.startswith(("data:", "#")):
+        return True
+    return allow_local and not re.match(r"^([a-z][a-z0-9+.-]*:|//)", value)
 
 
-def validate(path: Path) -> list[str]:
+def validate(path: Path, allow_local: bool = False) -> list[str]:
     html = path.read_text(encoding="utf-8")
     lower = html.lower()
-    parser = ExplainerParser()
+    parser = ExplainerParser(allow_local)
     parser.feed(html)
 
     errors: list[str] = []
@@ -103,7 +110,7 @@ def validate(path: Path) -> list[str]:
         css = re.sub(r"/\*.*?\*/", "", css, flags=re.DOTALL)
         urls = re.findall(r"url\(\s*([^)]*)\)", css, re.IGNORECASE)
         imports = re.findall(r"@import\s+['\"]([^'\"]+)['\"]", css, re.IGNORECASE)
-        if any(not embedded(url.strip().strip("\"'")) for url in urls + imports):
+        if any(not embedded(url.strip().strip("\"'"), allow_local) for url in urls + imports):
             errors.append("external CSS asset")
             break
 
@@ -117,16 +124,19 @@ def validate(path: Path) -> list[str]:
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("usage: validate_explainer.py <path-to-html>", file=sys.stderr)
+    args = sys.argv[1:]
+    allow_local = "--allow-local-assets" in args
+    args = [a for a in args if a != "--allow-local-assets"]
+    if len(args) != 1:
+        print("usage: validate_explainer.py [--allow-local-assets] <path-to-html>", file=sys.stderr)
         return 2
 
-    path = Path(sys.argv[1]).expanduser().resolve()
+    path = Path(args[0]).expanduser().resolve()
     if not path.is_file():
         print(f"ERROR: file does not exist: {path}", file=sys.stderr)
         return 2
 
-    errors = validate(path)
+    errors = validate(path, allow_local)
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)

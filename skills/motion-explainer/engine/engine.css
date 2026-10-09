@@ -114,8 +114,10 @@ body { display: grid; grid-template-rows: 1fr auto; }
   display: flex; align-items: center; gap: 18px; height: 64px; padding: 0 22px; user-select: none;
   background: #0b0b0b; border-top: 1px solid rgba(255, 255, 255, 0.07); font-size: 13px; color: var(--mx-dim);
 }
-#mx-controls button { all: unset; cursor: pointer; color: var(--mx-ink); padding: 6px 10px; border-radius: 6px; border: 1px solid transparent; font: inherit; }
-#mx-controls button:hover, #mx-controls button:focus-visible { border-color: var(--mx-line); }
+#mx-controls button { all: unset; cursor: pointer; color: var(--mx-ink); padding: 6px 10px; border-radius: 6px; border: 1px solid transparent; font: inherit; transition: border-color 160ms cubic-bezier(.23, 1, .32, 1), transform 160ms cubic-bezier(.23, 1, .32, 1); }
+#mx-controls button:focus-visible { border-color: var(--mx-line); }
+@media (hover: hover) and (pointer: fine) { #mx-controls button:hover { border-color: var(--mx-line); } }
+#mx-controls button:active { transform: scale(.97); }
 #mx-controls button.on { color: var(--mx-amber); }
 #mx-play { width: 22px; text-align: center; font-size: 15px; }
 #mx-time { min-width: 116px; font-variant-numeric: tabular-nums; }

@@ -18,6 +18,7 @@
       --amber: #e6b04f;
       --coral: #e0736a;
       --green: #9cc48a;
+      --out: cubic-bezier(.23, 1, .32, 1); /* ease-out for UI feedback */
       --mono: "IBM Plex Mono", "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     * { box-sizing: border-box; }
@@ -37,9 +38,11 @@
     .controls .sep { flex: 1; }
     button {
       appearance: none; font: inherit; color: var(--dim); background: transparent; cursor: pointer;
-      border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; transition: color .2s, border-color .2s, box-shadow .2s;
+      border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px;
+      transition: color 160ms var(--out), border-color 160ms var(--out), box-shadow 160ms var(--out), transform 160ms var(--out);
     }
-    button:hover { color: var(--ink); border-color: rgba(255, 255, 255, .25); }
+    @media (hover: hover) and (pointer: fine) { button:hover:not(:disabled) { color: var(--ink); border-color: rgba(255, 255, 255, .25); } }
+    button:active:not(:disabled) { transform: scale(.97); }
     button[aria-pressed="true"] { color: var(--ink); border-color: rgba(230, 176, 79, .55); box-shadow: 0 0 18px rgba(230, 176, 79, .14); }
     button:focus-visible { outline: 1px solid var(--amber); outline-offset: 2px; }
     button:disabled { opacity: .35; cursor: default; }
@@ -74,9 +77,9 @@
     .callout { position: absolute; transform: translateY(-50%); padding: 6px 13px; border: 1px solid var(--line); border-radius: 7px; background: rgba(12, 12, 12, .94); color: var(--dim); white-space: nowrap; opacity: 0; transition: opacity .3s; }
     .callout em { font-style: normal; color: var(--amber); }
 
-    .caption { min-height: 2.6em; margin: 22px 0 0; font-size: clamp(1rem, 1.8vw, 1.3rem); }
+    .caption { min-height: 2.6em; margin: 4px 0 14px; font-size: clamp(1rem, 1.8vw, 1.3rem); }
     .caption em { font-style: normal; color: var(--amber); }
-    .caption.in { animation: rise .45s cubic-bezier(.2, .7, .2, 1); }
+    .caption.in { animation: rise 200ms var(--out); }
     @keyframes rise { from { opacity: 0; transform: translateY(6px); filter: blur(3px); } }
     .inspector { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 6px 18px; margin: 18px 0 0; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .07); }
     .inspector dt { color: var(--faint); }
@@ -105,8 +108,8 @@
     </div>
 
     <section id="scenario-view" aria-live="polite">
-      <div class="frame" id="frame"><div class="stage" id="stage"><canvas id="fx" aria-hidden="true"></canvas></div><canvas id="grain" width="600" height="200" aria-hidden="true"></canvas></div>
       <p class="caption" id="caption"></p>
+      <div class="frame" id="frame"><div class="stage" id="stage"><canvas id="fx" aria-hidden="true"></canvas></div><canvas id="grain" width="600" height="200" aria-hidden="true"></canvas></div>
       <dl class="inspector">
         <dt>selected</dt><dd id="i-title"></dd>
         <dt>authoritative state</dt><dd id="i-state"></dd>
