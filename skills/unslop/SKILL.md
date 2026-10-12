@@ -1,6 +1,6 @@
 ---
 name: unslop
-description: Write or clean padded or AI-sounding prose so a tired engineer gets it on first read: docs, PR bodies, commits, reports, skill text. On request ("bro"), plain English for later replies.
+description: 'Write or clean padded or AI-sounding prose so a tired engineer gets it on first read: docs, PR bodies, commits, reports, skill text. On request ("bro"), plain English for later replies.'
 disable-model-invocation: true
 ---
 

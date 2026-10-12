@@ -1,6 +1,6 @@
 ---
 name: how
-description: Explain how code works or why it was built this way: execution paths, ownership, inventories, comparisons, design critique, or decision history from commits, PRs, issues, and docs.
+description: 'Explain how code works or why it was built this way: execution paths, ownership, inventories, comparisons, design critique, or decision history from commits, PRs, issues, and docs.'
 ---
 
 # How
