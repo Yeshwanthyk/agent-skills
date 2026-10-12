@@ -13,8 +13,8 @@ Last reviewed: `e43c7ee` (pstack 0.15.9, 2026-10-04). Run `scripts/upstream-diff
 | perf-issue, hillclimb playbooks | adapted | mantras, harness vetting, stop predicate, plateau rules |
 | principle-separate-before-serializing-shared-state | merged | `references/principles/state-ownership.md` |
 | tdd | merged | `skills/debug` (Correct section) |
-| technical-writing | merged | `skills/unslop/references/technical-writing.md` |
-| unslop pattern catalog | adapted | `skills/unslop/references/patterns.md` |
+| technical-writing | merged | `skills/unslop/SKILL.md` (Technical writing) |
+| unslop pattern catalog | adapted | `skills/unslop/SKILL.md` (Slop patterns) |
 | teach | dropped | removed 2026-10-09: no use; `how` covers understanding, show-me and the explainers cover visuals |
 | principle-subtract-before-you-add, laziness-protocol, minimize-reader-load | merged | `references/principles/simplicity.md` |
 | other `principle-*` skills | merged | `references/principles/` notes, listed in the router's Apply principles table and pointed at from each skill's steps |

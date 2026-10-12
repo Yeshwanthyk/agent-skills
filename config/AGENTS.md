@@ -17,7 +17,7 @@ Pick the model by role. Reasoning effort is medium unless stated.
 - In T3 Code, send Haiku, Fable, Astra and Kimi work through Pi; Opus runs in Claude Code.
 
 # Where things are
-- Skills source: `~/code/personal/agent-skills`. Installed copies live in `~/.gitgud/skills`, linked into `~/.claude/skills` and `~/.pi/agent/skills`. Edit the repo, push, then `gitgud update` and `gitgud apply`; never edit an installed copy.
+- Skills source: `~/code/personal/agent-skills`. Installed copies live in `~/.gitgud/skills`, linked into `~/.claude/skills` and `~/.pi/agent/skills`. Edit the repo, push, then run `gitgud update --global` and `gitgud apply --global` from outside the repo (inside it, gitgud reads the working tree and can fail on stale frontmatter); never edit an installed copy.
 - Skill map of every skill, playbook and principle link: `node tools/skill-map/build.mjs` in that repo.
 - Session logs: Claude Code, including T3 Code threads, in `~/.claude/projects/*/*.jsonl`; Pi in `~/.pi/agent/sessions/`.
 - Pi model list and defaults: `~/.pi/agent/settings.json`.

@@ -37,8 +37,9 @@ export const STORIES = [
     id: 'edit', name: 'edit a skill → writing-for-agents',
     steps: [
       { doc: `${R}SKILL.md`, caption: 'The router reads the catalog.' },
-      { doc: `${R}SKILL.md#triggers`, caption: 'The catalog names <em>writing-for-agents</em> for skill edits, as an external dependency.' },
-      { doc: 'ext/writing-for-agents/SKILL.md', caption: 'It comes from mattpocock/skills through gitgud. It is the only external skill the collection reaches.' },
+      { doc: `${R}SKILL.md#triggers`, caption: 'The catalog links <em>writing-for-agents</em> for skill and AGENTS.md edits.' },
+      { doc: 'skills/writing-for-agents/SKILL.md', caption: 'It sets the rules for pointers, the information hierarchy, and completion criteria.' },
+      { doc: 'skills/writing-for-agents/SKILL-MECHANICS.md', caption: 'For a skill, it adds frontmatter, the invocation choice, and how a router reaches hidden skills.' },
     ],
   },
 ];

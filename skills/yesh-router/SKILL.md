@@ -17,7 +17,7 @@ Match the situation to a row, open its file, and follow it. Pick one main method
 - How code works now, an execution path, or the path to establish before a consequential change → [how](../how/SKILL.md). Why it was built or decided this way → its History view.
 - A failing or crashing behavior to reproduce, diagnose, and fix when asked; a live runtime symptom; a captured trace or profile → [debug](../debug/SKILL.md).
 - Resuming earlier work from sessions and the repo → [resume](playbooks/resume.md).
-- Facts from outside the repo (docs, specs, APIs) → the installed `research` skill.
+- Facts from outside the repo (docs, specs, APIs) → [research](../research/SKILL.md).
 
 **Shape and plan**
 - An unsettled architectural boundary → [architect](../architect/SKILL.md).
@@ -50,7 +50,7 @@ Match the situation to a row, open its file, and follow it. Pick one main method
 **Improve the method** (*on request*)
 - Lessons from a session, or a personal mode built from working preferences → [reflect](../reflect/SKILL.md).
 - Agents keep repeating a mistake in this repo → [correct](../correct/SKILL.md).
-- Creating or editing a skill → the installed `writing-for-agents` skill and the host's authoring skill. Editing a skill authorizes that edit only.
+- Creating or editing a skill, `AGENTS.md`, or `CLAUDE.md` → [writing-for-agents](../writing-for-agents/SKILL.md). Editing a skill authorizes that edit only.
 
 ## Run
 

@@ -17,15 +17,17 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`how`](./skills/how) | Explains current systems through execution paths, ownership, inventories, contrasts, critique, and decision history from records. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded interactive HTML models of behavior, state, sequences, and comparisons. |
 | [`interrogate`](./skills/interrogate) | Runs independent adversarial reviews and returns one evidence-checked judgment. |
-| [`invariants`](./skills/invariants) | Models authoritative state and transitions, then breaks invariants with property tests or fuzzing and keeps replayable failures. |
+| [`invariants`](./skills/invariants) | Models authoritative state and transitions, model-checks them with Quint or proves them in Lean, then breaks invariants with property tests or fuzzing and keeps replayable failures. |
 | [`motion-explainer`](./skills/motion-explainer) | Builds narrated, timeline-driven systems explainers as playable HTML, optionally rendered to MP4 with a local voice. |
 | [`plan`](./skills/plan) | Turns a settled approach into an implementation-ready packet with chunks, dependencies, risks, and proof. |
+| [`research`](./skills/research) | Hands a question to a background agent that reads primary sources and saves a cited Markdown note in the repo. |
 | [`reflect`](./skills/reflect) | Extracts reusable lessons from a session, or builds a personal mode from stated preferences; applies only approved changes. |
 | [`show-me`](./skills/show-me) | Explains a topic visually with diagrams, code-shape sketches, calldiff views, and focused HTML; owns the visual PR description. |
 | [`structure-review`](./skills/structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
 | [`swarm`](./skills/swarm) | Runs one bounded parallel coverage pass, a solution race, or a best-of comparison that grafts one verified result. |
 | [`unslop`](./skills/unslop) | Writes and cleans prose, docs, PR bodies, and commits so they read clearly on first pass; on request, plain mode for the rest of the chat. |
 | [`verification-skill`](./skills/verification-skill) | Creates, audits, or repairs a project-local skill that drives and proves one real application surface. |
+| [`writing-for-agents`](./skills/writing-for-agents) | Rules for documents agents read: skills, `AGENTS.md`, `CLAUDE.md`, pointers, and invocation. |
 | [`yesh-router`](./skills/yesh-router) | Routes tasks across the collection and applies relevant engineering principles on explicit activation. |
 
 Routing is opt-in and sticky. The router's [Triggers](./skills/yesh-router/SKILL.md#triggers) select skills and playbooks; [orchestration](./skills/yesh-router/playbooks/orchestrate.md) owns dependent work and integration through the host harness’s subagent tools. PR work starts only on request.
@@ -41,7 +43,7 @@ After installing the reviewed collection, name a skill directly or ask for the r
 - `Use invariants to check the retry invariants.`
 - `Exit yesh-router.`
 
-Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, debug, invariants, plan, show-me, interactive-explainer and the router are listed by default.
+Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, debug, invariants, plan, show-me, interactive-explainer, research, writing-for-agents and the router are listed by default.
 
 Activate once, then describe outcomes in ordinary language. The router reads its Triggers and considers the host's installed skill descriptions, including project-local skills. It selects a main workflow and the supporting skills needed for the work, reads their instructions, and follows their completion criteria. It reconsiders selection as the task develops; small settled work stays direct when specialized guidance adds no value. The collection does not exclude other installed skills.
 
@@ -63,11 +65,15 @@ These are the command-line tools named by the skill instructions. Roles are opti
 | Python 3 | [python.org/downloads](https://www.python.org/downloads/) | Required for `python3 scripts/check-skill-routing.py`. |
 | GitHub CLI (`gh`) | [cli.github.com](https://cli.github.com/) | Optional; needed for the GitHub PR identity, create, edit, and readback commands in `show-me`'s PR workflow. GitHub access/authentication is required for those operations. |
 | `calldiff` | [github.com/tanishqkancharla/calldiff](https://github.com/tanishqkancharla/calldiff); `npm install -g calldiff` | Optional; used only for changed call-tree/stack views. Requires Node.js 22 or newer. If unavailable or unable to parse the project, `show-me` uses a source-grounded manual call tree and reports the limitation. |
+| Quint | [quint-lang.org](https://quint-lang.org/); `npm install -g @informalsystems/quint` | Optional; used by `invariants`' formal branch. `quint run` simulates; `quint verify` model-checks with Apalache, which it downloads on first use and which needs a JDK 17 or newer. |
+| Lean 4 | [lean-lang.org](https://lean-lang.org/); install `elan`, then `elan default leanprover/lean4:stable` | Optional; used by `invariants` to prove an invariant beyond any bound once Quint finds no counterexample. |
 | Meat | [github.com/boldsoftware/meat](https://github.com/boldsoftware/meat); upstream install: `go install meat.dev/cmd/meat@latest` | Optional; used for substantial/noisy PRs when a structural outline plus a reading diff improves review. Requires Go to install and a configured provider: an OpenAI or Anthropic API key/base URL, or the upstream exe.dev managed gateway. It sends the diff to that provider, so explicit data-sharing permission is required; otherwise use the authoritative full diff and report the fallback. |
 
 Meat is never authoritative: its reading diff can omit imports and security-relevant context. The `show-me` PR workflow requires explicit full-diff coverage for meaningful import, dependency, authentication/authorization, secrets, or other security changes. Mermaid diagrams still require actual GitHub render validation; if GitHub rendering cannot be verified, use the required text or diff fallback.
 
 ## Acknowledgments
+
+[`research`](skills/research) and [`writing-for-agents`](skills/writing-for-agents) are adapted from the MIT-licensed [mattpocock/skills](https://github.com/mattpocock/skills); each folder keeps its license. The PR evidence and merge-danger sections in `show-me` draw on the `pr` skill there, credited to Dex Horthy's [show-me](https://github.com/humanlayer/skills).
 
 The router and the adapted playbook, principle, review, and verification workflows draw on the MIT-licensed [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack). The portable instructions are harness-neutral; model preferences live in the host configuration. The upstream source and license remain at that repository.
 

@@ -38,5 +38,9 @@
   { "name": "evidence-discipline", "was": "skills/yesh-router/references/principles/evidence-discipline.md", "now": "skills/yesh-router/references/principles/prove-it-works.md",
     "why": "Both notes said check at the boundary the claim names and suspect the observation method, so an agent read one and missed half. Its technique-choice and stop-when-the-evidence-exists bullets moved into prove-it-works." },
   { "name": "attack-the-premise", "was": "skills/yesh-router/references/principles/attack-the-premise.md", "now": "skills/yesh-router/references/principles/fix-root-causes.md",
-    "why": "Three lines, and debug was its only reader, which already linked fix-root-causes. Its threshold survives as a bullet: after two fixes on one assumption fail the same check, stop patching." }
+    "why": "Three lines, and debug was its only reader, which already linked fix-root-causes. Its threshold survives as a bullet: after two fixes on one assumption fail the same check, stop patching." },
+  { "name": "patterns.md", "was": "skills/unslop/references/patterns.md", "now": "skills/unslop/SKILL.md#slop-patterns",
+    "why": "Your call: one unslop file that holds everything, so the pattern catalog moved inline." },
+  { "name": "technical-writing.md", "was": "skills/unslop/references/technical-writing.md", "now": "skills/unslop/SKILL.md#technical-writing",
+    "why": "Your call: one unslop file. The technical-writing layers moved inline, with the rules the earlier summary had dropped." }
 ]

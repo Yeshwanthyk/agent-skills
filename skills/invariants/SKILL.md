@@ -1,6 +1,6 @@
 ---
 name: invariants
-description: "Model state and break invariants: authority, transitions, concurrency, recovery; property-test contracts over generated values or operation sequences; fuzz a parser or untrusted-input boundary."
+description: "Model state and break invariants: authority, transitions, concurrency, recovery, with Quint model checking or Lean proofs; property-test contracts over generated values or operation sequences; fuzz a parser or untrusted-input boundary."
 ---
 
 # Invariants
@@ -31,7 +31,7 @@ A Model claim that needs generated evidence continues to step 2 for that claim.
 4. Define invariants and place each enforcement point at the boundary that owns it. When the model names the states and transitions code will represent, read [model-the-domain](../yesh-router/references/principles/model-the-domain.md); when it changes representations or constructors, also read [type-system-discipline](../yesh-router/references/principles/type-system-discipline.md).
 5. Trace concurrent transitions, retries, ordering, freshness, and lifecycle restoration through representative scenarios.
 6. Shape commands around intent and reads around explicit freshness semantics.
-7. When a concurrent or critical transition stays ambiguous after the table, take the **Formal** sub-branch: read [references/formal-modeling.md](references/formal-modeling.md).
+7. When a concurrent or critical transition stays ambiguous after the table, take the **Formal** sub-branch and read [references/formal-modeling.md](references/formal-modeling.md): Quint searches interleavings for a counterexample, and Lean proves an invariant beyond any bound once the model checks clean.
 8. Give each transition, invariant, race, replay, and recovery path in scope a proof strategy: a boundary test, generated exploration (step 2), or a named open question. When choosing, read [prove-it-works](../yesh-router/references/principles/prove-it-works.md).
 
 **Done** when every in-scope transition has an owner and a proof strategy or open question, every invariant has an enforcement point, and concurrency, freshness, replay, and recovery each have a scenario.

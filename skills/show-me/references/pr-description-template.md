@@ -10,6 +10,9 @@ Replace placeholders and remove guidance before publication. Retain the reposito
 
 - [One to three caveats about rollout, compatibility, migrations, intentional gaps, or non-obvious decisions; otherwise `None.`]
 
+**Door:** [One-way or two-way: whether a revert fully undoes the merge. Name what makes it one-way, such as a migration, deleted data, a published contract, or an external side effect.]
+**Blast radius:** [Who or what breaks if this is wrong: consumers, jobs, data, layout, platforms. Name the boundary, not a severity adjective.]
+
 ## Implementation map
 
 [Brief explanation beside a structural visual showing what changes. Choose the relevant schema, contract, type, component, responsibility, or execution view.]
@@ -24,5 +27,7 @@ Replace placeholders and remove guidance before publication. Retain the reposito
 
 ## Checks
 
-- [Executed check and observed result.]
+- **Before:** [Observed behavior on the base: a failing test, error output, or a screenshot for a visual change.]
+  **After:** [The same observation on this branch.]
+- [Other executed checks and observed results.]
 - [Relevant unexecuted check and why, when applicable.]

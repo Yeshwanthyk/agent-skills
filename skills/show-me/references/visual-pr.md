@@ -86,7 +86,9 @@ Read [the body template](pr-description-template.md) and fill its relevant secti
 
 The purpose is exactly one sentence. Reviewer caveats use one to three bullets, or `None.` when there are none. The outline contains at least one structural visual; a filename inventory alone is insufficient. Omit irrelevant visual categories and avoid a prose changelog alongside an equivalent diagram. Use plain language and include only real issue, plan, or artifact links.
 
-Record checks that actually ran, their results, and relevant missing checks. Visual explanation is not evidence that the implementation works. Keep the description limited to the template and repository-required information.
+Record checks that actually ran, their results, and relevant missing checks. Show evidence as before and after: the same test, command, or screen on the base and on this branch. For a visual change, screenshots are the strongest evidence when the environment can produce them; otherwise use executed output, such as the test that failed and now passes. Visual explanation is not evidence that the implementation works.
+
+Classify merge danger. A two-way door is fully undone by a revert. A one-way door is not: a migration, deleted or rewritten data, a published API or schema, a sent message, or another external side effect. For the blast radius, name what breaks if the change is wrong, such as consumers, jobs, stored data, layout, or a platform, and use [blast-radius](../../blast-radius/SKILL.md) when the answer is not obvious from the diff. Keep the description limited to the template and repository-required information.
 
 ## 4. Save, publish, and confirm
 
