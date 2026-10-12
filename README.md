@@ -1,6 +1,6 @@
 # Agent Skills
 
-Use [`yesh-router`](./skills/yesh-router/SKILL.md) when you want one entry point to select methods and apply engineering principles. Every skill also works directly. The [method catalog](./skills/yesh-router/methods.md) covers the complete collection; its groups are navigation, not mandatory stages. `yesh-router` is the sole router activation name.
+Use [`yesh-router`](./skills/yesh-router/SKILL.md) when you want one entry point to select methods and apply engineering principles. Every skill also works directly. Its [Triggers](./skills/yesh-router/SKILL.md#triggers) section covers the complete collection; its groups are navigation, not mandatory stages. `yesh-router` is the sole router activation name.
 
 Delegation follows the portable [delegation contract](skills/yesh-router/references/delegation.md). Model and reasoning defaults are host preferences, kept in the host configuration template ([`config/AGENTS.md`](./config/AGENTS.md)) rather than the portable docs.
 
@@ -9,39 +9,28 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | Skill | What it does |
 | --- | --- |
 | [`architect`](./skills/architect) | Chooses a target architecture from live contracts, execution paths, state ownership, and constraints. |
-| [`arena`](./skills/arena) | Runs complete competing candidates, cross-judges them, and grafts the best result into one verified artifact. |
-| [`automate-me`](./skills/automate-me) | Turns repeated working preferences into a reviewed personal mode skill. |
 | [`benchmark-checklist`](./skills/benchmark-checklist) | Vets a performance number (limiter, tuning, limits, errors, repeatability, relevance, whether the work ran) before it is reported or acted on. |
 | [`blast-radius`](./skills/blast-radius) | Finds what a change could break beyond grep and proves the main safety facts. |
-| [`bro`](./skills/bro) | Switches the conversation to short, plain, unambiguous English. |
 | [`correct`](./skills/correct) | Finds mistakes agents keep repeating in a repo and makes each impossible through architecture, types, checks, or tests. |
-| [`create-verification-skill`](./skills/create-verification-skill) | Creates and proves a project-local skill that drives one real application surface. |
+| [`debug`](./skills/debug) | Reproduces failures, diagnoses live runtime symptoms or captured traces, and applies and proves the smallest coherent fix when requested. |
 | [`deep-dive-explainer`](./skills/deep-dive-explainer) | Researches mechanisms, evidence, alternatives, and limits, then renders a connected long-form article with a reusable offline layout. |
-| [`debug`](./skills/debug) | Reproduces failures, finds the first contract divergence, and applies and proves the smallest coherent fix when requested. |
-| [`figure-it-out`](./skills/figure-it-out) | Designs and runs an auditable custom workflow for a large task that has no focused playbook. |
-| [`how`](./skills/how) | Explains current systems through execution paths, ownership, inventories, contrasts, and optional architecture critique. |
+| [`how`](./skills/how) | Explains current systems through execution paths, ownership, inventories, contrasts, critique, and decision history from records. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded interactive HTML models of behavior, state, sequences, and comparisons. |
-| [`motion-explainer`](./skills/motion-explainer) | Builds narrated, timeline-driven systems explainers as playable HTML, optionally rendered to MP4 with a local voice. |
 | [`interrogate`](./skills/interrogate) | Runs independent adversarial reviews and returns one evidence-checked judgment. |
-| [`maintain-verification-skill`](./skills/maintain-verification-skill) | Audits and repairs a project-local verification skill against current source and live behavior. |
-| [`property-testing`](./skills/property-testing) | Generates contract tests, shrinks failures, and preserves replayable regressions. |
-| [`fuzz-testing`](./skills/fuzz-testing) | Builds bounded coverage-guided fuzz targets and minimizes failures. |
+| [`invariants`](./skills/invariants) | Models authoritative state and transitions, then breaks invariants with property tests or fuzzing and keeps replayable failures. |
+| [`motion-explainer`](./skills/motion-explainer) | Builds narrated, timeline-driven systems explainers as playable HTML, optionally rendered to MP4 with a local voice. |
 | [`plan`](./skills/plan) | Turns a settled approach into an implementation-ready packet with chunks, dependencies, risks, and proof. |
-| [`recall`](./skills/recall) | Reconstructs recent project work from sessions and current repository state. |
-| [`reflect`](./skills/reflect) | Extracts reusable lessons from a session and applies only user-approved skill changes. |
-| [`show-me`](./skills/show-me) | Explains a topic visually with diagrams, code-shape sketches, calldiff views, and focused HTML. |
-| [`show-me-your-work`](./skills/show-me-your-work) | Keeps an auditable decision trail for long, unattended, or later-reviewed work. |
-| [`stateful-systems`](./skills/stateful-systems) | Models authoritative state, transitions, invariants, concurrency, replay, and recovery. |
-| [`swarm`](./skills/swarm) | Runs one bounded parallel coverage pass or solution race and synthesizes its evidence. |
-| [`teach`](./skills/teach) | Teaches a body of work in layers, combining `how` and `why` and escalating to diagrams, interactive models, or narrated explainers. |
-| [`unslop`](./skills/unslop) | Writes and cleans prose, docs, PR bodies, and commits so they read clearly on first pass, with a technical-writing standard for documentation. |
-| [`why`](./skills/why) | Investigates the evidence behind existing code and shipped technical, product, or operational decisions. |
+| [`reflect`](./skills/reflect) | Extracts reusable lessons from a session, or builds a personal mode from stated preferences; applies only approved changes. |
+| [`show-me`](./skills/show-me) | Explains a topic visually with diagrams, code-shape sketches, calldiff views, and focused HTML; owns the visual PR description. |
 | [`structure-review`](./skills/structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
+| [`swarm`](./skills/swarm) | Runs one bounded parallel coverage pass, a solution race, or a best-of comparison that grafts one verified result. |
+| [`unslop`](./skills/unslop) | Writes and cleans prose, docs, PR bodies, and commits so they read clearly on first pass; on request, plain mode for the rest of the chat. |
+| [`verification-skill`](./skills/verification-skill) | Creates, audits, or repairs a project-local skill that drives and proves one real application surface. |
 | [`yesh-router`](./skills/yesh-router) | Routes tasks across the collection and applies relevant engineering principles on explicit activation. |
 
-Routing is opt-in and sticky. The router's [method catalog](./skills/yesh-router/methods.md) selects skills and playbooks; [orchestration](./skills/yesh-router/playbooks/orchestrate.md) owns dependent work and integration through the host harness’s subagent tools. PR work starts only on request.
+Routing is opt-in and sticky. The router's [Triggers](./skills/yesh-router/SKILL.md#triggers) select skills and playbooks; [orchestration](./skills/yesh-router/playbooks/orchestrate.md) owns dependent work and integration through the host harness’s subagent tools. PR work starts only on request.
 
-Shared references live in [`skills/yesh-router/references/`](./skills/yesh-router/references): [engineering principles](./skills/yesh-router/references/principles), [delegation](./skills/yesh-router/references/delegation.md), and [session records](./skills/yesh-router/references/session-records.md). The router's [principle triggers](./skills/yesh-router/principle-triggers.md) map decisions to principle notes. Method-specific references, such as [review comment triage](./skills/interrogate/references/bugbot-triage.md), stay with their owning skill. Shared references ship inside the router folder, so installing yesh-router installs them; reading a reference does not activate the router.
+Shared references live in [`skills/yesh-router/references/`](./skills/yesh-router/references): [engineering principles](./skills/yesh-router/references/principles), [delegation](./skills/yesh-router/references/delegation.md), [session records](./skills/yesh-router/references/session-records.md), and the [decision trail](./skills/yesh-router/references/decision-trail.md). The router's [principle table](./skills/yesh-router/SKILL.md#apply-principles) maps decisions to principle notes, and each skill points at its principles at the step where they apply. Method-specific references, such as [review comment triage](./skills/interrogate/references/bugbot-triage.md), stay with their owning skill. Shared references ship inside the router folder, so installing yesh-router installs them; reading a reference does not activate the router.
 
 ## Using the collection
 
@@ -49,16 +38,20 @@ After installing the reviewed collection, name a skill directly or ask for the r
 
 - `Use yesh-router to diagnose duplicate deliveries. Do not edit yet.`
 - `Use yesh-router to implement this settled change and verify it.`
-- `Use property-testing to check the retry invariants.`
+- `Use invariants to check the retry invariants.`
 - `Exit yesh-router.`
 
-Activate once, then describe outcomes in ordinary language. The router reads the collection's method catalog and considers the host's installed skill descriptions, including project-local skills. It selects a main workflow and the supporting skills needed for the work, reads their instructions, and follows their completion criteria. It reconsiders selection as the task develops; small settled work stays direct when specialized guidance adds no value. The collection does not exclude other installed skills.
+Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, debug, invariants, plan, show-me, interactive-explainer and the router are listed by default.
 
-Workflows link to supporting skills at the step where their guidance is needed; the router can also select other relevant skills from their descriptions. You need not name those skills individually. A mid-task question preserves the active objective unless you replace it. Bro, reflection, mode authoring, and pausing still require the corresponding explicit request. `Use skill "how"` requests `how`; a mere mention or a quoted source instruction does not.
+Activate once, then describe outcomes in ordinary language. The router reads its Triggers and considers the host's installed skill descriptions, including project-local skills. It selects a main workflow and the supporting skills needed for the work, reads their instructions, and follows their completion criteria. It reconsiders selection as the task develops; small settled work stays direct when specialized guidance adds no value. The collection does not exclude other installed skills.
+
+Workflows link to supporting skills at the step where their guidance is needed; the router can also select other relevant skills from their descriptions. You need not name those skills individually. A mid-task question preserves the active objective unless you replace it. Plain mode, reflection, mode authoring, and pausing still require the corresponding explicit request. `Use skill "how"` requests `how`; a mere mention or a quoted source instruction does not.
 
 Playbooks are linked Markdown instructions, not executable hooks. The retired `yesh-mode` name and path are unsupported; activate `yesh-router` explicitly. A repository edit alone does not update a separately installed copy. Validate the installed names, entrypoint contents, and linked references after synchronizing through the chosen skill manager. Keep installation verification separate from document validation and routing trials.
 
-Run `python3 scripts/check-skill-routing.py` to check local links, catalog coverage of every skill and playbook, and the principle trigger map. This checks routing structure; representative agent trials are still needed to assess selection behavior.
+Run `python3 scripts/check-skill-routing.py` to check local links, Triggers coverage of every skill and playbook, and that each principle row matches its note's Read when line and is linked from some skill or playbook. This checks routing structure; representative agent trials are still needed to assess selection behavior.
+
+After changing a skill, run `node tools/skill-map/build.mjs` to rebuild the skill map, and `node tools/skill-map/build.mjs --check` to confirm the page matches the files. The map's changes view compares with the last commit. When you retire a skill, playbook or principle, add it to `scripts/retired-names.json` with where it went and why. The map shows that entry, and the routing check rejects links to the old name.
 
 ## CLI prerequisites used by skills
 

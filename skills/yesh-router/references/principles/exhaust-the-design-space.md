@@ -6,4 +6,4 @@
 - Use sketches for design-only work; executable prototypes stay within the requested scope.
 - Established patterns, clear fixes, and choices dictated by constraints can proceed directly.
 
-**Limits:** deriving a working shape from usage is [design-from-usage](design-from-usage.md); when all shapes fail on the same assumption, [attack-the-premise](attack-the-premise.md).
+**Limits:** deriving a working shape from usage is [design-from-usage](design-from-usage.md); when all shapes fail on the same assumption, [fix-root-causes](fix-root-causes.md).

@@ -1,6 +1,7 @@
 ---
 name: deep-dive-explainer
 description: Research a topic and write a long-form, connected explainer as a standalone HTML article, with illustrated or animated explanations when they help teach the mechanism. Use for deep dives into technology, science, history, or processes; not for standalone interactive simulations.
+disable-model-invocation: true
 ---
 
 # Deep Dive Explainer

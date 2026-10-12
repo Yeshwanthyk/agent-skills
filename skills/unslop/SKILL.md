@@ -1,6 +1,7 @@
 ---
 name: unslop
-description: Write or clean prose so a tired engineer gets it on first read. Use for docs, RFCs, READMEs, PR bodies, commits, reports, skill text, or any padded or AI-sounding prose.
+description: Write or clean padded or AI-sounding prose so a tired engineer gets it on first read: docs, PR bodies, commits, reports, skill text. On request ("bro"), plain English for later replies.
+disable-model-invocation: true
 ---
 
 # Unslop
@@ -12,6 +13,19 @@ Three rules sit above everything else:
 - **Cut every word that does no work.** "In order to" is "to". "It is important to note that" is nothing.
 - **Use the short, everyday word**, and the codebase's own names: the real symbol, file, flag, or command, not a synonym or a description of it.
 - **When a rule makes a sentence worse, fix it another way or leave it alone.** A sentence that follows every rule and sounds machine-written has failed.
+
+## Plain mode (explicit request)
+
+When the user asks for plain English for the rest of the conversation ("bro", "talk plain"), write every later reply this way until they end it:
+
+- Short active sentences and common words.
+- One term per concept.
+- Lists for sequences.
+- A one-line definition for any technical term that must stay.
+
+Keep facts, conditions, warnings, voice, and creative intent. Earlier messages stay as they are unless the user asks for a rewrite. Plain mode runs on this section and the three rules; open the references only when a reply is itself a document from the Process below. The rules are ASD-STE100-inspired, not a compliance claim.
+
+A request to write or clean a text is a one-shot pass through the Process and leaves plain mode off.
 
 ## Process
 

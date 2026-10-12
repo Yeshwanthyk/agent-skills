@@ -30,10 +30,20 @@ def _frontmatter(text: str) -> dict[str, str]:
 
 
 def catalog_methods(skills: Path) -> list[str]:
-    methods = skills / "yesh-router" / "methods.md"
-    if not methods.exists():
+    """Method names linked from the router's ## Triggers bullets."""
+    router = skills / "yesh-router" / "SKILL.md"
+    if not router.exists():
         return []
-    return [m.group(1) for line in methods.read_text().splitlines() if (m := _CATALOG_ROW.match(line))]
+    section = (router.read_text().split("\n## Triggers", 1) + [""])[1].split("\n## ", 1)[0]
+    names = []
+    for line in section.splitlines():
+        if line.lstrip().startswith("- "):
+            for target in re.findall(r"\]\(([^)#\s]+)", line):
+                name = Path(target).parent.name if target.endswith("SKILL.md") else Path(target).stem
+                if "/playbooks/" in "/" + target or target.endswith("SKILL.md"):
+                    if name not in names:
+                        names.append(name)
+    return names
 
 
 def lint(skills: Path) -> tuple[list[str], list[str]]:

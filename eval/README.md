@@ -78,11 +78,11 @@ Append this to a file in `cases/`:
 
 ```toml
 [[case]]
-id = "why-retry-cap"            # unique
+id = "history-retry-cap"        # unique
 activation = "router"           # router: prompt gets "Use yesh-router. " and the router must load
 tier = "route"                  # route: selection only, capped turns; task: run to completion
 prompt = "Why is MAX_ATTEMPTS in retry.py 3?"
-expect = { methods = ["why"], not_methods = ["how"], no_edits = true }
+expect = { methods = ["how"], not_methods = ["debug"], no_edits = true }
 notes = "optional"
 ```
 

@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--FINGERPRINT-->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skill map</title>
+  <link rel="icon" href="data:,">
+  <script>document.documentElement.dataset.theme = new URLSearchParams(location.search).get('theme') || localStorage.getItem('skill-map-theme') || 'dark';</script>
+  <style>
+    :root {
+      --out: cubic-bezier(.23, 1, .32, 1);
+      --mono: "IBM Plex Mono", "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0a0a0a; --raise: #121212; --panel: #141414; --ink: #e9e6e1; --dim: #8f8a83; --faint: #5d5953;
+      --line: rgba(255, 255, 255, .13); --line-soft: rgba(255, 255, 255, .07);
+      --amber: #e6b04f; --amber-soft: rgba(230, 176, 79, .14); --coral: #e0736a; --green: #9cc48a; --blue: #8fb3d9;
+      --shadow: 0 12px 34px rgba(0, 0, 0, .5);
+    }
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f5f3ee; --raise: #fbfaf7; --panel: #ffffff; --ink: #1d1b18; --dim: #67625a; --faint: #9a948a;
+      --line: rgba(0, 0, 0, .14); --line-soft: rgba(0, 0, 0, .07);
+      --amber: #a2700c; --amber-soft: rgba(162, 112, 12, .12); --coral: #b4443a; --green: #4c7a37; --blue: #38668f;
+      --shadow: 0 10px 28px rgba(0, 0, 0, .1);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.55 var(--mono); }
+    a { color: var(--amber); text-decoration: none; }
+    code { font: inherit; color: var(--amber); }
+    button { appearance: none; font: inherit; color: var(--dim); background: transparent; cursor: pointer; border: 1px solid var(--line); border-radius: 7px; padding: 5px 11px;
+      transition: color 160ms var(--out), border-color 160ms var(--out), transform 160ms var(--out); }
+    button:active:not(:disabled) { transform: scale(.97); }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 1px solid var(--amber); outline-offset: 2px; }
+    button[aria-pressed="true"] { color: var(--ink); border-color: var(--amber); }
+    button:disabled { opacity: .35; cursor: default; }
+    @media (hover: hover) and (pointer: fine) { button:hover:not(:disabled) { color: var(--ink); border-color: var(--dim); } a:hover { text-decoration: underline; } }
+
+    .top { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line-soft); }
+    .top-in { display: flex; align-items: center; gap: 14px; width: min(1320px, calc(100% - 32px)); margin: 0 auto; height: 46px; }
+    .top b { font-weight: 400; color: var(--amber); }
+    .top nav { display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; flex: 1; }
+    .top nav a { color: var(--dim); padding: 3px 9px; border: 1px solid var(--line-soft); border-radius: 999px; font-size: 12.5px; }
+    main { width: min(1320px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 80px; }
+    h1 { margin: 0 0 6px; font-size: clamp(1.25rem, 2.4vw, 1.7rem); font-weight: 400; }
+    .lede { margin: 0 0 12px; color: var(--dim); max-width: 78ch; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .chip { font-size: 12px; color: var(--dim); border: 1px solid var(--line-soft); border-radius: 999px; padding: 2px 10px; }
+    .chip i { font-style: normal; color: var(--faint); }
+    .counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 6px; margin-bottom: 22px; }
+    .counter { display: flex; align-items: baseline; gap: 8px; border: 1px solid var(--line-soft); border-radius: 10px; padding: 6px 12px; background: var(--raise); color: var(--ink);
+      transition: border-color 160ms var(--out), transform 160ms var(--out); }
+    .counter b { font-size: 1.1rem; font-weight: 400; }
+    .counter span { color: var(--dim); font-size: 12.5px; }
+    .counter.bad b { color: var(--coral); }
+    .counter:active { transform: scale(.97); }
+    @media (hover: hover) and (pointer: fine) { .counter:hover { border-color: var(--amber); text-decoration: none; } }
+
+    section { margin-top: 34px; }
+    h2 { font-size: 1rem; font-weight: 400; margin: 0 0 4px; color: var(--ink); }
+    h2 .sn { color: var(--amber); margin-right: .5em; }
+    .sub { margin: 0 0 14px; color: var(--dim); max-width: 86ch; }
+
+    .primer { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 4px 18px; margin: 0 0 12px; padding: 10px 14px; border: 1px solid var(--line-soft); border-radius: 10px; background: var(--raise); }
+    .primer p { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--dim); }
+    .primer p b { color: var(--ink); font-weight: 500; }
+    details.key { margin: 0 0 14px; font-size: 12.5px; color: var(--dim); }
+    details.key summary { cursor: pointer; color: var(--ink); margin-bottom: 8px; }
+    .key-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 6px 18px; }
+    .key-grid h4 { margin: 4px 0 2px; font-weight: 400; color: var(--faint); font-size: 11.5px; text-transform: lowercase; }
+    .key-row { display: flex; align-items: center; gap: 10px; }
+    .key-row .n { pointer-events: none; flex: none; white-space: nowrap; }
+    .key-row .n .nm { overflow-wrap: normal; }
+    .key-row svg { flex: none; }
+
+    .stories { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .stories .grow { flex: 1; }
+    #step-count { color: var(--faint); min-width: 4em; text-align: center; font-variant-numeric: tabular-nums; }
+    .caption { min-height: 2.2em; margin: 0 0 2px; font-size: 14.5px; }
+    .caption em { font-style: normal; color: var(--amber); }
+    .caption-ref { min-height: 1.4em; margin: 0 0 10px; font-size: 12px; color: var(--faint); }
+    .pinbar { position: sticky; top: 46px; z-index: 15; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 40px; margin: 0 0 8px; padding: 6px 10px; border: 1px solid var(--line-soft); border-radius: 9px; background: var(--bg); font-size: 13px; color: var(--dim); }
+    .pinbar b { font-weight: 400; color: var(--ink); }
+    .pinbar .grow { flex: 1; }
+    .pinbar.on { border-color: var(--amber); }
+
+    .map { position: relative; display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.25fr) minmax(0, .9fr) minmax(0, 1.05fr); gap: 0 44px; padding: 16px; border: 1px solid var(--line-soft); border-radius: 12px;
+      background: radial-gradient(var(--line-soft) 1px, transparent 1.2px) 0 0 / 22px 22px, var(--raise); }
+    .map svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+    .col h3 { margin: 0 0 8px; font-size: 11.5px; font-weight: 400; color: var(--faint); text-transform: lowercase; letter-spacing: .04em; }
+    .col h4 { margin: 12px 0 5px; font-size: 11.5px; font-weight: 400; color: var(--dim); }
+    .col h4:first-of-type { margin-top: 0; }
+    .col .list { display: flex; flex-direction: column; gap: 5px; }
+    .n { position: relative; z-index: 1; display: flex; align-items: center; gap: 7px; width: 100%; text-align: left; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 12.5px; line-height: 1.35;
+      transition: border-color 160ms var(--out), opacity 160ms var(--out), transform 160ms var(--out); }
+    .n .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+    .n .deg { color: var(--faint); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .n .tag { font-size: 10.5px; color: var(--dim); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+    .n.k-router, .n.k-catalog, .n.k-triggers { border-color: var(--amber); }
+    .n.k-playbook { border-style: dashed; }
+    .n.k-principle { border-radius: 999px; }
+    .n.k-external { border-color: var(--blue); }
+    .n.k-host, .n.k-contract { background: transparent; }
+    .n.unreached .deg { color: var(--coral); }
+    .chg { font-size: 10.5px; border-radius: 4px; padding: 0 4px; border: 1px solid currentColor; }
+    .chg.new { color: var(--green); } .chg.moved, .chg.merged { color: var(--blue); } .chg.edited { color: var(--amber); } .chg.removed { color: var(--coral); }
+    .map.changes-only .n:not(.changed) { opacity: .22; }
+    .changes h3 { font-size: .98rem; font-weight: 500; margin: 18px 0 6px; }
+    .changes td.why { color: var(--dim); max-width: 46ch; }
+    .changes ul.files { margin: 4px 0 0; padding-left: 1.2em; font-size: 12.5px; color: var(--dim); }
+    .n.dim { opacity: .28; }
+    .n.focus { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+    .n.lit { border-color: var(--amber); background: var(--amber-soft); }
+    .n.now { box-shadow: 0 0 0 2px var(--amber), 0 0 22px var(--amber-soft); }
+    .wire { fill: none; stroke-width: 1.3; }
+    .wire.out { stroke: var(--amber); }
+    .wire.in { stroke: var(--dim); }
+    .wire.via { stroke: var(--amber); opacity: .35; stroke-width: 1; }
+    .wire.mention { stroke-dasharray: 4 4; }
+    .wire.story { stroke: var(--amber); stroke-width: 2; }
+    .wire.draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 420ms var(--out) forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .scroll-cue { display: none; }
+    @media (max-width: 760px) { .map { grid-template-columns: 1fr; gap: 18px; } .map svg.wires { display: none; } }
+
+    .inv-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; font-size: 13px; }
+    .inv-controls input[type="search"], .inv-controls select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 5px 9px; }
+    .inv-controls label { color: var(--dim); display: flex; gap: 6px; align-items: center; }
+    .tbl { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+    th { font-weight: 400; color: var(--faint); white-space: nowrap; }
+    th button { border: 0; padding: 0; color: inherit; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    td a.open { color: var(--ink); }
+    td .bad { color: var(--coral); }
+    .lint li { margin: 3px 0; }
+    .lint .ok { color: var(--green); }
+    .lint .bad { color: var(--coral); }
+    .hint { color: var(--faint); font-size: 12.5px; }
+
+    #panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 40; width: min(620px, 100vw); overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: 16px 22px 60px; transform: translateX(104%); visibility: hidden; transition: transform 240ms var(--out), visibility 0s 240ms; }
+    #panel.open { transform: none; visibility: visible; transition: transform 240ms var(--out); }
+    .p-bar { display: flex; gap: 6px; margin-bottom: 12px; }
+    .p-bar .grow { flex: 1; }
+    .p-kind { font-size: 11.5px; color: var(--faint); }
+    #panel h2 { font-size: 1.15rem; margin: 2px 0 4px; }
+    .p-path { font-size: 12px; color: var(--faint); margin-bottom: 12px; overflow-wrap: anywhere; }
+    .p-path b { color: var(--ink); font-weight: 400; }
+    .p-box { border: 1px solid var(--line-soft); border-radius: 9px; padding: 9px 12px; margin-bottom: 10px; font-size: 13px; background: var(--raise); }
+    .p-box .lbl { display: block; font-size: 11.5px; color: var(--faint); margin-bottom: 2px; }
+    .p-links { display: flex; flex-wrap: wrap; gap: 5px; }
+    .p-links a { font-size: 12.5px; border: 1px solid var(--line-soft); border-radius: 999px; padding: 1px 9px; }
+    .p-links a.m { border-style: dashed; }
+    .doc { border-top: 1px solid var(--line-soft); margin-top: 14px; padding-top: 6px; font-size: 13.5px; }
+    .doc h2 { font-size: 1.05rem !important; color: var(--ink); }
+    .doc h3 { font-size: .98rem; font-weight: 500; margin: 18px 0 6px; }
+    .doc h4, .doc h5 { font-size: .92rem; font-weight: 500; margin: 14px 0 4px; color: var(--dim); }
+    .doc p, .doc li { color: var(--ink); }
+    .doc ul, .doc ol { padding-left: 1.3em; }
+    .doc pre { overflow-x: auto; padding: 10px 12px; border-radius: 8px; background: var(--raise); border: 1px solid var(--line-soft); font-size: 12.5px; }
+    .doc pre code { color: var(--ink); }
+    .doc blockquote { margin: 8px 0; padding-left: 12px; border-left: 2px solid var(--line); color: var(--dim); }
+    .doc a.wl { border-bottom: 1px dotted var(--amber); }
+    .doc .broken { color: var(--coral); text-decoration: line-through; }
+    .doc .file { color: var(--dim); border-bottom: 1px dotted var(--faint); }
+    .doc table { font-size: 12.5px; }
+    .scrim { position: fixed; inset: 0; z-index: 35; background: rgba(0, 0, 0, .2); opacity: 0; pointer-events: none; transition: opacity 200ms var(--out); }
+    .scrim.on { opacity: 1; pointer-events: auto; }
+    @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; animation: none !important; } .wire.draw { stroke-dashoffset: 0; } }
+  </style>
+</head>
+<body>
+  <header class="top"><div class="top-in"><b>skill map</b><nav aria-label="sections"><a href="#s-map">1 map</a><a href="#s-chg">2 changes</a><a href="#s-inv">3 inventory</a><a href="#s-lint">4 problems</a></nav><button type="button" id="theme" aria-label="switch theme">theme</button></div></header>
+  <main>
+    <h1>How your skills tie together</h1>
+    <p class="lede">Every file an agent can load, with the links between them. Click a box to read it and follow its links like a wiki. Built from the repo and gitgud, so rebuild after you change a skill.</p>
+    <div class="chips" id="chips"></div>
+    <div class="counters" id="counters"></div>
+
+    <section id="s-map">
+      <h2><span class="sn">1</span>the map</h2>
+      <p class="sub">Read left to right: what loads first, what the triggers route to, what sits outside it, and the principles. Hover a box to preview its links (amber goes out, grey comes in). Click it to pin them while you look around; click a lit neighbour to move the pin. Double-click, or "open" in the bar, reads the file. The number on a box counts the files that link to it.</p>
+      <div class="primer" id="primer"></div>
+      <details class="key"><summary>how to read this map</summary><div class="key-grid" id="key"></div></details>
+      <div class="stories" role="group" aria-label="stories">
+        <span id="story-pills"></span><span class="grow"></span>
+        <button type="button" id="play" aria-controls="map" aria-pressed="false">▶ play</button>
+        <button type="button" id="prev" aria-controls="map" aria-label="previous step">◂</button>
+        <span id="step-count"></span>
+        <button type="button" id="next" aria-controls="map" aria-label="next step">▸</button>
+        <button type="button" id="changes-only" aria-controls="map" aria-pressed="false">changed only</button>
+      </div>
+      <p class="caption" id="caption" aria-live="polite"></p>
+      <p class="caption-ref" id="caption-ref"></p>
+      <div class="pinbar" id="pinbar" aria-live="polite"></div>
+      <div class="map" id="map"><svg class="wires" id="wires" aria-hidden="true"></svg></div>
+    </section>
+
+    <section id="s-chg" class="changes">
+      <h2><span class="sn">2</span>changes</h2>
+      <p class="sub" id="chg-sub"></p>
+      <div id="chg"></div>
+    </section>
+
+    <section id="s-inv">
+      <h2><span class="sn">3</span>inventory</h2>
+      <p class="sub">Every top-level file, for deciding what to keep. "Loaded" is the description that sits in every session's context, in characters. A coral 0 means nothing links to the file, so only a direct call reaches it.</p>
+      <div class="inv-controls">
+        <input type="search" id="q" placeholder="filter by name" aria-label="filter by name">
+        <select id="kind" aria-label="kind"></select>
+        <label><input type="checkbox" id="unreached"> unreached only</label>
+        <span class="hint" id="inv-count"></span>
+      </div>
+      <div class="tbl"><table id="inv"><thead></thead><tbody></tbody></table></div>
+    </section>
+
+    <section id="s-lint">
+      <h2><span class="sn">4</span>problems</h2>
+      <p class="sub">Broken links and stories whose route no longer exists. The build prints the same list.</p>
+      <ul class="lint" id="lint"></ul>
+    </section>
+  </main>
+  <div class="scrim" id="scrim"></div>
+  <aside id="panel" aria-label="file" tabindex="-1"></aside>
+
+  <script>
+    const DATA = /*DATA*/null;
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const D = DATA.docs, docs = Object.values(D);
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const MAP_KINDS = ['router', 'catalog', 'triggers', 'host', 'contract', 'playbook', 'skill', 'external', 'principle'];
+    const KIND = { router: 'router', catalog: 'triggers', triggers: 'principle table', host: 'host config', contract: 'contract', playbook: 'playbook', skill: 'skill', external: 'external skill', principle: 'principle', ref: 'reference', readme: 'readme' };
+    const GLYPH = { router: '◆', catalog: '☰', triggers: '⌁', host: '⌂', contract: '§', playbook: '▤', skill: '▣', external: '◇', principle: '●', ref: '·', readme: '·' };
+
+    // ── theme
+    function setTheme(t, save) { document.documentElement.dataset.theme = t; if (save) localStorage.setItem('skill-map-theme', t); $('theme').textContent = t === 'dark' ? '◑ light' : '◐ dark'; drawWires(); }
+    $('theme').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
+
+    // ── graph at map level: a reference counts as its skill
+    const skillOf = {}; for (const d of docs) if (['skill', 'external', 'router'].includes(d.kind)) skillOf[d.owner] = d.id;
+    const mapId = (id) => { const d = D[id]; if (!d) return null; if (MAP_KINDS.includes(d.kind)) return id; if (d.kind === 'ref') return skillOf[d.owner] || null; return null; };
+    const mapEdges = new Map(); // "a|b" → {from, to, type}
+    for (const e of DATA.edges) {
+      if (D[e.from].kind === 'readme') continue;
+      const a = mapId(e.from), b = mapId(e.to);
+      if (!a || !b || a === b) continue;
+      const k = `${a}|${b}`, prev = mapEdges.get(k);
+      if (!prev || (prev.type === 'mention' && e.type === 'link')) mapEdges.set(k, { from: a, to: b, type: e.type });
+    }
+    const inDeg = {}; for (const { to } of mapEdges.values()) inDeg[to] = (inDeg[to] || 0) + 1;
+    const ownRefs = (id) => docs.filter((d) => d.kind === 'ref' && skillOf[d.owner] === id);
+
+    // ── header
+    const B = DATA.built, C = DATA.changes;
+    const changed = docs.filter((d) => d.change);
+    const isChanged = (d) => !!d.change || d.refsChanged;
+    const chgTag = (d) => d.change ? `<span class="chg ${d.change.status}">${d.change.status}</span>` : d.refsChanged ? '<span class="chg edited">edited</span>' : '';
+    $('chips').innerHTML = `<span class="chip"><i>built from</i> <code>${esc(B.commit)}</code>${B.dirty ? ' + uncommitted edits' : ''} · ${esc(B.at)}</span><span class="chip"><i>changes compared with</i> <code>${esc(C.base)}</code> ${esc(C.baseSubject)}</span><span class="chip"><i>stale?</i> <code>node tools/skill-map/build.mjs --check</code></span><span class="chip"><i>rebuild</i> <code>node tools/skill-map/build.mjs</code></span>`;
+    const topDocs = docs.filter((d) => MAP_KINDS.includes(d.kind));
+    const unreached = topDocs.filter((d) => !inDeg[d.id] && d.kind !== 'router' && d.kind !== 'host');
+    const loadedChars = docs.filter((d) => d.loaded).reduce((n, d) => n + d.desc.length, 0);
+    const counter = (href, n, label, bad) => `<a class="counter${bad ? ' bad' : ''}" href="${href}"><b>${n}</b><span>${label} →</span></a>`;
+    $('counters').innerHTML = [
+      counter('#s-map', DATA.catalog.length, 'methods the router\'s triggers pick from'),
+      counter('#inv:principle', DATA.triggers.length, 'principles in the router table'),
+      counter('#inv:external', docs.filter((d) => d.kind === 'external').length, 'external skills installed by gitgud'),
+      counter('#inv:unreached', unreached.length, 'files nothing links to', unreached.length > 0),
+      counter('#inv:loaded', loadedChars.toLocaleString(), 'chars of descriptions in every session'),
+      counter('#inv:hidden', docs.filter((d) => d.hidden).length, 'skills behind the router or a slash command'),
+      counter('#s-chg', changed.length + C.removed.filter((f) => !f.to).length, `files changed since ${esc(C.base)}`),
+      counter('#s-lint', DATA.lint.length, 'problems', DATA.lint.length > 0),
+    ].join('');
+
+    $('primer').innerHTML = [
+      ['Router', '<code>yesh-router</code>. Runs only when you ask for it, then picks methods and principles for the task.'],
+      ['Triggers', 'The router\'s catalog section. One line per situation → method; the router picks from these lines.'],
+      ['Skill', 'A folder with a <code>SKILL.md</code>. It works on its own too, by name or slash command.'],
+      ['Playbook', 'A procedure inside the router folder. It has no description of its own, so only the router\'s triggers reach it.'],
+      ['Principle', 'A short rule note. The router table and each skill\'s Principles section say when to read it.'],
+      ['External skill', 'Installed by gitgud from another repo. Listed here because it shares the same skill list.'],
+      ['Explicit request', 'A trigger marked "ask" (on request). The router uses it only when you ask for that activity.'],
+      ['Always loaded', 'Every listed skill\'s frontmatter description is in context every turn, used or not. The rest loads on demand.'],
+      ['Hidden (/)', 'A skill with <code>disable-model-invocation: true</code>. The host leaves it out of the skill list, so it costs nothing per session; the router\'s triggers or a slash command reach it.'],
+    ].map(([t, d]) => `<p><b>${t}</b>: ${d}</p>`).join('');
+
+    // ── map columns
+    const nodeHtml = (d) => {
+      const c = d.catalog, n = inDeg[d.id] || 0, un = !n && d.kind !== 'router' && d.kind !== 'host';
+      return `<button type="button" class="n k-${d.kind}${un ? ' unreached' : ''}${isChanged(d) ? ' changed' : ''}" data-id="${esc(d.id)}" aria-label="${esc(d.name)}, ${KIND[d.kind]}, ${n} inbound"><span aria-hidden="true">${GLYPH[d.kind]}</span><span class="nm">${esc(d.name)}</span>${c?.explicit ? '<span class="tag">ask</span>' : ''}${d.hidden ? '<span class="tag" title="disable-model-invocation: reached through the router or a slash command">/</span>' : ''}${chgTag(d)}<span class="deg">${n}</span></button>`;
+    };
+    const byKind = (k) => docs.filter((d) => d.kind === k);
+    const groups = [...new Set(DATA.catalog.map((c) => c.group))];
+    const inCatalog = new Set(DATA.catalog.map((c) => c.id));
+    const outside = docs.filter((d) => ['skill', 'external'].includes(d.kind) && !inCatalog.has(d.id));
+    const cols = [
+      ['loads first', [['', ['config/AGENTS.md', 'skills/yesh-router/SKILL.md', 'skills/yesh-router/SKILL.md#triggers', 'skills/yesh-router/SKILL.md#apply-principles'].filter((id) => D[id]).map((id) => D[id])], ['shared contracts', byKind('contract')]]],
+      ['the triggers route to', groups.map((g) => [g.toLowerCase(), DATA.catalog.filter((c) => c.group === g && MAP_KINDS.includes(D[c.id].kind)).map((c) => D[c.id])])],
+      ['outside the catalog', [['this repo', outside.filter((d) => d.source === 'repo')], ['installed from elsewhere', outside.filter((d) => d.source !== 'repo')]].filter(([, l]) => l.length)],
+      ['principles (router table order)', [['', DATA.triggers.map((t) => D[t.id])]]],
+    ];
+    $('map').insertAdjacentHTML('beforeend', cols.map(([title, gs]) => `<div class="col"><h3>${title}</h3>${gs.map(([g, list]) => `${g ? `<h4>${esc(g)}</h4>` : ''}<div class="list">${list.map(nodeHtml).join('')}</div>`).join('')}</div>`).join(''));
+    const nodeEl = (id) => $('map').querySelector(`.n[data-id="${CSS.escape(id)}"]`);
+
+    // key: drawn samples
+    const sample = (k, name, extra = '') => `<span class="n k-${k}${extra}" style="width:auto"><span>${GLYPH[k]}</span><span class="nm">${name}</span><span class="deg">3</span></span>`;
+    const line = (cls) => `<svg width="46" height="10"><path class="wire ${cls}" d="M2 5 H44"/></svg>`;
+    $('key').innerHTML = `
+      <div><h4>boxes</h4>
+        <div class="key-row">${sample('router', 'router')}<span>amber: router, triggers, principle table</span></div>
+        <div class="key-row">${sample('skill', 'skill')}<span>a skill in this repo</span></div>
+        <div class="key-row">${sample('playbook', 'playbook')}<span>dashed: a router playbook</span></div>
+        <div class="key-row">${sample('principle', 'principle')}<span>round: a principle note</span></div>
+        <div class="key-row">${sample('external', 'external')}<span>blue: installed from another repo</span></div></div>
+      <div><h4>lines</h4>
+        <div class="key-row">${line('out')}<span>a link out of the focused box</span></div>
+        <div class="key-row">${line('in')}<span>a link into the focused box</span></div>
+        <div class="key-row">${line('out mention')}<span>dashed: names the skill in backticks, no link</span></div>
+        <div class="key-row">${line('via')}<span>faint: reached through triggers or the principle table</span></div>
+        <div class="key-row">${line('story')}<span>thick: the current story's route</span></div></div>
+      <div><h4>marks</h4>
+        <div class="key-row"><span class="n" style="width:auto"><span class="nm">x</span><span class="deg">3</span></span><span>files linking in (a skill's references count as the skill)</span></div>
+        <div class="key-row"><span class="n unreached" style="width:auto"><span class="nm">x</span><span class="deg">0</span></span><span>coral 0: nothing links here</span></div>
+        <div class="key-row"><span class="n" style="width:auto"><span class="nm">x</span><span class="tag">ask</span></span><span>explicit request only</span></div>
+        <div class="key-row"><span class="n" style="width:auto"><span class="nm">x</span><span class="tag">/</span></span><span>hidden from the skill list: router or slash command only</span></div>
+        <div class="key-row"><span class="chg new">new</span> <span class="chg merged">merged</span> <span class="chg moved">moved</span> <span class="chg edited">edited</span><span>changed since ${esc(C.base)}; a skill counts as edited when any of its files changed</span></div></div>`;
+
+    // ── wires
+    const ui = { pin: null, focus: null, story: null, step: 0, playing: 0, drawn: new Set() };
+    function curve(a, b) {
+      const m = $('map').getBoundingClientRect(), ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+      const ax = ra.left - m.left, bx = rb.left - m.left, ay = ra.top - m.top + ra.height / 2, by = rb.top - m.top + rb.height / 2;
+      if (Math.abs(ax - bx) < 8) { const x = ax + ra.width, k = Math.min(90, 26 + Math.abs(by - ay) * .25); return `M${x} ${ay} C${x + k} ${ay} ${x + k} ${by} ${x} ${by}`; }
+      const [x1, x2] = ax < bx ? [ax + ra.width, bx] : [ax, bx + rb.width], k = (x2 - x1) / 2;
+      return `M${x1} ${ay} C${x1 + k} ${ay} ${x2 - k} ${by} ${x2} ${by}`;
+    }
+    function drawWires() {
+      const svg = $('wires'); svg.innerHTML = '';
+      const add = (a, b, cls, animate) => {
+        const ea = nodeEl(a), eb = nodeEl(b); if (!ea || !eb) return;
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        p.setAttribute('d', curve(ea, eb)); p.setAttribute('class', `wire ${cls}`); svg.appendChild(p);
+        if (animate && !still) { const len = p.getTotalLength(); p.style.setProperty('--len', len); p.classList.add('draw'); }
+      };
+      if (ui.story) story().steps.slice(0, ui.step + 1).forEach((st, k) => { const a = mapId(st.from), b = mapId(st.doc); if (a && b && a !== b) add(a, b, 'story', k === ui.step && !ui.drawn.has(`${ui.story}:${k}`)); });
+      if (ui.story) ui.drawn.add(`${ui.story}:${ui.step}`);
+      if (ui.focus) for (const e of mapEdges.values()) {
+        if (e.from === ui.focus) add(e.from, e.to, `out ${e.type}`);
+        else if (e.to === ui.focus) add(e.from, e.to, `in ${e.type}`);
+      }
+      if (ui.focus) for (const e of viaHubs(ui.focus)) add(e.from, e.to, `via ${e.type}`);
+    }
+    // the router's Triggers and principle table are hubs: a box that links to one also reaches everything it lists
+    const HUBS = ['skills/yesh-router/SKILL.md#triggers', 'skills/yesh-router/SKILL.md#apply-principles'];
+    const viaHubs = (id) => [...mapEdges.values()].filter((h) => HUBS.includes(h.from) && h.from !== id && mapEdges.has(`${id}|${h.from}`) && h.to !== id);
+    function setFocus(id) {
+      ui.focus = id;
+      const near = new Set([id]);
+      if (id) for (const e of mapEdges.values()) { if (e.from === id) near.add(e.to); if (e.to === id) near.add(e.from); }
+      if (id) for (const e of viaHubs(id)) near.add(e.to);
+      $('map').querySelectorAll('.n').forEach((el) => { el.classList.toggle('dim', !!id && !near.has(el.dataset.id)); el.classList.toggle('focus', el.dataset.id === id); });
+      drawWires();
+    }
+    // hover previews; a click pins, so the links stay while you scroll. A pin wins over hover.
+    const openFile = (id) => { location.hash = `doc=${encodeURIComponent(id)}`; };
+    function pin(id) {
+      ui.pin = id; setFocus(id);
+      const bar = $('pinbar'); bar.classList.toggle('on', !!id);
+      if (!id) { bar.innerHTML = '<span>Click a box to pin its links here.</span>'; return; }
+      const d = D[id], via = viaHubs(id), n = [...mapEdges.values()].filter((e) => e.from === id).length, out = via.length ? `${n} direct · ${new Set(via.map((e) => e.to)).size} via triggers and the principle table` : `${n} out`;
+      bar.innerHTML = `<span>pinned</span> <b>${GLYPH[d.kind]} ${esc(d.name)}</b> <span>${inDeg[id] || 0} in · ${out}</span><span class="grow"></span><button type="button" id="pin-open">open file</button><button type="button" id="pin-clear" aria-label="unpin">✕ unpin</button>`;
+      $('pin-open').onclick = () => openFile(id);
+      $('pin-clear').onclick = () => pin(null);
+    }
+    $('map').addEventListener('pointerover', (e) => { if (e.pointerType !== 'mouse' || ui.pin) return; const n = e.target.closest('.n'); if (n && n.dataset.id !== ui.focus) setFocus(n.dataset.id); });
+    $('map').addEventListener('pointerleave', () => { if (!ui.pin) setFocus(null); });
+    $('map').addEventListener('focusin', (e) => { const n = e.target.closest('.n'); if (n && !ui.pin) setFocus(n.dataset.id); });
+    $('map').addEventListener('focusout', (e) => { if (!$('map').contains(e.relatedTarget)) setFocus(ui.pin); });
+    $('map').addEventListener('click', (e) => { const n = e.target.closest('.n'); if (!n) return pin(null); pin(n.dataset.id === ui.pin ? null : n.dataset.id); });
+    $('map').addEventListener('dblclick', (e) => { const n = e.target.closest('.n'); if (n) { pin(n.dataset.id); openFile(n.dataset.id); } });
+    addEventListener('resize', () => drawWires());
+    $('changes-only').onclick = () => { const on = $('map').classList.toggle('changes-only'); $('changes-only').setAttribute('aria-pressed', String(on)); };
+
+    // ── stories
+    const story = () => DATA.stories.find((s) => s.id === ui.story);
+    $('story-pills').innerHTML = DATA.stories.map((s) => `<button type="button" data-story="${s.id}" aria-controls="map" aria-pressed="false">${esc(s.name)}</button>`).join(' ');
+    $('story-pills').addEventListener('click', (e) => { const b = e.target.closest('[data-story]'); if (!b) return; play(false); ui.story = b.dataset.story; ui.step = 0; ui.drawn.clear(); renderStory(); });
+    function renderStory() {
+      const s = story();
+      document.querySelectorAll('[data-story]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.story === ui.story)));
+      $('map').querySelectorAll('.n').forEach((el) => el.classList.remove('lit', 'now'));
+      if (!s) {
+        $('caption').innerHTML = 'Pick a story to follow one route through the collection, or click any box to read it.';
+        $('caption-ref').textContent = ''; $('step-count').textContent = '';
+        $('prev').disabled = $('next').disabled = $('play').disabled = true; drawWires(); return;
+      }
+      s.steps.slice(0, ui.step + 1).forEach((st, k) => { const el = nodeEl(mapId(st.doc)); if (el) el.classList.add(k === ui.step ? 'now' : 'lit'); });
+      const st = s.steps[ui.step];
+      $('caption').innerHTML = st.caption;
+      $('caption-ref').innerHTML = `<a href="#doc=${encodeURIComponent(st.doc)}">${esc(st.doc)}</a>`;
+      $('step-count').textContent = `${ui.step + 1} / ${s.steps.length}`;
+      $('play').disabled = false; $('prev').disabled = ui.step === 0; $('next').disabled = ui.step === s.steps.length - 1;
+      drawWires();
+    }
+    const last = () => (story()?.steps.length ?? 1) - 1;
+    const go = (k) => { if (!story()) return; ui.step = Math.max(0, Math.min(last(), k)); renderStory(); };
+    function play(on = !ui.playing) {
+      clearInterval(ui.playing); ui.playing = 0;
+      $('play').textContent = on ? '❚❚ pause' : '▶ play'; $('play').setAttribute('aria-pressed', String(on));
+      if (!on || !story()) return;
+      if (ui.step === last()) { ui.drawn.clear(); go(0); }
+      ui.playing = setInterval(() => (ui.step >= last() ? play(false) : go(ui.step + 1)), 2600);
+    }
+    $('prev').onclick = () => { play(false); go(ui.step - 1); };
+    $('next').onclick = () => { play(false); go(ui.step + 1); };
+    $('play').onclick = () => play();
+    addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { if ($('panel').classList.contains('open')) closePanel(); else pin(null); return; }
+      if (e.target.closest('input, select, textarea, #panel')) return;
+      if (e.key === 'ArrowRight') { play(false); go(ui.step + 1); }
+      if (e.key === 'ArrowLeft') { play(false); go(ui.step - 1); }
+    });
+
+    const retiredInto = (id) => C.retired.filter((r) => r.nowId === id);
+    // ── panel: the file, its routing rows, links out and in. Hash routing gives a working back button.
+    const linksOut = (id) => DATA.edges.filter((e) => e.from === id);
+    const linksIn = (id) => DATA.edges.filter((e) => e.to === id);
+    const chipLink = (id, cls = '') => `<a class="${cls}" href="#doc=${encodeURIComponent(id)}">${esc(D[id].kind === 'ref' ? `${D[id].owner}/${D[id].id.split('/').slice(D[id].source === 'repo' ? 2 : 2).join('/')}` : D[id].name)}</a>`;
+    const pathHtml = (d) => { const i = d.id.lastIndexOf('/'); return `${esc(d.id.slice(0, i + 1))}<b>${esc(d.id.slice(i + 1))}</b>`; };
+    function openDoc(id) {
+      const d = D[id]; if (!d) return;
+      const refs = d.kind === 'ref' ? [] : ownRefs(id), mine = new Set(refs.map((r) => r.id)), out = linksOut(id).filter((e) => !mine.has(e.to)), inn = linksIn(id);
+      const rows = [];
+      if (d.change) rows.push(`<div class="p-box"><span class="lbl">since ${esc(C.base)}</span><span class="chg ${d.change.status}">${d.change.status}</span>${d.change.from ? ` from <code>${esc(d.change.from)}</code>` : ''}${d.change.add != null ? ` · +${d.change.add} −${d.change.del} lines` : ''}${retiredInto(id).map((r) => `<br>absorbs <b>${esc(r.name)}</b>: ${esc(r.why)}`).join('')}</div>`);
+      else if (retiredInto(id).length) rows.push(`<div class="p-box"><span class="lbl">since ${esc(C.base)}</span>${retiredInto(id).map((r) => `absorbs <b>${esc(r.name)}</b>: ${esc(r.why)}`).join('<br>')}</div>`);
+      if (d.desc) rows.push(`<div class="p-box"><span class="lbl">${d.loaded ? `description · in context every turn · ${d.desc.length} chars` : d.hidden ? 'description · hidden from the skill list (disable-model-invocation); router or slash command only' : 'read when'}</span>${esc(d.desc)}</div>`);
+      if (d.catalog) rows.push(`<div class="p-box"><span class="lbl">catalog row · ${esc(d.catalog.group)}${d.catalog.explicit ? ' · explicit request only' : ''}</span>${esc(d.catalog.use)}</div>`);
+      if (d.trigger) rows.push(`<div class="p-box"><span class="lbl">router table: read it when the decision concerns</span>${esc(d.trigger)}</div>`);
+      if (d.sourceUrl && d.source !== 'repo') rows.push(`<div class="p-box"><span class="lbl">installed from</span><a href="${esc(d.sourceUrl)}" target="_blank" rel="noreferrer">${esc(d.source)}</a></div>`);
+      if (refs.length) rows.push(`<div class="p-box"><span class="lbl">files in this skill (${refs.length})</span><div class="p-links">${refs.map((r) => chipLink(r.id)).join('')}</div></div>`);
+      rows.push(`<div class="p-box"><span class="lbl">links to (${out.length})</span><div class="p-links">${out.map((e) => chipLink(e.to, e.type === 'mention' ? 'm' : '')).join('') || '<span class="hint">nothing</span>'}</div></div>`);
+      rows.push(`<div class="p-box"><span class="lbl">linked from (${inn.length})</span><div class="p-links">${inn.map((e) => chipLink(e.from, e.type === 'mention' ? 'm' : '')).join('') || '<span class="hint" style="color:var(--coral)">nothing links here</span>'}</div></div>`);
+      $('panel').innerHTML = `<div class="p-bar"><button type="button" id="p-back">← back</button><span class="grow"></span><button type="button" id="p-close" aria-label="close">✕ close</button></div>
+        <div class="p-kind">${GLYPH[d.kind]} ${KIND[d.kind]}${d.owner && d.kind === 'ref' ? ` in ${esc(d.owner)}` : ''} · ${d.words.toLocaleString()} words</div>
+        <h2>${esc(d.title)}</h2><div class="p-path">${pathHtml(d)}</div>${rows.join('')}<div class="doc">${d.html}</div>`;
+      $('p-back').onclick = () => history.back();
+      $('p-close').onclick = closePanel;
+      $('panel').classList.add('open'); $('scrim').classList.add('on'); $('panel').scrollTop = 0; $('panel').focus({ preventScroll: true });
+    }
+    function closePanel() {
+      if (!$('panel').classList.contains('open')) return;
+      $('panel').classList.remove('open'); $('scrim').classList.remove('on');
+      if (location.hash.startsWith('#doc=')) history.pushState(null, '', location.pathname + location.search);
+    }
+    $('scrim').onclick = closePanel;
+    function route() {
+      const h = decodeURIComponent(location.hash.slice(1));
+      if (h.startsWith('doc=')) return openDoc(h.slice(4));
+      if ($('panel').classList.contains('open')) { $('panel').classList.remove('open'); $('scrim').classList.remove('on'); }
+      if (h.startsWith('inv:')) { const f = h.slice(4); $('kind').value = ['principle', 'external'].includes(f) ? f : f === 'hidden' ? 'skill' : ''; $('unreached').checked = f === 'unreached'; if (f === 'loaded') inv.sort = ['loaded', -1]; renderInv(); $('s-inv').scrollIntoView(); }
+    }
+    addEventListener('hashchange', route);
+
+    // ── inventory
+    const inv = { sort: ['in', 1] };
+    const invCols = [['name', 'name'], ['kind', 'kind'], ['in', 'in · out', 'num'], ['loaded', 'loaded', 'num'], ['words', 'words', 'num'], ['change', 'since ' + C.base]];
+    $('kind').innerHTML = `<option value="">every kind</option>${MAP_KINDS.map((k) => `<option value="${k}">${KIND[k]}</option>`).join('')}`;
+    $('inv').tHead.innerHTML = `<tr>${invCols.map(([k, l, c]) => `<th class="${c || ''}"><button type="button" data-sort="${k}">${l}</button></th>`).join('')}</tr>`;
+    $('inv').tHead.addEventListener('click', (e) => { const b = e.target.closest('[data-sort]'); if (!b) return; inv.sort = [b.dataset.sort, inv.sort[0] === b.dataset.sort ? -inv.sort[1] : (b.dataset.sort === 'name' || b.dataset.sort === 'kind' || b.dataset.sort === 'in' ? 1 : -1)]; renderInv(); });
+    const outDeg = (id) => [...mapEdges.values()].filter((e) => e.from === id).length;
+    function renderInv() {
+      const q = $('q').value.trim().toLowerCase(), k = $('kind').value, un = $('unreached').checked;
+      const val = (d, key) => ({ name: d.name, kind: KIND[d.kind], in: inDeg[d.id] || 0, loaded: d.loaded ? d.desc.length : 0, words: d.words + ownRefs(d.id).reduce((n, r) => n + r.words, 0), change: d.change?.status || (d.refsChanged ? 'edited' : '') })[key];
+      const rows = topDocs.filter((d) => (!q || d.name.toLowerCase().includes(q)) && (!k || d.kind === k) && (!un || (!inDeg[d.id] && d.kind !== 'router' && d.kind !== 'host')))
+        .sort((a, b) => { const [key, dir] = inv.sort, x = val(a, key), y = val(b, key); return (x < y ? -1 : x > y ? 1 : a.name.localeCompare(b.name)) * dir; });
+      $('inv').tBodies[0].innerHTML = rows.map((d) => {
+        const n = inDeg[d.id] || 0, bad = !n && d.kind !== 'router' && d.kind !== 'host';
+        return `<tr><td><a class="open" href="#doc=${encodeURIComponent(d.id)}">${esc(d.name)}</a>${d.catalog?.explicit ? ' <span class="hint">ask</span>' : ''}${d.hidden ? ' <span class="hint" title="router or slash command only">/</span>' : ''}</td><td>${KIND[d.kind]}${d.source !== 'repo' ? ` <span class="hint">${esc(d.source.replace(/^github:/, ''))}</span>` : ''}</td>
+          <td class="num"><span class="${bad ? 'bad' : ''}">${n}</span> · ${outDeg(d.id)}</td><td class="num">${d.loaded ? d.desc.length : '–'}</td><td class="num">${val(d, 'words').toLocaleString()}</td><td>${chgTag(d)}</td></tr>`;
+      }).join('');
+      $('inv-count').textContent = `${rows.length} of ${topDocs.length} · words include a skill's reference files`;
+    }
+    $('q').addEventListener('input', renderInv); $('kind').addEventListener('change', renderInv); $('unreached').addEventListener('change', renderInv);
+
+    // ── changes: retired names first (what went where, and why), then every file by status
+    {
+      const link = (id, text) => D[id] ? `<a href="#doc=${encodeURIComponent(id)}">${esc(text ?? D[id].name)}</a>` : `<code>${esc(text ?? id)}</code>`;
+      const nChanged = changed.length, nGone = C.removed.filter((f) => !f.to).length;
+      $('chg-sub').innerHTML = `Compared with <code>${esc(C.base)}</code> (${esc(C.baseSubject)}). ${nChanged} files new, moved or edited; ${nGone} deleted. Where each retired name went, and why, comes from <code>scripts/retired-names.json</code>; the routing check reads the same file to reject links to those names. Press "changed only" above the map to see where they sit.`;
+      const retiredRows = C.retired.map((r) => `<tr><td><span class="chg removed">${esc(r.name)}</span></td><td>${r.now ? link(r.nowId, r.now.replace(/^skills\//, '')) : '<span class="hint">removed</span>'}</td><td class="why">${esc(r.why)}</td><td class="num">${r.files.length}</td></tr>`).join('');
+      const group = (status, label) => {
+        const list = changed.filter((d) => d.change.status === status).sort((a, b) => a.id.localeCompare(b.id));
+        return list.length ? `<h3>${label} (${list.length})</h3><div class="tbl"><table><tbody>${list.map((d) => `<tr><td>${link(d.id, d.id.replace(/^skills\//, ''))}</td><td class="hint">${d.change.from ? `from ${esc(d.change.from.replace(/^skills\//, ''))}` : ''}</td><td class="num">${d.change.add != null ? `+${d.change.add} −${d.change.del}` : ''}</td></tr>`).join('')}</tbody></table></div>` : '';
+      };
+      $('chg').innerHTML = (retiredRows ? `<h3>retired (${C.retired.length})</h3><div class="tbl"><table><thead><tr><th>was</th><th>now</th><th>why</th><th class="num">files</th></tr></thead><tbody>${retiredRows}</tbody></table></div>` : '')
+        + group('new', 'new') + group('merged', 'merged') + group('moved', 'moved') + group('edited', 'edited')
+        || `<p class="hint">Nothing changed since ${esc(C.base)}.</p>`;
+    }
+
+    // ── problems
+    $('lint').innerHTML = DATA.lint.length ? DATA.lint.map((l) => `<li class="bad">${D[l.doc] ? `<a href="#doc=${encodeURIComponent(l.doc)}">${esc(l.doc)}</a>` : esc(l.doc)}: ${esc(l.msg)}</li>`).join('') : '<li class="ok">No broken links. Every story step follows a real link.</li>';
+
+    setTheme(document.documentElement.dataset.theme, false);
+    renderInv(); renderStory(); pin(null); route();
+    document.fonts?.ready.then(drawWires);
+  </script>
+</body>
+</html>

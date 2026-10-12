@@ -1,6 +1,7 @@
 ---
 name: motion-explainer
 description: Build a narrated, timeline-driven systems explainer (boxes, wires, packets, dotted orbs, callouts, code diffs) as a playable HTML explorer, optionally rendered to MP4 with a local voice. Use for "motion graphic", "explainer video", "animate how X works", "Kit Langton style", or an interactive explainer that should play over time.
+disable-model-invocation: true
 ---
 
 # Motion Explainer

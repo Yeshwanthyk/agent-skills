@@ -17,10 +17,10 @@ prompt = "Get bench.py under 2ms. Measure every step and keep iterating until it
 expect = { methods = ["hillclimb"] }
 
 [[case]]
-id = "pb-runtime-forensics"
+id = "pb-runtime-symptom"
 activation = "router"
 prompt = "Production shows duplicate delivery rows whenever the carrier retries a webhook. Work out what's happening at runtime. No fix yet."
-expect = { any_method = ["runtime-forensics", "debug"], no_edits = true }
+expect = { methods = ["debug"], no_edits = true }
 
 [[case]]
 id = "pb-prototype"

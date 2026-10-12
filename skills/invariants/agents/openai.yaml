@@ -1,0 +1,6 @@
+interface:
+  display_name: "Invariants"
+  short_description: "Model state, property-test contracts, and fuzz input boundaries"
+  default_prompt: "Use $invariants to name the invariants for this workflow, then model the state, property-test the contract, or fuzz the input boundary."
+policy:
+  allow_implicit_invocation: true

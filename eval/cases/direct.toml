@@ -1,4 +1,5 @@
-# No router: natural requests that should match a skill by its description.
+# No router: natural requests that should match a skill by its description. Skills with
+# disable-model-invocation are reachable only through the router or a slash command, so their cases run with the router on.
 
 [[case]]
 id = "direct-how"
@@ -6,9 +7,9 @@ prompt = "Explain how carrier webhook events flow through webhooks.py."
 expect = { methods = ["how"], no_edits = true }
 
 [[case]]
-id = "direct-why"
+id = "direct-history"
 prompt = "What's the history behind the retry cap in retry.py? Was there an incident?"
-expect = { methods = ["why"], no_edits = true }
+expect = { methods = ["how"], no_edits = true }
 
 [[case]]
 id = "direct-debug"
@@ -19,17 +20,20 @@ notes = "Claude Code ships a built-in 'debug' skill; this shows which one wins."
 
 [[case]]
 id = "direct-blast-radius"
+activation = "router"
 prompt = "Before I touch webhooks.py's DELIVERIES list, what downstream code could break?"
 expect = { methods = ["blast-radius"], no_edits = true }
 
 [[case]]
 id = "direct-unslop"
+activation = "router"
 tags = ["port"]
 prompt = "docs.md reads padded and AI-ish. Clean up the prose without losing any facts."
 expect = { methods = ["unslop"] }
 
 [[case]]
 id = "correct-findings-only"
+activation = "router"
 tags = ["port"]
 prompt = "Use the correct skill on this repo. Report the repeated mistake classes and the level you'd fix each at, but don't change anything yet."
 expect = { methods = ["correct"], no_edits = true }

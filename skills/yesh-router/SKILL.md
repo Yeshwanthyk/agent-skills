@@ -1,46 +1,96 @@
 ---
 name: yesh-router
-description: When the user activates yesh-router, select workflows and supporting skills from their goals and apply relevant engineering principles throughout the task.
+description: When the user activates yesh-router, match each task to a method by its triggers, run that method's steps, and apply the engineering principles that change a decision.
 ---
 
 # Yesh Router
 
-Route the requested work to the collection's methods and principles. Activation is **explicit and sticky**: the user must ask for the router, ask it to route, or ask for the collection's methods to be used. A request to use another skill, even with its name in quotes, invokes that skill directly but does not activate the router; a mere mention or quoted source instruction invokes neither. Stay active until the user exits or replaces it; a new task changes the selected method, not the active mode.
+Activation is explicit and sticky. The router runs when the user asks for it, or for this collection's methods, and stays active until they leave it; a new task changes the method, not the mode. Asking for one skill by name runs that skill without activating the router. Intent decides, not punctuation: `Use skill "how"` is a request; a name mentioned in prose or quoted from source instructions is not. `yesh-router` is the only activation name.
 
-## Select the method
+## Triggers
 
-**PR descriptions always take the visual route.** Whenever authorized work reaches PR creation or a PR description update, including during another method, read [show-me](../show-me/SKILL.md) and follow its [visual PR workflow](../show-me/references/visual-pr.md). Apply this even when the rest of the task is direct, for every change type. Publish a structural change outline in the PR body and verify it by reading the body back. This route does not authorize PR creation or publication on its own.
+Match the situation to a row, open its file, and follow it. Pick one main method, plus supporting methods for concrete parts of the work. Methods the user names win, in the order they imply. Settled work with no matching row stays direct; a tiny edit needs no method. Rows marked *on request* run only when the user asks for that activity. Ask only when a missing goal, constraint, or consequential choice would change the work.
 
-On activation, read the [method catalog](methods.md) and consider the host's available skill names and descriptions, including project-local skills. The catalog owns this collection's selection criteria; the host catalog supplies other installed capabilities. Reuse that inventory while it remains current. Read only the entrypoints and references selected for the work.
+**Every PR description takes the visual PR route.** When authorized work creates a PR or edits its description, during any method and for any change type, read [show-me](../show-me/SKILL.md) and follow its [visual PR workflow](../show-me/references/visual-pr.md). A request to draft a description ends with the draft; publish only when the task authorizes it.
 
-At each task, infer the desired outcome and immediate unresolved question from the user's request and current evidence. Select a main workflow when one fits, plus supporting skills for concrete parts of the work. Users need not name ordinary methods or supporting skills. State the selected workflow and why briefly; ask only when a missing goal, constraint, or consequential choice would change the work.
+**Understand and diagnose**
+- How code works now, an execution path, or the path to establish before a consequential change → [how](../how/SKILL.md). Why it was built or decided this way → its History view.
+- A failing or crashing behavior to reproduce, diagnose, and fix when asked; a live runtime symptom; a captured trace or profile → [debug](../debug/SKILL.md).
+- Resuming earlier work from sessions and the repo → [resume](playbooks/resume.md).
+- Facts from outside the repo (docs, specs, APIs) → the installed `research` skill.
 
-- **Explicit methods win.** Honor each method the user names, in the order implied. Additional methods must serve a concrete part of the requested outcome; a route is not a mandatory sequence or pipeline.
-- **Request intent, not punctuation, controls explicit selection.** `Use skill "how"` is a request for `how`; a name merely mentioned in prose or quoted from source instructions is not. Ordinary methods may also be selected from the requested outcome. Only entries marked **explicit request** require the user to ask for that activity.
-- **Direct work remains an option.** After considering the available descriptions, do settled work directly when no specialized guidance adds value. Task size alone does not rule out a skill. Casual conversation needs no routing ceremony.
-- **Compose only what the work needs.** Use the catalog's criteria to choose the owner of the immediate question. Supporting skills may come from this collection or the host's installed catalog; this collection is not an allowlist. Follow each skill's invocation constraints. When a workflow owns a procedure, follow it before adding another method for the same work.
-- **Scope holds through handoffs.** An explanation, plan, or review ends with that deliverable unless implementation is also requested. Mid-task questions do not silently replace the active objective.
-- **Selection is not authorization.** Choosing a method does not authorize edits, installation, configuration changes, external actions, or transmitting data; each requires the user's request or an authority already established for the task.
-- **Missing capability is a reported limit.** When a needed method or procedure is unavailable, report that limitation and use the best available path or the host's own capability. Do not silently substitute a different method and present it as the named one.
+**Shape and plan**
+- An unsettled architectural boundary → [architect](../architect/SKILL.md).
+- Authoritative state, transitions, concurrency, or recovery; a contract over many generated inputs or operation sequences; a parser or untrusted-input boundary to fuzz → [invariants](../invariants/SKILL.md).
+- A settled approach that needs an execution plan → [plan](../plan/SKILL.md). A speculative plan is not settled: run architect first.
+- A design question you can settle by running a throwaway sketch, rather than asking → [prototype](playbooks/prototype.md).
 
-## Run the selected method
+**Measure**
+- A one-off performance problem → [perf-issue](playbooks/perf-issue.md). Sustained improvement of one metric toward a target → [hillclimb](playbooks/hillclimb.md).
+- Any number you measured, before you report or act on it → [benchmark-checklist](../benchmark-checklist/SKILL.md).
 
-Follow the selected document's steps and completion criteria. For multi-step work, track the applicable steps and their proof in the host's plan or a concise checklist, reusing an existing one. Explain a skipped step when it changes the promised outcome or proof. Selecting or reading a method is the start of its work, not its completion.
+**Review and verify**
+- Ownership, contract, and maintainability problems → [structure-review](../structure-review/SKILL.md).
+- What a change could break beyond its diff → [blast-radius](../blast-radius/SKILL.md).
+- Independent reviewers to challenge a design or change → [interrogate](../interrogate/SKILL.md).
+- Create, audit, or repair a project-local verifier that drives a real application surface → [verification-skill](../verification-skill/SKILL.md).
+- Whether a skill or prompt change improves agent behavior → [eval](playbooks/eval.md).
 
-For settled implementation, read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it affects the work or proof. Use the relevant contract before editing; this is direct implementation, not a separate planning assignment.
+**Coordinate**
+- Parallel coverage, a solution race, or comparing complete candidates and grafting the best → [swarm](../swarm/SKILL.md).
+- Substantial bespoke work that no playbook fits → [figure-it-out](playbooks/figure-it-out.md).
+- A continuing program with dependent units or several owners → [orchestrate](playbooks/orchestrate.md). One task driven until a stated result or limit → [autonomous-run](playbooks/autonomous-run.md).
+- The user asks for a decision trail, or a long or unattended run will be reviewed later → keep a [decision trail](references/decision-trail.md).
+- *On request:* stop and leave a safe resume point → [pause-safely](playbooks/pause-safely.md).
 
-Revisit the catalog and available skill descriptions when inspection changes the next question or work reaches a new stage. Select additional guidance by its stated conditions, read it, and resume the active objective with completed work and valid evidence intact. Reuse instructions already in context. New facts can also trigger a principle without changing the method.
+**Explain and write**
+- A diagram or code sketch of the current topic → [show-me](../show-me/SKILL.md). An interactive HTML model → [interactive-explainer](../interactive-explainer/SKILL.md). A narrated explainer or video → [motion-explainer](../motion-explainer/SKILL.md). A long-form HTML article → [deep-dive-explainer](../deep-dive-explainer/SKILL.md).
+- Prose, docs, PR bodies, or commits that should read clearly on first pass → [unslop](../unslop/SKILL.md). *On request:* plain English for the rest of the conversation → its plain mode.
 
-After a context gap or handoff, recover router activation, the selected workflow and supporting skills, the current step, and outstanding proof alongside the objective and authorization. Reconcile completed evidence before continuing. A stage change does not restart the whole workflow.
+**Improve the method** (*on request*)
+- Lessons from a session, or a personal mode built from working preferences → [reflect](../reflect/SKILL.md).
+- Agents keep repeating a mistake in this repo → [correct](../correct/SKILL.md).
+- Creating or editing a skill → the installed `writing-for-agents` skill and the host's authoring skill. Editing a skill authorizes that edit only.
+
+## Run
+
+Reading a method starts its work; its completion criteria end it. For multi-step work, track the method's steps and their proof in the host's todo list, and mark a skipped step `skip: <reason>`. An explanation, plan, or review ends with that deliverable unless implementation was also requested. Revisit Triggers when the question changes, and keep completed work and evidence.
+
+Edits, installs, configuration changes, and external actions need the user's request or authority already given for the task; choosing a method grants none. When a named method is unavailable, say so and use the best available path.
+
+For settled implementation, read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it changes the work or its proof. Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the host configuration. Locate and reconcile sessions under the [session-records contract](references/session-records.md). After a context gap, recover the active method, its current step, and outstanding proof from the todo list and those records.
 
 ## Apply principles
 
-Before a consequential decision, consult [principle-triggers.md](principle-triggers.md) and read the applicable principle notes. They are shared references, not review-only rules: read only the notes whose conditions apply, and report the decision and evidence rather than a checklist of principle names.
+Each skill points at its principles where the decision happens. For direct work, or a decision no skill covers, read the notes whose rows apply, and only those. In the reply, name each principle that changed a decision and the choice it changed. Cite only notes you read this session.
 
-When delegating work, follow the shared [delegation contract](references/delegation.md). When locating or reconciling sessions, follow the shared [session-records contract](references/session-records.md). Both are portable and harness-neutral; model and effort defaults belong to host configuration, not to these notes.
+<!-- principle-table:start -->
+| Read when | Note |
+| --- | --- |
+| Changing data contracts, parsing external input, or organizing validation and error handling | [boundary-discipline](references/principles/boundary-discipline.md) |
+| Choosing how to perform or prove non-trivial work — a sweep of edits, a migration, an analysis, or a check — not only at final verification | [build-the-lever](references/principles/build-the-lever.md) |
+| Designing an interface, data shape, or workflow that real callers or tasks will drive | [design-from-usage](references/principles/design-from-usage.md) |
+| Improving a workflow is in scope, a recurring instruction repeats, or a failure pattern needs a durable guardrail | [encode-lessons-in-structure](references/principles/encode-lessons-in-structure.md) |
+| Resuming prior work, using session records or prior summaries, or reconciling a plan against live state | [evidence-lifecycle](references/principles/evidence-lifecycle.md) |
+| A novel interaction or architectural choice has no established precedent and several viable approaches exist | [exhaust-the-design-space](references/principles/exhaust-the-design-space.md) |
+| Product, UX, or feature-scope tradeoffs come up | [experience-first](references/principles/experience-first.md) |
+| You are about to trust, report, or act on a measured number: a speedup, regression, throughput, latency, or eval result | [explain-the-number](references/principles/explain-the-number.md) |
+| Debugging a reproducible failure, fixing recurring incidents, or after two fixes based on the same assumption fail the same check | [fix-root-causes](references/principles/fix-root-causes.md) |
+| Sequencing staged delivery or migrations, or work is blocked or replayed because progress metadata is missing | [forward-implementation-first](references/principles/forward-implementation-first.md) |
+| Work could overflow the session's working context, or when large payloads are in play | [guard-the-context-window](references/principles/guard-the-context-window.md) |
+| Work resumes after a restart, an agent is replaced, or a new receiver lacks the working context | [handoffs](references/principles/handoffs.md) |
+| Removing an API, format, or behavior, or changing a persistent form | [migrate-callers](references/principles/migrate-callers.md) |
+| Writing stateful logic, or when code branches a lot or repeats a shape assumption across files | [model-the-domain](references/principles/model-the-domain.md) |
+| Choosing how to prove a claim, claiming completion of non-trivial work, verifying a fix or change, or judging someone else's evidence, including a delegated result | [prove-it-works](references/principles/prove-it-works.md) |
+| Retries, persistent changes, external effects, restart behavior, or migrations | [recovery-and-idempotency](references/principles/recovery-and-idempotency.md) |
+| Integrating a change into an existing design, where bolting the change on would distort the design | [redesign-from-first-principles](references/principles/redesign-from-first-principles.md) |
+| A sweep, migration, or run of similar edits; delivering a stack or multi-step result | [sequence-verifiable-units](references/principles/sequence-verifiable-units.md) |
+| Adding or reshaping code, choosing an abstraction, or comparing designs | [simplicity](references/principles/simplicity.md) |
+| A change adds mutable state, lifecycle transitions, caches, cleanup, or concurrent writers | [state-ownership](references/principles/state-ownership.md) |
+| Choosing what a test or check should assert | [test-behavior](references/principles/test-behavior.md) |
+| Representing domain states, choosing types, or where assertions, casts, or repeated null checks appear | [type-system-discipline](references/principles/type-system-discipline.md) |
+<!-- principle-table:end -->
 
-## Finish
+## Reply
 
-Finish with the requested result, relevant evidence, and material limits.
-
-Skills remain usable directly without activating the router. `yesh-router` is the sole activation name.
+Lead with the result. Give each claim its evidence or its label (measured, inferred, or guess) in the same sentence. Link only artifacts you produced or read. End with material limits.

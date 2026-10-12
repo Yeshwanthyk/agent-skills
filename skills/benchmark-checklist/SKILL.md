@@ -1,6 +1,7 @@
 ---
 name: benchmark-checklist
 description: Vet a performance number before reporting or acting on it. Use when you benchmark, claim a speedup or regression, build a perf harness, or choose between options by speed.
+disable-model-invocation: true
 ---
 
 # Benchmark checklist

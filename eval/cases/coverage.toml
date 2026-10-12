@@ -2,10 +2,10 @@
 # (except explicit-only methods, which must be asked for).
 
 [[case]]
-id = "cov-trace-forensics"
+id = "cov-trace-profile"
 activation = "router"
 prompt = "profiles/bench.prof.txt is a profile I captured from bench.py. Tell me where the time goes. Don't change any code."
-expect = { any_method = ["trace-forensics"], no_edits = true }
+expect = { methods = ["debug"], no_edits = true }
 
 [[case]]
 id = "cov-interrogate"
@@ -21,16 +21,16 @@ expect = { any_method = ["figure-it-out", "plan", "orchestrate"] }
 notes = "Several methods are defensible; this records which one wins."
 
 [[case]]
-id = "cov-arena"
+id = "cov-best-of"
 activation = "router"
 prompt = "Build two complete, different fixes for the webhook dedupe bug, compare them, and merge the best parts into one final fix."
-expect = { any_method = ["arena", "swarm"] }
+expect = { methods = ["swarm"] }
 
 [[case]]
-id = "cov-show-me-your-work"
+id = "cov-decision-trail"
 activation = "router"
 prompt = "Fix the paid to pending transition bug in state.py, and keep an evidence-linked decision trail I can review later."
-expect = { methods = ["show-me-your-work"] }
+expect = { methods = ["debug"], reads = ["decision-trail.md"] }
 
 [[case]]
 id = "cov-interactive-explainer"
@@ -48,7 +48,7 @@ expect = { methods = ["deep-dive-explainer"] }
 id = "cov-fuzz"
 activation = "router"
 prompt = "handle_carrier_event receives untrusted JSON from the carrier. Throw lots of malformed and random payloads at it and find what crashes."
-expect = { any_method = ["fuzz-testing", "property-testing"] }
+expect = { methods = ["invariants"] }
 
 [[case]]
 id = "cov-reflect-explicit"
@@ -57,13 +57,13 @@ prompt = "Reflect on this session and extract any lessons worth keeping."
 expect = { methods = ["reflect"] }
 
 [[case]]
-id = "cov-bro-explicit"
+id = "cov-plain-mode-explicit"
 activation = "router"
 prompt = "Switch to bro mode for the rest of this chat. First question: what does retry.py do?"
-expect = { methods = ["bro"], no_edits = true }
+expect = { methods = ["unslop"], no_edits = true }
 
 [[case]]
-id = "cov-automate-me-explicit"
+id = "cov-personal-mode-explicit"
 activation = "router"
 prompt = "Make me a personal mode from my preferences: terse answers, tests before code, never commit without asking."
-expect = { methods = ["automate-me"] }
+expect = { methods = ["reflect"] }

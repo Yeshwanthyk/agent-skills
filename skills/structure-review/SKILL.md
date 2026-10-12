@@ -1,6 +1,7 @@
 ---
 name: structure-review
 description: Review code structure for concrete ownership, contract, and maintainability problems.
+disable-model-invocation: true
 ---
 
 # Structure review

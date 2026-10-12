@@ -1,6 +1,6 @@
 # Architect runner brief
 
-Use this brief for each independent candidate when the separate `arena` skill is available. Fill the bracketed fields before dispatch.
+Use this brief for each independent candidate when swarm's best-of branch is used. Fill the bracketed fields before dispatch.
 
 ## Task
 

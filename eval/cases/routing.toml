@@ -6,13 +6,13 @@
 id = "how-order-total"
 activation = "router"
 prompt = "Walk me through how an order's total is computed in this repo, from lines and discounts to the final number."
-expect = { methods = ["how"], not_methods = ["why", "debug"], no_edits = true }
+expect = { methods = ["how"], not_methods = ["debug"], no_edits = true }
 
 [[case]]
-id = "why-retry-cap"
+id = "history-retry-cap"
 activation = "router"
 prompt = "Why is MAX_ATTEMPTS in retry.py 3? Someone wants to raise it back to 5."
-expect = { methods = ["why"], not_methods = ["how"], no_edits = true }
+expect = { methods = ["how"], no_edits = true }
 
 [[case]]
 id = "debug-diagnose-only"
@@ -35,10 +35,10 @@ prompt = "We've decided: dedupe carrier events by event id in storage, rejecting
 expect = { methods = ["plan"], not_methods = ["architect"], no_edits = true }
 
 [[case]]
-id = "stateful-order-lifecycle"
+id = "invariants-order-lifecycle"
 activation = "router"
 prompt = "Model the order lifecycle in state.py, including what should happen when a payment confirmation and a cancellation race."
-expect = { methods = ["stateful-systems"], no_edits = true }
+expect = { methods = ["invariants"], no_edits = true }
 
 [[case]]
 id = "structure-review-modules"
@@ -56,7 +56,7 @@ expect = { methods = ["blast-radius"], no_edits = true }
 id = "property-pricing"
 activation = "router"
 prompt = "Add tests that check order_total's invariants across lots of generated carts and discount lists."
-expect = { methods = ["property-testing"] }
+expect = { methods = ["invariants"] }
 
 [[case]]
 id = "pr-description"
@@ -77,7 +77,7 @@ id = "explicit-only-not-triggered"
 activation = "router"
 tags = ["port", "overhead"]
 prompt = "That last change went well, thanks. Separately: what does state.py do?"
-expect = { not_methods = ["reflect", "automate-me", "bro", "pause-safely", "correct"], no_edits = true }
+expect = { not_methods = ["reflect", "pause-safely", "correct"], no_edits = true }
 
 [[case]]
 id = "quoted-name-not-a-request"
@@ -87,8 +87,8 @@ prompt = "A teammate's note says 'hillclimb this later'. For now just tell me wh
 expect = { not_methods = ["hillclimb"], no_edits = true }
 
 [[case]]
-id = "teach-retry-flow"
+id = "understand-retry-flow"
 tags = ["port"]
 activation = "router"
 prompt = "I'm new to this repo and about to change the retry logic. Help me really understand how retries work here and why they're built this way."
-expect = { methods = ["teach"], no_edits = true }
+expect = { methods = ["how"], no_edits = true }

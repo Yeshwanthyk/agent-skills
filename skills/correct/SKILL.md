@@ -1,6 +1,7 @@
 ---
 name: correct
 description: On request, find mistakes agents keep repeating in a repo and make each one impossible through architecture, types, checks, or tests before docs.
+disable-model-invocation: true
 ---
 
 # Correct
@@ -11,7 +12,7 @@ Assume every contributor is an agent that sees only the files it opened, copies 
 
 ## Find the mistake classes
 
-Read recent commits, reverts, fix-ups, review comments, the repo's agent instruction files (`AGENTS.md`, `CLAUDE.md`, or equivalent), and comments that explain workarounds. Use [`recall`](../recall/SKILL.md) when past sessions hold corrections that never reached git. Group the mistakes into classes. A class counts once it has happened twice; cite each occurrence.
+Read recent commits, reverts, fix-ups, review comments, the repo's agent instruction files (`AGENTS.md`, `CLAUDE.md`, or equivalent), and comments that explain workarounds. Use the [resume](../yesh-router/playbooks/resume.md) playbook when past sessions hold corrections that never reached git. Group the mistakes into classes. A class counts once it has happened twice; cite each occurrence.
 
 ## Fix each class at the highest level that works
 
@@ -24,7 +25,7 @@ The [encode-lessons-in-structure principle](../yesh-router/references/principles
 
 ## Fix and prove
 
-Unless the user asked for findings only, fix the most frequent classes now, one commit each. Prove each new check fails on a real past mistake: reapply the old code or a minimal copy of it and show the red output. Run the same command locally and in CI. Exceptions go on the offending line with a reason, an expiry date, and a human's approval.
+Unless the user asked for findings only, fix the most frequent classes now, one commit each. When choosing what a new test or check asserts, read [test-behavior](../yesh-router/references/principles/test-behavior.md). Prove each new check fails on a real past mistake: reapply the old code or a minimal copy of it and show the red output. Run the same command locally and in CI. Exceptions go on the offending line with a reason, an expiry date, and a human's approval.
 
 ## Keep the rule table
 

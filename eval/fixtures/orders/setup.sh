@@ -1,6 +1,6 @@
 #!/bin/sh
 # Builds the orders fixture as a git repo with meaningful history in $1.
-# History matters: `why` cases need commit evidence, `recall`/`blast-radius` need diffs.
+# History matters: history cases need commit evidence, `resume`/`blast-radius` need diffs.
 set -eu
 dest=$1
 mkdir -p "$dest/orders" "$dest/tests"

@@ -8,6 +8,7 @@ Retired router paths are rejected rather than aliased.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -25,8 +26,6 @@ RETIRED_PATH_POLICY = "retired-router-paths-forbidden"
 
 REQUIRED_ROUTER_DOCS = (
     "SKILL.md",
-    "methods.md",
-    "principle-triggers.md",
 )
 SHARED_REFERENCES = ("delegation.md", "session-records.md")
 
@@ -439,29 +438,42 @@ def _targets(path: Path) -> list[Path]:
     return [link.resolved for link in _parse_markdown_links(path)[0]] if path.is_file() else []
 
 
+def _section_targets(path: Path, heading: str, bullets_only: bool = False) -> list[Path]:
+    """Local link targets inside one `## heading` section, fragments dropped."""
+    if not path.is_file():
+        return []
+    lines = [line for _, line in _visible_markdown_lines(_source_path(path))]
+    section, inside = [], False
+    for line in lines:
+        if line.startswith("## "):
+            inside = line[3:].strip() == heading
+            continue
+        if inside and (not bullets_only or line.lstrip().startswith("- ")):
+            section.append(line)
+    targets = []
+    for raw in re.findall(r"\]\(([^)\s]+)\)", "\n".join(section)):
+        link = _local_link_target(path, raw)
+        if link:
+            targets.append(link.resolved)
+    return targets
+
+
 def _check_router_entry(root: Path, errors: list[str]) -> None:
     entry = root / ROUTER_REL / "SKILL.md"
-    if not entry.is_file():
-        return
-    targets = set(_targets(entry))
-    for name in ("methods.md", "principle-triggers.md"):
-        expected = (root / ROUTER_REL / name).resolve()
-        if expected not in targets:
-            errors.append(
-                f"{_display(entry, root)} does not point to "
-                f"{_display(expected, root)}"
-            )
+    if entry.is_file() and not _section_targets(entry, "Triggers"):
+        errors.append(f"{_display(entry, root)} has no ## Triggers section with method links")
 
 
 def _check_method_catalog(root: Path, errors: list[str]) -> None:
-    catalog = root / ROUTER_REL / "methods.md"
+    # The catalog is the router's ## Triggers section.
+    catalog = root / ROUTER_REL / "SKILL.md"
     if not catalog.is_file():
         return
 
     expected = [*(path.resolve() for path in _required_skill_paths(root)), *(
         path.resolve() for path in _actual_playbook_paths(root)
     )]
-    targets = _targets(catalog)
+    targets = _section_targets(catalog, "Triggers", bullets_only=True)
     for target in expected:
         count = targets.count(target)
         if count == 0:
@@ -491,22 +503,74 @@ def _check_method_catalog(root: Path, errors: list[str]) -> None:
 
 
 def _check_principle_triggers(root: Path, errors: list[str]) -> None:
-    triggers = root / ROUTER_REL / "principle-triggers.md"
-    if not triggers.is_file():
+    # The router's principle table lists every principle once, each row matching the
+    # note's Read when line; some skill or playbook must point at it so standalone runs reach it.
+    router = root / ROUTER_REL / "SKILL.md"
+    if not router.is_file():
         return
 
     expected = [path.resolve() for path in _actual_principle_paths(root)]
-    targets = _targets(triggers)
+    targets = _section_targets(router, "Apply principles")
+    rows = {}
+    for line in router.read_text(encoding="utf-8").splitlines():
+        row = re.match(r"^\|\s*(.+?)\s*\|\s*\[[^\]]+\]\(([^)]+)\)\s*\|$", line)
+        if row:
+            rows[(router.parent / row.group(2)).resolve()] = row.group(1)
+    for target in expected:
+        note = target.read_text(encoding="utf-8")
+        when = re.search(r"^\*\*Read when:\*\*\s*(.+)$", note, re.M)
+        if not when:
+            errors.append(f"Shared principle has no **Read when:** line: {_display(target, root)}")
+        elif target in rows and rows[target].rstrip(".").lower() != when.group(1).strip().rstrip(".").lower():
+            errors.append(
+                f"Router principle row drifts from the note's Read when line: {_display(target, root)}"
+            )
     for target in expected:
         count = targets.count(target)
         if count == 0:
             errors.append(
-                f"Principle trigger map omits shared principle: {_display(target, root)}"
+                f"Router principle table omits shared principle: {_display(target, root)}"
             )
         elif count > 1:
             errors.append(
-                f"Principle trigger map lists principle more than once: {_display(target, root)}"
+                f"Router principle table lists principle more than once: {_display(target, root)}"
             )
+
+    owners: set[Path] = set()
+    for skill in (root / "skills").glob("*/SKILL.md"):
+        if skill.parent.name == ROUTER_REL.name:
+            continue
+        owners.update(_targets(skill))
+    for playbook in (root / ROUTER_REL / "playbooks").glob("*.md"):
+        owners.update(_targets(playbook))
+    for target in expected:
+        if target not in owners:
+            errors.append(
+                f"No skill or playbook links shared principle: {_display(target, root)}"
+            )
+
+
+# Skills folded into others on 2026-10-09; linking them by their old name reads as a missing skill.
+# Retired skills, playbooks and notes, with where each went and why. The skill map shows the same file.
+RETIRED_FILE = Path(__file__).with_name("retired-names.json")
+RETIRED = json.loads(RETIRED_FILE.read_text(encoding="utf-8"))
+# A name that lives on as a file of the same name (figure-it-out as a playbook) stays linkable.
+RETIRED_NAMES = tuple(
+    entry["name"] for entry in RETIRED
+    if not entry["name"].endswith(".md")
+    and not (entry["now"] or "").split("#")[0].endswith(f"/{entry['name']}.md")
+)
+_RETIRED_NOW = {entry["name"]: entry["now"] for entry in RETIRED}
+_RETIRED_LINK_RE = re.compile(r"\[`?(" + "|".join(map(re.escape, RETIRED_NAMES)) + r")`?\]\(")
+
+
+def _check_retired_names(root: Path, errors: list[str]) -> None:
+    for path in sorted((root / "skills").rglob("*.md")):
+        for line_number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for match in _RETIRED_LINK_RE.finditer(raw):
+                name = match.group(1)
+                where = _RETIRED_NOW.get(name)
+                errors.append(f"{_display(path, root)}:{line_number}: links retired name `{name}`" + (f"; it is now {where}" if where else "; it was removed"))
 
 
 def collect_errors(root: Path) -> list[str]:
@@ -519,6 +583,7 @@ def collect_errors(root: Path) -> list[str]:
     _check_router_entry(root, errors)
     _check_method_catalog(root, errors)
     _check_principle_triggers(root, errors)
+    _check_retired_names(root, errors)
 
     unique: list[str] = []
     seen: set[str] = set()

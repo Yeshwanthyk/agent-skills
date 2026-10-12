@@ -2,10 +2,10 @@
 # so each case runs both with and without the router.
 
 [[case]]
-id = "port-teach-state"
+id = "port-understand-state"
 tags = ["port"]
 prompt = "I'm reviewing a change to state.py next week. Help me really understand the order state machine: what it is, how it works, and why it's shaped this way."
-expect = { methods = ["teach"], no_edits = true }
+expect = { methods = ["how"], no_edits = true }
 
 [[case]]
 id = "port-correct-natural"

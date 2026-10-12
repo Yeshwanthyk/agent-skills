@@ -8,7 +8,7 @@
 - Before removing an administrative gate, establish what it protects. Checksums, locks, receipts, and revision IDs may enforce real guarantees. Preserve those guarantees and required reviews; this principle grants no additional authority.
 - Report delivered behavior, evidence, and actual blockers before status infrastructure.
 
-For proof selection, follow [evidence discipline](evidence-discipline.md); for reuse after changes or restart, [evidence lifecycle](evidence-lifecycle.md). When publication or cursor state is shared, apply [state ownership](state-ownership.md); when retrying a partial stage, [recovery and idempotency](recovery-and-idempotency.md).
+For proof selection, follow [prove it works](prove-it-works.md); for reuse after changes or restart, [evidence lifecycle](evidence-lifecycle.md). When publication or cursor state is shared, apply [state ownership](state-ownership.md); when retrying a partial stage, [recovery and idempotency](recovery-and-idempotency.md).
 
 ## Source
 

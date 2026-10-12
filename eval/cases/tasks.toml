@@ -2,11 +2,11 @@
 # run with --tier task or --file tasks.
 
 [[case]]
-id = "task-why-retry-answer"
+id = "task-history-retry-answer"
 tier = "task"
 activation = "router"
 prompt = "Why is MAX_ATTEMPTS in retry.py 3 and not 5? Is it safe to raise it?"
-expect = { methods = ["why"], no_edits = true, answer = ["INC-212", "(fraud|suspen)"] }
+expect = { methods = ["how"], no_edits = true, answer = ["INC-212", "(fraud|suspen)"] }
 notes = "The reason lives in commit history and docs.md; a code-only reading misses it."
 
 [[case]]
@@ -21,7 +21,7 @@ id = "task-stateful-implement"
 activation = "router"
 tier = "task"
 prompt = "Model the order lifecycle, including a payment confirmation racing a cancellation, then implement it in state.py with tests."
-expect = { methods = ["stateful-systems"], edits_any = ["state.py"] }
+expect = { methods = ["invariants"], edits_any = ["state.py"] }
 notes = "Guards the modeling-scope fix: an explicit implementation ask must still edit."
 
 # Mid-task switching: the prompt names a symptom, not the method. The right
@@ -33,7 +33,7 @@ activation = "router"
 tier = "task"
 tags = ["midtask"]
 prompt = "Customers say checkout is broken for big orders. Figure out what's wrong and fix it."
-expect = { any_method = ["perf-issue", "trace-forensics", "hillclimb"], edits_any = ["pricing.py"] }
+expect = { any_method = ["perf-issue", "debug", "hillclimb"], edits_any = ["pricing.py"] }
 notes = "Reads like a bug; the cause is quadratic pricing. Should move from debug to perf-issue."
 
 [[case]]
@@ -42,7 +42,7 @@ activation = "router"
 tier = "task"
 tags = ["midtask"]
 prompt = "Sometimes customers get two delivery records for one shipment. Find out what's going on, but don't change anything yet."
-expect = { any_method = ["runtime-forensics", "debug"], no_edits = true }
+expect = { methods = ["debug"], no_edits = true }
 notes = "The fixture's failing test reproduces it, so debug (diagnose only) is right; the check that matters is no edits."
 
 [[case]]
@@ -51,5 +51,5 @@ activation = "router"
 tier = "task"
 tags = ["midtask"]
 prompt = "Big-cart checkout got slow after the discount change. Figure out why."
-expect = { any_method = ["trace-forensics", "perf-issue"], no_edits = true }
-notes = "A captured profile sits in profiles/; finding it should pull in trace-forensics."
+expect = { any_method = ["debug", "perf-issue"], reads = ["trace-forensics.md"], no_edits = true }
+notes = "A captured profile sits in profiles/; finding it should pull in debug's trace-forensics reference."

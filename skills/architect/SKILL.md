@@ -1,6 +1,7 @@
 ---
 name: architect
 description: Choose an architecture when a consequential design boundary is unsettled.
+disable-model-invocation: true
 ---
 
 # Architect
@@ -9,17 +10,17 @@ Settle a consequential design choice before implementation depends on it. Start 
 
 ## Ground
 
-Read the relevant implementation and tests. Use [`how`](../how/SKILL.md) for current mechanics and [`why`](../why/SKILL.md) when history or an operational constraint can change the choice. Name the decision seam, callers, current contracts, state and external authorities, fixed constraints, and unresolved gaps. Do not treat filenames or conventions as intent.
+Read the relevant implementation and tests. Use [`how`](../how/SKILL.md) for current mechanics and how's [History](../how/SKILL.md#history) view when history or an operational constraint can change the choice. Name the decision seam, callers, current contracts, state and external authorities, fixed constraints, and unresolved gaps. Do not treat filenames or conventions as intent. When the change enters an existing design and bolting it on would distort that design, read [redesign-from-first-principles](../yesh-router/references/principles/redesign-from-first-principles.md) before sketching.
 
 ## Sketch
 
-Write caller-facing usage before the type sketch. Show the dominant calls, inputs, outputs, and failure handling; two or three examples are useful when they expose different contracts, but use fewer for a narrow case. Derive data structures from those access patterns and parse external, storage, or framework data at the boundary.
+Write caller-facing usage before the type sketch; read [design-from-usage](../yesh-router/references/principles/design-from-usage.md) before writing it. Show the dominant calls, inputs, outputs, and failure handling; two or three examples are useful when they expose different contracts, but use fewer for a narrow case. Derive data structures from those access patterns; when they represent domain states, read [type-system-discipline](../yesh-router/references/principles/type-system-discipline.md). Parse external, storage, or framework data at the boundary; when the sketch parses that data or changes a data contract, read [boundary-discipline](../yesh-router/references/principles/boundary-discipline.md).
 
-Describe module responsibilities, dependency direction, state transitions, side effects, observability, migration, rollout, and production/test substitution points. For novel choices with multiple viable approaches, apply the [exhaust-the-design-space principle](../yesh-router/references/principles/exhaust-the-design-space.md) before selecting a shape. Prefer a small public surface that hides real policy; screen each candidate against [`design-red-flags.md`](references/design-red-flags.md). Judge candidates as an agent contributor would change them: it sees only the files it opened, copies the nearest example, and takes the shortest path that compiles. Prefer the design where a change that looks right from one file is right for the whole repo. Use the candidate and rationale templates for a design that will be handed to others. Run [`arena`](../arena/SKILL.md) only when competing whole-shape alternatives would materially improve the decision.
+Describe module responsibilities, dependency direction, state transitions, side effects, observability, migration, rollout, and production/test substitution points. When the design holds stateful logic, or the current code repeats a shape assumption across files, read [model-the-domain](../yesh-router/references/principles/model-the-domain.md). For a novel choice with no established precedent and several viable approaches, read [exhaust-the-design-space](../yesh-router/references/principles/exhaust-the-design-space.md) before selecting a shape. Prefer a small public surface that hides real policy. When comparing candidates, read [simplicity](../yesh-router/references/principles/simplicity.md) and screen each against [`design-red-flags.md`](references/design-red-flags.md). Judge candidates as an agent contributor would change them: it sees only the files it opened, copies the nearest example, and takes the shortest path that compiles. Prefer the design where a change that looks right from one file is right for the whole repo. Use the candidate and rationale templates for a design that will be handed to others. Run swarm's [best-of](../swarm/SKILL.md#best-of) branch only when competing whole-shape alternatives would materially improve the decision.
 
 Record the selected shape, rejected alternatives, tradeoffs, risks, and open questions. Keep the rationale beside the sketch for larger changes.
 
-When the decision seam concerns stage ownership, publication, replay, or metadata gates, consult [forward implementation first](../yesh-router/references/principles/forward-implementation-first.md). Use it within the current design decision, not as another architecture phase.
+When the decision seam concerns sequencing staged delivery, replay, or progress-metadata gates, consult [forward implementation first](../yesh-router/references/principles/forward-implementation-first.md). Use it within the current design decision, not as another architecture phase.
 
 ## Implement or hand off
 

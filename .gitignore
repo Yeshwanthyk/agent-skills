@@ -4,3 +4,4 @@ node_modules/
 .DS_Store
 eval/results/
 __pycache__/
+tools/skill-map/skill-map.html

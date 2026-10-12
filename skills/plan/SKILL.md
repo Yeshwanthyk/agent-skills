@@ -11,7 +11,7 @@ Own the plan, not the code. Orient the executor in plain language, name the sett
 
 Confirm that the approach is settled. If the decision seam is open, route to [`architect`](../architect/SKILL.md) or an empirical prototype; do not hide an architecture decision inside a checklist. For a tiny change with an obvious shape, say that a formal plan adds no value unless the user asks for one.
 
-Read the current implementation and relevant tests when changing an existing system. Use [`how`](../how/SKILL.md) for live paths and [`why`](../why/SKILL.md) for history when they reduce uncertainty. Record the outcome, scope, constraints, contracts, state owners, failure behavior, affected paths, and proof boundary.
+Read the current implementation and relevant tests when changing an existing system. Use [`how`](../how/SKILL.md) for live paths and how's [History](../how/SKILL.md#history) view for history when they reduce uncertainty. Record the outcome, scope, constraints, contracts, state owners, failure behavior, affected paths, and proof boundary.
 
 Start with what changes, who benefits, why the shape fits, and the tradeoffs that matter. Keep this orientation short.
 
@@ -21,17 +21,17 @@ For staged delivery, replay, or metadata gates, apply [forward implementation fi
 
 1. State settled decisions and explicit exclusions.
 2. Name current files and symbols for each change. Do not invent paths.
-3. Order work into independently verifiable vertical chunks. Put a real prerequisite before its dependent behavior; keep disjoint work parallel only when it helps.
+3. Order work into independently verifiable vertical chunks; when the work is a sweep, migration, or stack, read [sequence-verifiable-units](../yesh-router/references/principles/sequence-verifiable-units.md) first. Put a real prerequisite before its dependent behavior; keep disjoint work parallel only when it helps.
 4. For each chunk, give the behavior, files/symbols, path or state transition touched, dependencies, risk, and proof.
 5. Name the owner of shared mutable state and distinguish persisted, external, cached, derived, and displayed values.
-6. Describe migration, compatibility, rollout, observability, recovery, and rollback only where they affect delivery.
+6. Describe migration, compatibility, rollout, observability, recovery, and rollback only where they affect delivery. When the plan removes or replaces an API, format, or behavior, or changes a persistent format, read [migrate-callers](../yesh-router/references/principles/migrate-callers.md).
 7. End with open decisions and the chunks or gates they block.
 
 Use [`change-shape.md`](references/change-shape.md) for feature/refactoring guidance. Use [`program-template.md`](references/program-template.md) when the work spans phases, stacked changes, or multiple owners. Delegate distinct read-only exploration through the [shared delegation contract](../yesh-router/references/delegation.md) when it reduces risk; reconcile reports against the source.
 
 ## Verification matrix
 
-For broad input/transition contracts or malformed-input boundaries, consult the [evidence-discipline principle](../yesh-router/references/principles/evidence-discipline.md) to select property or fuzz testing. Specify the invariant, generator or target, budget, and replay plan within the applicable lane; planning alone does not execute it.
+Read [prove-it-works](../yesh-router/references/principles/prove-it-works.md) before choosing checks, and plan property or fuzz work with [invariants](../invariants/SKILL.md); it also says when broad input/transition contracts or malformed-input boundaries call for property or fuzz testing. For those, specify the invariant, generator or target, budget, and replay plan within the applicable lane; planning alone does not execute it.
 
 Match checks to changed behavior. Name a concrete scenario, command or driving procedure, artifact/output, and pass predicate for each applicable lane:
 

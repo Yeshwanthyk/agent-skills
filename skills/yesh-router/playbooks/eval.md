@@ -2,7 +2,7 @@
 
 Use when a behavior change needs evidence before adoption.
 
-Define the tasks and observable success criteria before running the comparison. Select cases that could expose both the intended benefit and lost constraints. A focused task can use one independent run; claims about relative performance need comparable baseline and revised runs.
+Define the tasks and observable success criteria before running the comparison; read [prove-it-works](../references/principles/prove-it-works.md) before choosing them. Select cases that could expose both the intended benefit and lost constraints. A focused task can use one independent run; claims about relative performance need comparable baseline and revised runs.
 
 Follow the [delegation contract](../references/delegation.md) for worker scope, independence, and result reconciliation. Give each worker a realistic user request, the relevant instructions, and minimal raw artifacts. Keep expected answers, suspected faults, and scoring criteria out of its brief. Use separate temporary workspaces and the same task conditions across variants. Disclose any unavoidable differences.
 
@@ -10,4 +10,4 @@ For a comparison, let an independent judge assess anonymized outputs on the same
 
 The coordinator checks consequential results and reconciles disagreements. Run additional cases only when a finding or uncertainty justifies them.
 
-Report the tested cases, observed outcomes, changes made, and limits. A small sample can expose a regression; it cannot establish universal superiority. Read the [session-records contract](../references/session-records.md) only when using transcripts.
+When the result is a score or rate you will trust or report, read [explain-the-number](../references/principles/explain-the-number.md). Report the tested cases, observed outcomes, changes made, and limits. A small sample can expose a regression; it cannot establish universal superiority. Read the [session-records contract](../references/session-records.md) only when using transcripts.
