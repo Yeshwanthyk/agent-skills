@@ -15,7 +15,7 @@ Match the situation to a row, open its file, and follow it. Pick one main method
 
 **Understand and diagnose**
 - How code works now, an execution path, or the path to establish before a consequential change → [how](../how/SKILL.md). Why it was built or decided this way → its History view.
-- A failing or crashing behavior to reproduce, diagnose, and fix when asked; a live runtime symptom; a captured trace or profile → [debug](../debug/SKILL.md).
+- A bug, or a failing or crashing behavior, to reproduce, diagnose, and fix when asked; a live runtime symptom; a captured trace or profile → [diagnose](../diagnose/SKILL.md).
 - Resuming earlier work from sessions and the repo → [resume](playbooks/resume.md).
 - Facts from outside the repo (docs, specs, APIs) → [research](../research/SKILL.md).
 
@@ -39,8 +39,8 @@ Match the situation to a row, open its file, and follow it. Pick one main method
 **Coordinate**
 - Parallel coverage, a solution race, or comparing complete candidates and grafting the best → [swarm](../swarm/SKILL.md).
 - Substantial bespoke work that no playbook fits → [figure-it-out](playbooks/figure-it-out.md).
-- A continuing program with dependent units or several owners → [orchestrate](playbooks/orchestrate.md). One task driven until a stated result or limit → [autonomous-run](playbooks/autonomous-run.md).
-- The user asks for a decision trail, or a long or unattended run will be reviewed later → keep a [decision trail](references/decision-trail.md).
+- A continuing program with dependent units or several owners → [orchestrate](playbooks/orchestrate.md).
+- Alongside the main method, never instead of it: the user asks for a decision trail, or a long or unattended run will be reviewed later → keep a [decision trail](references/decision-trail.md).
 - *On request:* stop and leave a safe resume point → [pause-safely](playbooks/pause-safely.md).
 - *On request:* catch up on this chat since the user's last message, with the decisions only they can make → [recap](playbooks/recap.md).
 

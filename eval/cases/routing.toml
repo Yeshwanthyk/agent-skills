@@ -6,7 +6,7 @@
 id = "how-order-total"
 activation = "router"
 prompt = "Walk me through how an order's total is computed in this repo, from lines and discounts to the final number."
-expect = { methods = ["how"], not_methods = ["debug"], no_edits = true }
+expect = { methods = ["how"], not_methods = ["diagnose"], no_edits = true }
 
 [[case]]
 id = "history-retry-cap"
@@ -15,11 +15,11 @@ prompt = "Why is MAX_ATTEMPTS in retry.py 3? Someone wants to raise it back to 5
 expect = { methods = ["how"], no_edits = true }
 
 [[case]]
-id = "debug-diagnose-only"
+id = "diagnose-only"
 tags = ["port"]
 activation = "router"
 prompt = "test_redelivered_event_records_one_delivery is failing. Find the cause, but don't change any code yet."
-expect = { methods = ["debug"], no_edits = true }
+expect = { methods = ["diagnose"], no_edits = true }
 
 [[case]]
 id = "architect-dedupe-boundary"

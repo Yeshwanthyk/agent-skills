@@ -1,6 +1,6 @@
 # Pause safely
 
-Use when the user asks to pause. A request to keep working through the user's absence belongs to [autonomous run](autonomous-run.md).
+Use when the user asks to pause.
 
 Reach a safe boundary without starting new work. Settle or cancel managed writers and confirm their state before describing the pause. Preserve existing edits and name any incomplete or broken portion.
 

@@ -5,7 +5,7 @@
 id = "cov-trace-profile"
 activation = "router"
 prompt = "profiles/bench.prof.txt is a profile I captured from bench.py. Tell me where the time goes. Don't change any code."
-expect = { methods = ["debug"], no_edits = true }
+expect = { methods = ["diagnose"], no_edits = true }
 
 [[case]]
 id = "cov-interrogate"
@@ -30,7 +30,7 @@ expect = { methods = ["swarm"] }
 id = "cov-decision-trail"
 activation = "router"
 prompt = "Fix the paid to pending transition bug in state.py, and keep an evidence-linked decision trail I can review later."
-expect = { methods = ["debug"], reads = ["decision-trail.md"] }
+expect = { methods = ["diagnose"], reads = ["decision-trail.md"] }
 
 [[case]]
 id = "cov-interactive-explainer"

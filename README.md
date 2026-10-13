@@ -12,7 +12,7 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`benchmark-checklist`](./skills/benchmark-checklist) | Vets a performance number (limiter, tuning, limits, errors, repeatability, relevance, whether the work ran) before it is reported or acted on. |
 | [`blast-radius`](./skills/blast-radius) | Finds what a change could break beyond grep and proves the main safety facts. |
 | [`correct`](./skills/correct) | Finds mistakes agents keep repeating in a repo and makes each impossible through architecture, types, checks, or tests. |
-| [`debug`](./skills/debug) | Reproduces failures, diagnoses live runtime symptoms or captured traces, and applies and proves the smallest coherent fix when requested. |
+| [`diagnose`](./skills/diagnose) | Reproduces failures, diagnoses live runtime symptoms or captured traces, and applies and proves the smallest coherent fix when requested. |
 | [`deep-dive-explainer`](./skills/deep-dive-explainer) | Researches mechanisms, evidence, alternatives, and limits, then renders a connected long-form article with a reusable offline layout. |
 | [`how`](./skills/how) | Explains current systems through execution paths, ownership, inventories, contrasts, critique, and decision history from records. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Builds source-grounded interactive HTML models of behavior, state, sequences, and comparisons. |
@@ -43,7 +43,7 @@ After installing the reviewed collection, name a skill directly or ask for the r
 - `Use invariants to check the retry invariants.`
 - `Exit yesh-router.`
 
-Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, debug, invariants, plan, show-me, interactive-explainer, research, writing-for-agents and the router are listed by default.
+Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, diagnose, invariants, plan, show-me, interactive-explainer, research, writing-for-agents and the router are listed by default.
 
 Activate once, then describe outcomes in ordinary language. The router reads its Triggers and considers the host's installed skill descriptions, including project-local skills. It selects a main workflow and the supporting skills needed for the work, reads their instructions, and follows their completion criteria. It reconsiders selection as the task develops; small settled work stays direct when specialized guidance adds no value. The collection does not exclude other installed skills.
 

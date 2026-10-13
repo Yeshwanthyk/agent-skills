@@ -1,5 +1,5 @@
 ---
-name: debug
+name: diagnose
 description: Diagnose a reproducible failure, a live runtime symptom, or a supplied trace or profile; fix and verify the cause when requested.
 ---
 

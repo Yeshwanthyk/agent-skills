@@ -4,13 +4,13 @@
 const R = 'skills/yesh-router/';
 export const STORIES = [
   {
-    id: 'crash', name: 'crash report → debug + its principles',
+    id: 'crash', name: 'crash report → diagnose + its principles',
     steps: [
       { doc: `${R}SKILL.md`, caption: 'You ask for the router. It stays active until you leave it, and reads the <em>catalog</em> first.' },
-      { doc: `${R}SKILL.md#triggers`, caption: 'The catalog row "Reproduce a failing or crashing behavior" picks <em>debug</em>.' },
-      { doc: 'skills/debug/SKILL.md', caption: 'debug runs a red-to-green loop. It calls how for the path and its History view for regressions.' },
-      { doc: `${R}references/principles/fix-root-causes.md`, caption: 'debug lists its own principles, so they load with or without the router. First, <em>fix-root-causes</em>.' },
-      { doc: `${R}references/principles/prove-it-works.md`, from: 'skills/debug/SKILL.md', caption: 'Before calling the fix done, <em>prove-it-works</em>. The reply names each principle that changed a choice.' },
+      { doc: `${R}SKILL.md#triggers`, caption: 'The catalog row "Reproduce a failing or crashing behavior" picks <em>diagnose</em>.' },
+      { doc: 'skills/diagnose/SKILL.md', caption: 'diagnose runs a red-to-green loop. It calls how for the path and its History view for regressions.' },
+      { doc: `${R}references/principles/fix-root-causes.md`, caption: 'diagnose lists its own principles, so they load with or without the router. First, <em>fix-root-causes</em>.' },
+      { doc: `${R}references/principles/prove-it-works.md`, from: 'skills/diagnose/SKILL.md', caption: 'Before calling the fix done, <em>prove-it-works</em>. The reply names each principle that changed a choice.' },
     ],
   },
   {

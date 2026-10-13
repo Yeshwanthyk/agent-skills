@@ -12,11 +12,10 @@ prompt = "What's the history behind the retry cap in retry.py? Was there an inci
 expect = { methods = ["how"], no_edits = true }
 
 [[case]]
-id = "direct-debug"
-tags = ["builtin-collision"]
+id = "direct-diagnose"
 prompt = "tests/test_webhooks.py fails. Diagnose why; don't fix it."
-expect = { methods = ["debug"], no_edits = true }
-notes = "Claude Code ships a built-in 'debug' skill; this shows which one wins."
+expect = { methods = ["diagnose"], no_edits = true }
+notes = "Small diagnose-only task without the router; checks the skill loads instead of being skipped as easy."
 
 [[case]]
 id = "direct-blast-radius"

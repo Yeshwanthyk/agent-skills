@@ -1,6 +1,6 @@
 # Orchestrate
 
-Use for a continuing program with dependent units, shared integration, or multiple owners. One bounded task can use [autonomous run](autonomous-run.md).
+Use for a continuing program with dependent units, shared integration, or multiple owners.
 
 Use the shared [delegation contract](../references/delegation.md) for ownership, results, and host-configured role defaults. Before the first dispatch, read the host configuration's role table and location notes (which model per role, which harness runs it, where skills and session logs live) and assign every unit a role from it. Reviews use a different agent from the implementation author. When an unresolved question blocks progress, use [architect](../../architect/SKILL.md) for an unsettled design boundary, [blast-radius](../../blast-radius/SKILL.md) for downstream consequences, or [interrogate](../../interrogate/SKILL.md) for a requested or warranted independent challenge. Select the method for that question, then resume coordination.
 
