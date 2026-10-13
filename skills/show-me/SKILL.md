@@ -13,7 +13,7 @@ Whenever creating a PR or updating its description, follow [`references/visual-p
 
 ## Choose the form
 
-Where the host renders HTML inline in the chat, such as [T3 Code](../yesh-router/references/hosts/t3.md), lean into it: interaction and data-flow diagrams, call trees, `calldiff` output, and comparisons take the HTML branch. Pseudocode, diffs, and copyable code stay as text. Elsewhere, choose from this list as written.
+Read the active host's note in [hosts](../yesh-router/references/hosts/) for its rendering limits, such as Mermaid width in [pi](../yesh-router/references/hosts/pi.md). Where the host renders HTML inline in the chat, such as [T3 Code](../yesh-router/references/hosts/t3.md), lean into it: interaction and data-flow diagrams, call trees, `calldiff` output, and comparisons take the HTML branch. Pseudocode, diffs, and copyable code stay as text. Elsewhere, choose from this list as written.
 
 - Use pseudocode for logic or an algorithm.
 - Use a call tree for runtime control flow.
