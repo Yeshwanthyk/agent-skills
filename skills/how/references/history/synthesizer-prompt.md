@@ -38,7 +38,7 @@ Include only when multiple explanations remain plausible. Give evidence for and 
 List unanswered questions, searched nulls, unavailable sources, contradictions, and retention or sampling limits.
 
 ### Sources consulted
-List only sources actually searched, including queries or bounded windows where they affect confidence.
+List the sources actually searched, with queries or bounded windows where they affect confidence, then each skipped source with its written reason.
 
 ### Confidence summary
 Give a short overall calibration.

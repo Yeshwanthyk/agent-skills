@@ -43,10 +43,10 @@ These hold in every branch.
 Inspect the repository before asking the user:
 
 1. **Surface.** Identify the independently driven surface the user touches: web UI, CLI or TUI, desktop app, API, mobile app, or library. Generate one skill per surface that needs distinct controls.
-2. **Launch.** Find the authoritative start command, prerequisites, readiness signal, and teardown path.
+2. **Launch.** Find the authoritative start command, prerequisites, readiness signal, and teardown path. Launch reaches a usable state from an empty data directory, including migrations and seed data. Ready means usable, not that a process answers: a database health check can pass while its init scripts still run. For a short-lived CLI or TUI, launch builds once and each drive starts in its own isolated PTY or tmux session.
 3. **Doctor.** Define one read-only check that confirms the intended build, process, endpoint, authentication, and isolated state are safe to drive.
 4. **Drive.** Prefer an existing harness. Otherwise use stable semantic controls through the harness's browser or UI tools, exact CLI prompts through a PTY-capable harness, or HTTP requests for a service.
-5. **Evidence.** Identify observable proof: actions and resulting UI state, terminal output and exit status, response bodies, logs, or persisted side effects. When choosing what each check asserts, read [test-behavior](../yesh-router/references/principles/test-behavior.md).
+5. **Evidence.** Identify observable proof: actions and resulting UI state, terminal output and exit status, response bodies, logs, or persisted side effects. When the safe path is a dry-run or test mode, observe what it actually skips (files, network, git refs) rather than trusting its name. When choosing what each check asserts, read [test-behavior](../yesh-router/references/principles/test-behavior.md).
 6. **Isolation.** Determine how runs separate ports, profiles, data directories, and accounts. State when concurrent driving is unsafe.
 
 When launch or doctor cannot complete, return `blocked`.
@@ -75,6 +75,8 @@ When proving the generated skill works, read [prove-it-works](../yesh-router/ref
 5. Run cleanup.
 6. Confirm the evidence remains.
 
+When the seed data lacks a precondition a journey needs, the journey reports a failure and the reason goes in that feature's Gotchas; the journey keeps its full assertion. When the proof ran in a stand-in for the real target (a container for a fresh VM, a local stack for a remote one), list every setup step the stand-in did that the target will not; those stay unverified until a run on the real target covers them.
+
 **Done** when a cold reader can follow the skill without placeholders, one mapped feature passes end to end, cleanup leaves no owned runtime residue, and the proof artifacts survive at the documented path. Report the skill path and the feature exercised.
 
 ## Audit and repair
@@ -85,7 +87,7 @@ Audit skips step 7 and reports `findings` or `clean`. Repair runs every step.
 2. **Index.** Reconcile `features/README.md` with its feature files. Mark dead entries, and propose only features backed by a concrete registered surface, per [feature-map](references/feature-map.md). When prior run summaries or session records must be reconciled against live behavior, read [evidence-lifecycle](../yesh-router/references/principles/evidence-lifecycle.md).
 3. **Source review.** Account for each feature recipe in scope against current entry points and implementation, with concise source evidence and a proposed live recipe per feature. Use the [shared delegation contract](../yesh-router/references/delegation.md) when delegation earns its overhead.
 4. **Reconcile.** Verify suspected drift and combine overlapping live recipes into the fewest safe application states.
-5. **Live pass.** Run doctor, then drive the mapped features in scope. Record `verified-unreachable` only with its route and prerequisite; any other gap in coverage is `blocked`.
+5. **Live pass.** Run doctor, then drive the mapped features in scope. A doctor failure caused by skill drift is drift: in Repair, fix it and retry once before returning `blocked`. Record `verified-unreachable` only with its route and prerequisite; any other gap in coverage is `blocked`.
 6. **Triage.** Classify each failure as a verifier defect or a product defect, and list both.
 7. **Correct (Repair).** Fix documentation drift and harness gaps inside the selected skill, including the dead and missing index entries. Re-drive every harness correction on the real surface.
 8. **Close.** Clean up owned runtime state and confirm evidence remains. Open a PR only when the user requests it.

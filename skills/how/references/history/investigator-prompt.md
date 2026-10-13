@@ -1,6 +1,6 @@
 # Investigator brief
 
-Use this brief for a delegated search of one relevant evidence source or question. Fill the placeholders and append the matching guide from [`source-playbook.md`](source-playbook.md) when useful. Do not create investigators for sources that cannot answer the question.
+Use this brief for a delegated search of one relevant evidence source or question. Fill the placeholders and append the matching guide from [`source-playbook.md`](source-playbook.md) when useful. Skip a source only with a written reason that goes in Sources consulted: no access to it in this environment (a gap, not a choice), or it is provably irrelevant, not merely probably irrelevant. A source searched with nothing found is a recorded null, not a skip.
 
 You are gathering historical evidence about a code or shipped decision. Stay within the assigned source and return raw, checkable findings for a later synthesis. Read the implementation only enough to understand the anchor; mechanics are not proof of intent.
 

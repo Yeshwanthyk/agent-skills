@@ -1,6 +1,6 @@
 ---
 name: writing-for-agents
-description: Writing documents for agents. Use when creating or editing skills, or modifying AGENTS.md or CLAUDE.md.
+description: Write, edit, trim, or review a document an agent reads, such as a skill, its description, AGENTS.md, CLAUDE.md, or a doc reached by a pointer.
 metadata:
   credits:
     author: Matt Pocock

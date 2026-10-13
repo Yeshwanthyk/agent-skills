@@ -37,10 +37,10 @@ Use the [shared delegation contract](../yesh-router/references/delegation.md) wh
 Before launch, define the artifact and observable selection criteria. When the candidates embody a novel interaction or architectural choice with no established precedent, read [exhaust-the-design-space](../yesh-router/references/principles/exhaust-the-design-space.md) before choosing the arms. Ask each candidate for a brief design rationale when the differences will not be evident in the artifacts.
 
 1. **Complete.** Each candidate delivers a whole artifact in its own write target. Keep failed or incomplete candidates visible.
-2. **Cross-judge.** After candidate work settles, a separate read-only reviewer assesses every output against the criteria. The reviewer may share the candidates' model family. When independent review is unavailable, state the limitation.
-3. **Choose a base** from the artifacts and the review evidence.
-4. **Graft** useful parts from other candidates only where they fit the base's design. Agreement can justify keeping the base unchanged. Disagreement is a reason to inspect assumptions, not to rerun everything.
-5. **Verify the synthesis** at its relevant boundary, and fix demonstrated failures within the requested task. Candidate success does not establish that the combined result works; read [prove-it-works](../yesh-router/references/principles/prove-it-works.md) before claiming it does.
+2. **Cross-judge.** After candidate work settles, a separate read-only reviewer scores every output against the criteria and recommends a base. Prefer a model family different from yours; when only the same family or no independent reviewer is available, state the limitation.
+3. **Choose a base.** Read every candidate end to end and score each criterion, not overall feel, then compare with the judge. When the judge disagrees, read both rationales before deciding. Pick the base a future maintainer can extend without breaking invariants; between near-ties, take the cleaner boundary or smaller API.
+4. **Graft** usually one or two parts per losing candidate, folded in by hand so the result keeps one design. Candidates that converge on one shape are strong agreement: ship that shape with no grafts. Candidates that diverge wildly mean the frame was under-specified: reframe and re-run rather than averaging them.
+5. **Verify the synthesis** at its relevant boundary, and fix demonstrated failures within the requested task. When verification finds a miss, decide whether the frame was wrong (reframe and re-run) or a candidate caught it and the graft was missed (graft it). Candidate success does not establish that the combined result works; read [prove-it-works](../yesh-router/references/principles/prove-it-works.md) before claiming it does.
 
 Deliver the artifact, the reason for the selection, the grafts, and the verification. A comparison that produced only one candidate is not evidence that it beat alternatives; say so.
 

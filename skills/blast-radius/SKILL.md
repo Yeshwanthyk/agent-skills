@@ -16,7 +16,15 @@ Find the breakage a diff or grep result can miss. Trace the changed behavior thr
 
 ## Prove
 
-Read [prove-it-works](../yesh-router/references/principles/prove-it-works.md) before choosing proof. Give each safety fact an evidence rung: source citation, failure reasoning, executable call to the real code, or running-app reproduction. Prefer a small script or focused test over a long argument. Step 4 (the real-code execution) is strong proof but not always cheap; mark facts that stop earlier as unproven. Use [`how`](../how/SKILL.md) or how's [History](../how/SKILL.md#history) view when current mechanics or history changes the risk assessment. Run swarm's [best-of](../swarm/SKILL.md#best-of) branch only for a genuinely wide change where competing reviews add value.
+Read [prove-it-works](../yesh-router/references/principles/prove-it-works.md) before choosing proof. A writeup that sounds right reads as convincing whether or not it is true, so prove the facts rather than hand back the argument. Take each safety fact as far down this ladder as is cheap, and say where it stopped:
+
+1. Asserted. Worthless on its own.
+2. Cited: a real `file:line`, or the dependency's own source.
+3. Reasoned: the failure walked step by step, and it does not reach.
+4. Executed: a small script or test that imports the same library version the app ships, calls the exact function in question, and fails loud if the fact is wrong.
+5. Reproduced in the running app.
+
+Rung 4 is strong proof but not always cheap; mark facts that stop earlier as unproven. Use [`how`](../how/SKILL.md) or how's [History](../how/SKILL.md#history) view when current mechanics or history changes the risk assessment. Run swarm's [best-of](../swarm/SKILL.md#best-of) branch only for a genuinely wide change where competing reviews add value.
 
 ## Report
 

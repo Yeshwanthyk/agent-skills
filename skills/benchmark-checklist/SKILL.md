@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Use before you report or act on a performance number: a before/after, a regression claim, a hillclimb harness, or a library or configuration choice. The [explain-the-number principle](../yesh-router/references/principles/explain-the-number.md) says why. Answer each question with evidence from a run, not a guess from reading code.
 
-For a quick ballpark the user asked for, one run is enough. Still check questions 4 and 7 and say it is one run. A choice between options is never a ballpark.
+For a quick ballpark the user asked for, one run is enough. Still check questions 4 and 7 and say it is one run. Skip the rest unless that run looks wrong. A choice between options is never a ballpark.
 
 ## Before running
 
@@ -19,7 +19,7 @@ For a quick ballpark the user asked for, one run is enough. Still check question
 ## The questions
 
 1. **Why not double?** Name the limiter. Profile in a run you do not report, because profilers slow the work. Use per-process CPU (`top`, `pidstat`), a runtime profiler (`node --cpu-prof`, `py-spy`, `perf`, Instruments or `sample` on macOS), I/O wait, and syscall counts (`strace -c` on Linux, `dtruss` on macOS). Map the hot spot to source. Watch the load generator too: if it saturates first, you measured the load generator. If a change did not move the number, the limiter explains why; find it before calling the change useless.
-2. **Was it tuned?** Run every side the way production runs it: release builds, production flags and env, batching and transaction settings, connection pools, cache warmth, same versions and data. If one side runs on defaults, you compared configurations, not implementations. A limiter that is a setting (a commit per row, a debug build, a missing index) means that side is untuned. Tune it and measure again before picking a winner.
+2. **Was it tuned?** Run every side the way production runs it: release builds, production flags and env, batching and transaction settings, connection pools, cache warmth, same versions and data. If one side runs on defaults, you compared configurations, not implementations. A limiter that is a setting (a commit per row, a debug build, a missing index) means that side is untuned. Tune it and measure again before picking a winner. If you cannot tune it, pick no winner from that run. When the user is choosing what to adopt, narrowing the claim to the code as it ships today does not fix this: they adopt the option, not today's settings.
 3. **Did it break limits?** Do the arithmetic. Compare bytes per second with disk and network bandwidth, and operations per second times cost per operation with available cores. Compare time saved with the time the changed piece took: removing a piece that takes 10% of the run can make it at most about 11% faster. A result past a limit measured something other than the work, such as a cache, a no-op, or a bug.
 4. **Did it error?** Count failures and non-success responses, and check outputs are correct, not just present. Rejections are often fast; timeouts and retries are slow. If the script does not count errors, add the count.
 5. **Does it reproduce?** Run each side at least 5 times, alternating A, B, A, B so warmup, lazy initialization, caches, and drift do not favor one side. Report median and range. A gap smaller than run-to-run variation is no measurable difference. When the call is close, use a rank-sum test or the harness's own statistics.

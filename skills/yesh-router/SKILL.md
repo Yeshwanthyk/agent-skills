@@ -9,7 +9,7 @@ Activation is explicit and sticky. The router runs when the user asks for it, or
 
 ## Triggers
 
-Match the situation to a row, open its file, and follow it. Pick one main method, plus supporting methods for concrete parts of the work. Methods the user names win, in the order they imply. Settled work with no matching row stays direct; a tiny edit needs no method. Rows marked *on request* run only when the user asks for that activity. Ask only when a missing goal, constraint, or consequential choice would change the work.
+Match the situation to a row, open its file, and follow it. Pick one main method, plus supporting methods for concrete parts of the work. Methods the user names win, in the order they imply. Settled work with no matching row stays direct; a tiny edit needs no method. Rows marked *on request* run only when the user asks for that activity. On reversible work (code, notes, plans), make the reasonable call, proceed, and name the choice in the reply. Ask only for product direction, a missing goal or constraint, or a choice that is consequential or hard to reverse.
 
 **Every PR description takes the visual PR route.** When authorized work creates a PR or edits its description, during any method and for any change type, read [show-me](../show-me/SKILL.md) and follow its [visual PR workflow](../show-me/references/visual-pr.md). A request to draft a description ends with the draft; publish only when the task authorizes it.
 
@@ -42,6 +42,7 @@ Match the situation to a row, open its file, and follow it. Pick one main method
 - A continuing program with dependent units or several owners → [orchestrate](playbooks/orchestrate.md). One task driven until a stated result or limit → [autonomous-run](playbooks/autonomous-run.md).
 - The user asks for a decision trail, or a long or unattended run will be reviewed later → keep a [decision trail](references/decision-trail.md).
 - *On request:* stop and leave a safe resume point → [pause-safely](playbooks/pause-safely.md).
+- *On request:* catch up on this chat since the user's last message, with the decisions only they can make → [recap](playbooks/recap.md).
 
 **Explain and write**
 - A diagram or code sketch of the current topic → [show-me](../show-me/SKILL.md). An interactive HTML model → [interactive-explainer](../interactive-explainer/SKILL.md). A narrated explainer or video → [motion-explainer](../motion-explainer/SKILL.md). A long-form HTML article → [deep-dive-explainer](../deep-dive-explainer/SKILL.md).

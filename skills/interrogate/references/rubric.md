@@ -4,7 +4,7 @@ Apply only the lenses that fit the change.
 
 ## Correctness
 
-Check the happy and sad paths, empty and boundary inputs, error propagation, state ownership, stale references, retries, idempotency, and concurrent access. Trace the call chain before claiming a bug.
+Check the happy and sad paths, empty and boundary inputs, error propagation, state ownership, stale references, retries, idempotency, and concurrent access. If a rerun or a crash halfway leaves the outcome depending on leftover state, a reconciliation step is missing. Concurrent access to shared state should be serialized by structure (locks, phases, exclusive ownership), not by convention. Trace the call chain before claiming a bug.
 
 ## Root cause
 
@@ -22,7 +22,7 @@ For broad input/transition contracts or malformed-input boundaries, use the [pro
 
 ## Complexity
 
-Check for needless layers, one-call abstractions, configuration for nonexistent cases, dead code, duplicated helpers, and avoidable sequential orchestration. Prefer the smallest structure that keeps behavior clear and correct.
+Check for needless layers, one-call abstractions, configuration for nonexistent cases, dead code, duplicated helpers, and avoidable sequential orchestration. Every feature, control, and option should earn its place; a half-finished feature is worse than a missing one. Prefer the smallest structure that keeps behavior clear and correct.
 
 ## Security
 

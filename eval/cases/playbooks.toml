@@ -51,3 +51,15 @@ id = "pb-pause-safely"
 activation = "router"
 prompt = "I need to stop for today. Leave this repo at a safe point I can resume from."
 expect = { methods = ["pause-safely"] }
+
+[[case]]
+id = "pb-recap"
+activation = "router"
+prompt = "Catch me up: what happened while I was away, and what do you need me to decide?"
+expect = { methods = ["recap"], no_edits = true }
+
+[[case]]
+id = "pb-recap-not-resume"
+activation = "router"
+prompt = "What did we work on in this repo over the last few days? Pick up where we left off."
+expect = { methods = ["resume"], not_methods = ["recap"] }
