@@ -46,7 +46,7 @@ Match the situation to a row, open its file, and follow it. Pick one main method
 
 **Explain and write**
 - A diagram or code sketch of the current topic → [show-me](../show-me/SKILL.md). An interactive HTML model → [interactive-explainer](../interactive-explainer/SKILL.md). A narrated explainer or video → [motion-explainer](../motion-explainer/SKILL.md). A long-form HTML article → [deep-dive-explainer](../deep-dive-explainer/SKILL.md).
-- Prose, docs, PR bodies, or commits that should read clearly on first pass → [unslop](../unslop/SKILL.md). *On request:* plain English for the rest of the conversation → its plain mode.
+- Prose, docs, PR bodies, or commits that should read clearly on first pass → [unslop](../unslop/SKILL.md). *On request* ("bro", "unslop", plain talk): plain English for the rest of the conversation → its plain mode.
 
 **Improve the method** (*on request*)
 - Lessons from a session, or a personal mode built from working preferences → [reflect](../reflect/SKILL.md).
