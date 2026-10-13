@@ -2,10 +2,7 @@
 name: writing-for-agents
 description: Write, edit, trim, or review a document an agent reads, such as a skill, its description, AGENTS.md, CLAUDE.md, or a doc reached by a pointer.
 metadata:
-  credits:
-    author: Matt Pocock
-    url: "https://github.com/mattpocock/skills/tree/main/skills/productivity/writing-for-agents"
-    license: MIT (see LICENSE)
+  credits: "Matt Pocock, https://github.com/mattpocock/skills/tree/main/skills/productivity/writing-for-agents, MIT (see LICENSE)"
 ---
 
 Reference for writing any document an agent consumes: a skill, an `AGENTS.md` / `CLAUDE.md`, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable, since the agent takes the same _process_ every run rather than producing the same output.

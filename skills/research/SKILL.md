@@ -2,10 +2,7 @@
 name: research
 description: Investigate a question against high-trust primary sources and capture the findings as a cited Markdown file in the repo. Use when the user wants a topic researched, docs or API facts gathered, or reading legwork delegated to a background agent.
 metadata:
-  credits:
-    author: Matt Pocock
-    url: "https://github.com/mattpocock/skills/tree/main/skills/engineering/research"
-    license: MIT (see LICENSE)
+  credits: "Matt Pocock, https://github.com/mattpocock/skills/tree/main/skills/engineering/research, MIT (see LICENSE)"
 ---
 
 # Research
