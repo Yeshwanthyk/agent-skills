@@ -1,6 +1,6 @@
 ---
 name: recap
-description: On request, catch the user up on this chat since their last message, read-only: what happened and what it means, in plain text with visuals, plus a brief for each decision only they can make.
+description: "On request, catch the user up on this chat since their last message, read-only: what happened and what it means, in plain text with visuals, plus a brief for each decision only they can make."
 disable-model-invocation: true
 ---
 

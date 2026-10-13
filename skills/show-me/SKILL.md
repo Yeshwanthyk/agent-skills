@@ -1,6 +1,6 @@
 ---
 name: show-me
-description: Draw the current topic when the user asks to see it (show me, draw, diagram, sketch): a call tree, file tree, Mermaid diagram, diff, or pseudocode. Also builds the visual change outline whenever a pull request description is created or updated. A prose explanation of how code works is how's job.
+description: "Draw the current topic when the user asks to see it (show me, draw, diagram, sketch): a call tree, file tree, Mermaid diagram, diff, or pseudocode. Also builds the visual change outline whenever a pull request description is created or updated. A prose explanation of how code works is how's job."
 ---
 
 # Show me
