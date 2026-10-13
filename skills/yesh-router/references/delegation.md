@@ -21,4 +21,6 @@ Use this reference when work is handed to another worker: a dispatched agent, a 
 - Use the current harness's native dispatch mechanism. Use an external runtime only when the user requests it; inspect its current interface before dispatch.
 - If a requested choice or capability is unavailable, report that limit instead of silently substituting. If the harness offers no suitable worker, do the work directly and say so.
 
+When the host is [T3 Code](hosts/t3.md) or [Pi](hosts/pi.md), read its note for how dispatch, waiting, and display map onto its tools.
+
 For a restart, replacement, or transfer to a receiver without the working context, use the [handoffs principle](principles/handoffs.md).

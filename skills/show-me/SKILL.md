@@ -13,6 +13,8 @@ Whenever creating a PR or updating its description, follow [`references/visual-p
 
 ## Choose the form
 
+Where the host renders HTML inline in the chat, such as [T3 Code](../yesh-router/references/hosts/t3.md), lean into it: interaction and data-flow diagrams, call trees, `calldiff` output, and comparisons take the HTML branch. Pseudocode, diffs, and copyable code stay as text. Elsewhere, choose from this list as written.
+
 - Use pseudocode for logic or an algorithm.
 - Use a call tree for runtime control flow.
 - Use a component tree for UI structure and state ownership.
@@ -21,7 +23,7 @@ Whenever creating a PR or updating its description, follow [`references/visual-p
 - Use a diff when the surrounding shape exists and the point is what changes.
 - Use a whole code block when omitted context would hide ownership or order, or the user needs a copyable target.
 - Use `calldiff` for a changed call tree or stack.
-- Use focused HTML for a visual comparison or concept too dense for Mermaid.
+- Use focused HTML for a visual comparison or concept too dense for Mermaid, or for any diagram where the host renders HTML inline.
 
 Load [`references/visual-forms.md`](references/visual-forms.md) for text and diagram patterns. Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch.
 

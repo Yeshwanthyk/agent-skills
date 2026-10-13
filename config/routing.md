@@ -14,6 +14,9 @@ Pick the worker for a spawn, `Agent`/`Task` call, or `pi -p` run from this table
 ## Pi
 Headless run: `command pi -p --model openai-codex/<model> --thinking medium --no-session "<task>"`. Models and defaults are in `~/.pi/agent/settings.json`; if this file disagrees, settings.json wins.
 
+## T3 Code
+In T3 Code, run each row on the provider instance `orchestrator_capabilities` lists for that model, through native subagents when they support it and `delegate_task` otherwise.
+
 ## Bedrock (only on a machine with a `bedrock` AWS profile)
 Kimi K3 and the `global.*` IDs come from here: prefix the Pi command with `AWS_PROFILE=bedrock AWS_REGION=us-east-1` and add `--provider amazon-bedrock --model global.<id>` (`global.anthropic.claude-haiku-5-5`, `global.anthropic.claude-opus-5-5`, `global.anthropic.claude-fable-5-1`, `global.openai.gpt-6-astra`, `global.moonshotai.kimi-k3`). Kimi K3 takes simple gates. Without the profile, skip this section, and skip Kimi rows and say so.
 

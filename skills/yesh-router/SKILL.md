@@ -42,7 +42,7 @@ Match the situation to a row, open its file, and follow it. Pick one main method
 - A continuing program with dependent units or several owners → [orchestrate](playbooks/orchestrate.md).
 - Alongside the main method, never instead of it: the user asks for a decision trail, or a long or unattended run will be reviewed later → keep a [decision trail](references/decision-trail.md).
 - *On request:* stop and leave a safe resume point → [pause-safely](playbooks/pause-safely.md).
-- *On request:* catch up on this chat since the user's last message, with the decisions only they can make → [recap](playbooks/recap.md).
+- *On request:* catch up on this chat since the user's last message, with the decisions only they can make → [recap](../recap/SKILL.md).
 
 **Explain and write**
 - A diagram or code sketch of the current topic → [show-me](../show-me/SKILL.md). An interactive HTML model → [interactive-explainer](../interactive-explainer/SKILL.md). A narrated explainer or video → [motion-explainer](../motion-explainer/SKILL.md). A long-form HTML article → [deep-dive-explainer](../deep-dive-explainer/SKILL.md).

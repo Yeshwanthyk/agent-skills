@@ -46,5 +46,7 @@
   { "name": "debug", "was": "skills/debug/", "now": "skills/diagnose/SKILL.md",
     "why": "Your call: renamed to diagnose so it cannot collide with Claude Code's built-in debug skill." },
   { "name": "autonomous-run", "was": "skills/yesh-router/playbooks/autonomous-run.md", "now": null,
-    "why": "Your call: removed. Metric targets go to hillclimb; other long runs to figure-it-out." }
+    "why": "Your call: removed. Metric targets go to hillclimb; other long runs to figure-it-out." },
+  { "name": "recap.md", "was": "skills/yesh-router/playbooks/recap.md", "now": "skills/recap/SKILL.md",
+    "why": "Your call: a catch-up should work as /recap without the router, like upstream ketchup, and pair text with visuals." }
 ]
