@@ -1,6 +1,6 @@
 # Delegation
 
-Use this reference when work is handed to another worker: a dispatched agent, a subprocess, or any harness-managed task. It is portable: it mandates no model, provider, or API. Role defaults such as model and effort choices are host preferences, configured by the host outside this reference.
+Use this reference when work is handed to another worker: a dispatched agent, a subprocess, or any harness-managed task. It is portable: it mandates no model, provider, or API. Role defaults such as model and effort choices live in the routing file the host instructions name, outside this reference.
 
 ## Dispatch and communication
 
@@ -17,7 +17,7 @@ Use this reference when work is handed to another worker: a dispatched agent, a 
 
 ## Defaults and limits
 
-- An explicit user override wins. Use the current harness's existing configuration for model and effort defaults; do not invent a new configuration system.
+- An explicit user override wins. Take model and effort defaults from the host's routing file; do not invent a new configuration system.
 - Use the current harness's native dispatch mechanism. Use an external runtime only when the user requests it; inspect its current interface before dispatch.
 - If a requested choice or capability is unavailable, report that limit instead of silently substituting. If the harness offers no suitable worker, do the work directly and say so.
 

@@ -4,21 +4,8 @@
 - Most blocking first. Never bury it mid-update.
 
 # Delegation
-Pick the model by role. Reasoning effort is medium unless stated.
-
-| role | model | run it in |
-| --- | --- | --- |
-| scouts, lint fixes | Haiku 5.5 | Pi |
-| implementation | Opus 5.5 | Claude Code (or Pi) |
-| verification, structure, slop-code and correction gates | Opus 5.5; Kimi K3 for simple gates | Claude Code or Pi |
-| design challenge and other high-feedback review | Fable 5.1 and GPT-6 Astra, both | Pi |
-
-- Pi runs Bedrock global models: `global.anthropic.claude-haiku-5-5`, `global.anthropic.claude-opus-5-5`, `global.anthropic.claude-fable-5-1`, `global.openai.gpt-6-astra`, `global.moonshotai.kimi-k3`. Run one headless with `AWS_PROFILE=bedrock AWS_REGION=us-east-1 command pi -p --provider amazon-bedrock --model <id> --thinking medium --no-session "<task>"`. The interactive `pi` is a shell function that sets those two variables.
-- In T3 Code, send Haiku, Fable, Astra and Kimi work through Pi; Opus runs in Claude Code.
-- When Bedrock is unavailable (no `bedrock` profile, expired SSO, or a Pi auth error), skip Pi: dispatch the same role through the current harness's own subagents on its smaller models, such as Haiku or Luna, and name the substitution in the reply. Leave Pi and AWS setup alone.
+- Before any spawn, dispatch, Agent/Task call, or `pi -p` run, read `~/Documents/personal/agent-skills/config/routing.md` and use its role table. If the file is missing, say so and ask; do not pick a model from memory.
 
 # Where things are
-- Skills source: `~/code/personal/agent-skills`. Installed copies live in `~/.gitgud/skills`, linked into `~/.claude/skills` and `~/.pi/agent/skills`. Edit the repo, push, then run `gitgud update --global` and `gitgud apply --global` from outside the repo (inside it, gitgud reads the working tree and can fail on stale frontmatter); never edit an installed copy.
-- Skill map of every skill, playbook and principle link: `node tools/skill-map/build.mjs` in that repo.
-- Session logs: Claude Code, including T3 Code threads, in `~/.claude/projects/*/*.jsonl`; Pi in `~/.pi/agent/sessions/`.
-- Pi model list and defaults: `~/.pi/agent/settings.json`.
+- Skills source is `~/Documents/personal/agent-skills`: edit the repo, never an installed copy.
+- Install steps, session logs, skill map, and Pi settings: `~/Documents/personal/agent-skills/config/locations.md`.
