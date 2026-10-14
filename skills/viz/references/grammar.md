@@ -37,4 +37,4 @@ settle -> hooks | COMMIT | Commit is the moment the order counts as paid.
 
 ## Versioning
 
-The CDN URL in [`SKILL.md`](../SKILL.md) and `scripts/viz.py` is pinned to the tag `viz-v1`. A breaking change to the grammar ships under a new tag (`viz-v2`), and both places move to that tag. Never move an existing tag: jsDelivr caches tagged files permanently.
+The CDN URL in [`SKILL.md`](../SKILL.md) and `scripts/viz.py` pins viz.js to a commit SHA. jsDelivr caches it permanently, and a tag would not do: jsDelivr strips a leading `v` from tag names. To ship a renderer change: commit and push viz.js, then update both URLs to that commit's SHA in a second commit. A grammar change must keep old `text/viz` blocks rendering, or the old pages need updating to match.

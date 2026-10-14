@@ -425,7 +425,10 @@ color:var(--vz-fg);font:12.5px/1.45 var(--font-mono,"IBM Plex Mono","Berkeley Mo
   function boot() {
     for (const sc of document.querySelectorAll('script[type="text/viz"]')) {
       if (sc.dataset.done) continue; sc.dataset.done = 1;
-      const host = h('div', {}); sc.after(host); render(host, sc.textContent);
+      // A page with no <body> tag parses these scripts into <head>, where an inserted view never shows.
+      const host = h('div', {});
+      if (document.body.contains(sc)) sc.after(host); else document.body.append(host);
+      render(host, sc.textContent);
     }
   }
   window.Viz = { render, parse, boot };
