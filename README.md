@@ -2,7 +2,7 @@
 
 Use [`yesh-router`](./skills/yesh-router/SKILL.md) when you want one entry point to select methods and apply engineering principles. Every skill also works directly. Its [Triggers](./skills/yesh-router/SKILL.md#triggers) section covers the complete collection; its groups are navigation, not mandatory stages. `yesh-router` is the sole router activation name.
 
-Delegation follows the portable [delegation contract](skills/yesh-router/references/delegation.md). Model and reasoning defaults are host preferences, kept in the host configuration template ([`config/AGENTS.md`](./config/AGENTS.md)) rather than the portable docs.
+Delegation follows the portable [delegation contract](skills/yesh-router/references/delegation.md). Model and reasoning defaults per role are in the [routing table](skills/yesh-router/references/routing.md), installed with the skills; the host configuration template ([`config/AGENTS.md`](./config/AGENTS.md)) points each host at its installed copy.
 
 ## Active skills
 

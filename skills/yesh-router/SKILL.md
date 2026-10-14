@@ -59,7 +59,7 @@ Reading a method starts its work; its completion criteria end it. For multi-step
 
 Edits, installs, configuration changes, and external actions need the user's request or authority already given for the task; choosing a method grants none. When a named method is unavailable, say so and use the best available path.
 
-For settled implementation, read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it changes the work or its proof. Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the routing file the host instructions name. Locate and reconcile sessions under the [session-records contract](references/session-records.md). After a context gap, recover the active method, its current step, and outstanding proof from the todo list and those records.
+For settled implementation, read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it changes the work or its proof. Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the [routing table](references/routing.md). Locate and reconcile sessions under the [session-records contract](references/session-records.md). After a context gap, recover the active method, its current step, and outstanding proof from the todo list and those records.
 
 ## Apply principles
 

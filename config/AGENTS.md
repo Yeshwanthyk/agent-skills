@@ -4,7 +4,7 @@
 - Most blocking first. Never bury it mid-update.
 
 # Delegation
-- Before any spawn, dispatch, Agent/Task call, or `pi -p` run, read `~/code/personal/agent-skills/config/routing.md` and use its role table. If the file is missing, say so and ask; do not pick a model from memory.
+- Before any spawn, dispatch, Agent/Task call, or `pi -p` run, read the routing table installed with the skills at `<skills-dir>/yesh-router/references/routing.md` and use it. If the file is missing, say so and ask; do not pick a model from memory.
 - Small delegation (one or two bounded children, such as a scout, lint fix, or quick check): a one-line ask naming what and which model is enough.
 - Big delegation (several children, a workflow, writers, or long or costly runs): before starting, show a clean review: each task's purpose, scope (read-only or owned paths), ordering, and model and effort. Wait for my approval.
 

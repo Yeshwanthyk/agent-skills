@@ -12,7 +12,7 @@ Pick the worker for a spawn, `Agent`/`Task` call, or `pi -p` run from this table
 | design challenge, high-feedback review (run both) | GPT-6 Astra | Pi |
 
 ## Pi
-Headless run: `command pi -p --model openai-codex/<model> --thinking medium --no-session "<task>"`. Models and defaults are in `~/.pi/agent/settings.json`; if this file disagrees, settings.json wins.
+Headless run: `command pi -p --model openai-codex/<model> --thinking medium --no-session "<task>"`. Pi's own models and defaults are in its `agent/settings.json`; if this file disagrees, settings.json wins.
 
 ## T3 Code
 In T3 Code, run each row on the provider instance `orchestrator_capabilities` lists for that model, through native subagents when they support it and `delegate_task` otherwise.

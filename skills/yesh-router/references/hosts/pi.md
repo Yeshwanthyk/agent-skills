@@ -4,7 +4,7 @@ Pi is the host when the tool list includes `subagent_spawn` (the pi-subagents pa
 
 ## Dispatch
 
-`subagent_spawn` runs a child with the model the host's routing file names; `wait: true` returns its result in the same call, otherwise collect it with `subagent_wait`. `subagent_inspect` reads a child's state without consuming its result, and `subagent_cancel` settles one before replacement.
+`subagent_spawn` runs a child with the model the [routing table](../routing.md) names; `wait: true` returns its result in the same call, otherwise collect it with `subagent_wait`. `subagent_inspect` reads a child's state without consuming its result, and `subagent_cancel` settles one before replacement.
 
 ## Show
 
