@@ -45,7 +45,7 @@ Match the situation to a row, open its file, and follow it. Pick one main method
 - *On request:* catch up on this chat since the user's last message, with the decisions only they can make → [recap](../recap/SKILL.md).
 
 **Explain and write**
-- A diagram or code sketch of the current topic → [show-me](../show-me/SKILL.md). An interactive HTML model → [interactive-explainer](../interactive-explainer/SKILL.md). A narrated explainer or video → [motion-explainer](../motion-explainer/SKILL.md). A long-form HTML article → [deep-dive-explainer](../deep-dive-explainer/SKILL.md).
+- A diagram or code sketch of the current topic → [show-me](../show-me/SKILL.md). An interactive flow, DAG, call tree, or call diff → [viz](../viz/SKILL.md). An interactive HTML model → [interactive-explainer](../interactive-explainer/SKILL.md). A narrated explainer or video → [motion-explainer](../motion-explainer/SKILL.md). A long-form HTML article → [deep-dive-explainer](../deep-dive-explainer/SKILL.md).
 - Prose, docs, PR bodies, or commits that should read clearly on first pass → [unslop](../unslop/SKILL.md). *On request* ("bro", "unslop", plain talk): plain English for the rest of the conversation → its plain mode.
 
 **Improve the method** (*on request*)

@@ -13,7 +13,7 @@ Whenever creating a PR or updating its description, follow [`references/visual-p
 
 ## Choose the form
 
-Read the active host's note in [hosts](../yesh-router/references/hosts/) for its rendering limits, such as Mermaid width in [pi](../yesh-router/references/hosts/pi.md). Where the host renders HTML inline in the chat, such as [T3 Code](../yesh-router/references/hosts/t3.md), lean into it: interaction and data-flow diagrams, call trees, `calldiff` output, and comparisons take the HTML branch. Pseudocode, diffs, and copyable code stay as text. Elsewhere, choose from this list as written.
+Read the active host's note in [hosts](../yesh-router/references/hosts/) for its rendering limits, such as Mermaid width in [pi](../yesh-router/references/hosts/pi.md). Where the host renders HTML inline in the chat, such as [T3 Code](../yesh-router/references/hosts/t3.md), lean into it: flows and DAGs, call trees, and `calldiff` output go to [viz](../viz/SKILL.md), and other comparisons take the HTML branch. Pseudocode, diffs, and copyable code stay as text. Elsewhere, choose from this list as written.
 
 - Use pseudocode for logic or an algorithm.
 - Use a call tree for runtime control flow.
@@ -23,9 +23,10 @@ Read the active host's note in [hosts](../yesh-router/references/hosts/) for its
 - Use a diff when the surrounding shape exists and the point is what changes.
 - Use a whole code block when omitted context would hide ownership or order, or the user needs a copyable target.
 - Use `calldiff` for a changed call tree or stack.
-- Use focused HTML for a visual comparison or concept too dense for Mermaid, or for any diagram where the host renders HTML inline.
+- Use [viz](../viz/SKILL.md) for a flow or DAG with branches or failure paths, a call tree or call diff too long to read as text, or whenever the user wants to click through it. Elsewhere it opens a temp HTML page.
+- Use focused HTML for a visual comparison or concept too dense for Mermaid or viz.
 
-Load [`references/visual-forms.md`](references/visual-forms.md) for text and diagram patterns. Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch.
+Load [`references/visual-forms.md`](references/visual-forms.md) for text and diagram patterns. Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch. For viz, read and follow its skill.
 
 ## Present
 

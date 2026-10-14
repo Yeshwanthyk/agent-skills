@@ -1,0 +1,58 @@
+title When a payment settles an order
+sub example/order-flow @1a2b3c4
+base app/
+
+== flow Settle path
+webhook: handle_payment_webhook [worker] @webhooks/payment_webhook.py:40
+  does: hands the payload to PaymentEventHandler
+  writes: WebhookEvent
+  fails: an out-of-order event raises OutOfOrderEvent
+ordersvc: OrderService [service] @orders/order_service.py:88
+  does: finds the order; a settled payment calls _settle
+settle: _settle: UPDATE order PAID [db txn] @orders/order_service.py:210
+  does: marks the order paid, copies totals and tax from the cart
+  writes: Order (PAID), AuditLog
+  fails: a hook that raises before :236 drops the chain; nothing reconciles it
+hooks: on_commit hooks [after COMMIT] @orders/order_service.py:230-244
+  does: queues work only; nothing runs here. COMMIT is the moment the order counts as paid
+event: OrderPaid [event bus] @orders/order_service.py:237
+receipt: receipt email [mailer] @orders/order_service.py:240
+chain: tasks 1-3: stock, invoice, ledger [job chain] @orders/jobs.py:12
+  does: reserves stock, renders the invoice, posts ledger lines
+  fails: any task raising stops the chain, so no shipment is planned at all
+*ship: plan_shipment_task [task 4] @shipping/tasks.py:9
+  state: only queued if the merchant has shipping enabled and the order is physical
+dispatch: ShipmentRouter.run [mode switch] @shipping/router.py:30
+  does: reads ShippingSettings.mode: OFF, SHADOW or LIVE
+legacy: legacy label printer [legacy] @shipping/legacy_labels.py:18
+  does: prints a label by warehouse; stops if a label already exists
+check: CarrierQuoteService.run [quote] @shipping/carrier_quote.py:55
+  reads: the order as of now (after tasks 1-3), weight from the cart
+  writes: QuoteRun, CarrierQuotes
+  fails: any exception -> FAILED, LIVE falls back to the legacy printer
+  ref: shipping/address_normalizer.py:21 AddressNormalizer.normalize
+  ref: shipping/quote_recorder.py:64 completed
+?booking: CarrierBooking.create [LIVE + BOOKED] @shipping/carrier_booking.py:25
+  does: locks the order, books the cheapest quote, stores the tracking id
+  note: the customer is not notified; notify() is a stub
+
+webhook -> ordersvc: payload
+ordersvc -> settle: settled payment
+settle -> hooks: COMMIT
+hooks ~> event, receipt: emit
+hooks ~> chain: :236 queue_post_payment_tasks
+chain -> ship: if shipping enabled
+ship -> dispatch
+dispatch -> legacy: OFF / SHADOW first
+dispatch -> check: SHADOW / LIVE
+check -> legacy: LIVE fallback: NO_QUOTE / FAILED
+check -> booking: LIVE + BOOKED
+
+== steps
+webhook -> ordersvc -> settle | payment payload | The webhook worker marks the order paid inside one DB transaction.
+settle -> hooks | COMMIT | Commit is the moment the order counts as paid. on_commit hooks only queue work.
+hooks -> chain | order id | Hook :236 queues the job chain; tasks 1-3 reserve stock and post the ledger first.
+chain -> ship -> dispatch | order id | Task 4 runs only when shipping is enabled. The router reads the mode.
+dispatch -> check | LIVE | In LIVE the quote service re-reads the order now.
+check -> booking | BOOKED | BOOKED: the carrier booking stores the tracking id. No one is notified.
+!chain | | If any of tasks 1-3 raises, the chain stops and no shipment exists at all.

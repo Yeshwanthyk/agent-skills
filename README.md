@@ -26,6 +26,7 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`show-me`](./skills/show-me) | Explains a topic visually with diagrams, code-shape sketches, calldiff views, and focused HTML; owns the visual PR description. |
 | [`structure-review`](./skills/structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
 | [`swarm`](./skills/swarm) | Runs one bounded parallel coverage pass, a solution race, or a best-of comparison that grafts one verified result. |
+| [`viz`](./skills/viz) | Renders interactive flows, DAGs, call trees and call diffs from a few lines of text: inline in T3 Code, or a temp HTML page elsewhere. |
 | [`unslop`](./skills/unslop) | Writes and cleans prose, docs, PR bodies, and commits so they read clearly on first pass; on request, plain mode for the rest of the chat. |
 | [`verification-skill`](./skills/verification-skill) | Creates, audits, or repairs a project-local skill that drives and proves one real application surface. |
 | [`writing-for-agents`](./skills/writing-for-agents) | Rules for documents agents read: skills, `AGENTS.md`, `CLAUDE.md`, pointers, and invocation. |
@@ -44,7 +45,7 @@ After installing the reviewed collection, name a skill directly or ask for the r
 - `Use invariants to check the retry invariants.`
 - `Exit yesh-router.`
 
-Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, diagnose, invariants, plan, show-me, interactive-explainer, research, writing-for-agents and the router are listed by default.
+Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, diagnose, invariants, plan, show-me, viz, interactive-explainer, research, writing-for-agents and the router are listed by default.
 
 Activate once, then describe outcomes in ordinary language. The router reads its Triggers and considers the host's installed skill descriptions, including project-local skills. It selects a main workflow and the supporting skills needed for the work, reads their instructions, and follows their completion criteria. It reconsiders selection as the task develops; small settled work stays direct when specialized guidance adds no value. The collection does not exclude other installed skills.
 

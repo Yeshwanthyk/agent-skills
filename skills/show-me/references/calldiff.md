@@ -18,3 +18,5 @@ calldiff tree --file <path>
 ```
 
 Show the command, the smallest useful output slice, and one sentence explaining the changed path. If `calldiff` is unavailable or cannot parse the project, use a source-grounded manual call tree and state the limitation.
+
+Where the host renders HTML inline, or the tree is too long to read as text, show it with [viz](../../viz/SKILL.md), which converts calldiff output for you.

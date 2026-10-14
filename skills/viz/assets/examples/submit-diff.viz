@@ -1,0 +1,29 @@
+title submitForm after the session refactor
+base apps/web/src/
+
+== diff main..feature
+  submitForm @routes/submit.ts:12
+    validatePrompt @routes/submit.ts:30
+~   createSession @sessions/create.ts:8 # now returns a handle, not an id
+-     persistPrompt @sessions/persist.ts:4
++     queuePrompt @sessions/queue.ts:9 # writes to the outbox instead
++       outbox.put @transport/outbox.ts:21
+      launchAgent @agents/launch.ts:40
+        spawnWorker @agents/worker.ts:11
+    navigateToSession @routes/nav.ts:5
+
+== tree before (indent)
+submitForm @routes/submit.ts:12
+  validatePrompt
+  createSession
+    persistPrompt
+    launchAgent
+  navigateToSession
+
+== tree pasted ascii
+submitForm  routes/submit.ts:12
+├─ validatePrompt  routes/submit.ts:30
+├─ createSession  sessions/create.ts:8
+│  ├─ persistPrompt  sessions/persist.ts:4
+│  └─ launchAgent  agents/launch.ts:40
+└─ navigateToSession  routes/nav.ts:5

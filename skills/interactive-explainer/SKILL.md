@@ -34,6 +34,7 @@ UI motion answers an input; story motion (a packet on a wire, a state change) is
 ## Supporting Files
 
 - Use [`assets/starter.html`](assets/starter.html) as the base for scenario-driven explainers and as the visual-token reference for other forms.
+- For a call path, call tree, or call-diff section, write a `text/viz` block instead of building that view, following [viz](../viz/SKILL.md) for a self-contained page. Its detail lines (`does`, `reads`, `writes`, `fails`, `ref`) carry the inspector facts step 5 asks for.
 - When the explainer should play over time, with narration, a scrubber, or MP4 output, use [`../motion-explainer`](../motion-explainer/SKILL.md) instead. It shares this look and builds an HTML file you can edit.
 - Run `python3 scripts/validate_explainer.py <path-to-html>` before delivery. Add `--allow-local-assets` for pages that share relative local CSS and JS.
 - The validator catches common structural and dependency mistakes. It is not a complete network or accessibility check; exercise the rendered page too.

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Viz"
+  short_description: "Interactive flows, DAGs, call trees and call diffs from a few lines of text"
+  default_prompt: "Use $viz to draw this flow or call tree interactively."
+policy:
+  allow_implicit_invocation: true
