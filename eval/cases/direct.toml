@@ -31,6 +31,12 @@ prompt = "docs.md reads padded and AI-ish. Clean up the prose without losing any
 expect = { methods = ["unslop"] }
 
 [[case]]
+id = "direct-sharpen"
+activation = "router"
+prompt = "Sharpen this before you start: make the price calculation in pricing.py faster."
+expect = { methods = ["sharpen"] }
+
+[[case]]
 id = "correct-findings-only"
 activation = "router"
 tags = ["port"]

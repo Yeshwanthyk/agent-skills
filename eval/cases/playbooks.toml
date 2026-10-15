@@ -59,6 +59,12 @@ prompt = "Catch me up: what happened while I was away, and what do you need me t
 expect = { methods = ["recap"], no_edits = true }
 
 [[case]]
+id = "pb-recap-goal"
+activation = "router"
+prompt = "Before you start, tell me in your own words what you think I'm trying to do here."
+expect = { methods = ["recap"], no_edits = true }
+
+[[case]]
 id = "pb-recap-not-resume"
 activation = "router"
 prompt = "What did we work on in this repo over the last few days? Pick up where we left off."

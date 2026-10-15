@@ -21,8 +21,9 @@ Delegation follows the portable [delegation contract](skills/yesh-router/referen
 | [`motion-explainer`](./skills/motion-explainer) | Builds narrated, timeline-driven systems explainers as playable HTML, optionally rendered to MP4 with a local voice. |
 | [`plan`](./skills/plan) | Turns a settled approach into an implementation-ready packet with chunks, dependencies, risks, and proof. |
 | [`research`](./skills/research) | Hands a question to a background agent that reads primary sources and saves a cited Markdown note in the repo. |
-| [`recap`](./skills/recap) | Catches you up on the chat since your last message, read-only: plain-text results, visuals, and a brief per decision only you can make. |
+| [`recap`](./skills/recap) | Plays back your goal and catches you up on the chat since your last message, read-only: a few plain sentences, small visuals, and the calls only you can make. |
 | [`reflect`](./skills/reflect) | Extracts reusable lessons from a session, or builds a personal mode from stated preferences; applies only approved changes. |
+| [`sharpen`](./skills/sharpen) | On request, sharpens a task before starting: the expert approach, the real goal, the right amount of spec, and one outside check. Then does the work. |
 | [`show-me`](./skills/show-me) | Explains a topic visually with diagrams, code-shape sketches, calldiff views, and focused HTML; owns the visual PR description. |
 | [`structure-review`](./skills/structure-review) | Audits implementation structure and proposes evidence-backed corrections. |
 | [`swarm`](./skills/swarm) | Runs one bounded parallel coverage pass, a solution race, or a best-of comparison that grafts one verified result. |

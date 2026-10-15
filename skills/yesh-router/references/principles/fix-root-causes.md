@@ -7,6 +7,7 @@
 - A workaround that needs a paragraph to justify it is a symptom fix: fix the code, not the comment.
 - Check for the pattern, not just the instance; fix all instances within scope.
 - When stuck, instrument instead of guessing: read the actual error, add logging.
+- When the deciding fact took a deep dig to find, propose the cheap, always-on signal that would have shown it at first look.
 - On restart failures, suspect stale state before code: config, caches, locks, and serialized state change between runs; code does not.
 - After two fixes on one assumption fail the same check, stop patching. Find which actors actually hold the problematic state or effect, test the shared assumption, and revise the model before the next fix.
 
