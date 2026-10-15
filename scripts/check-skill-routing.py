@@ -23,6 +23,8 @@ RETIRED_ROUTER_REL = Path("skills/yesh-mode")
 SHARED_REL = Path("skills/yesh-router/references")
 PRINCIPLES_REL = SHARED_REL / "principles"
 RETIRED_PATH_POLICY = "retired-router-paths-forbidden"
+# The router is sent every turn; a principle row is a short pointer, its note holds the full condition.
+PRINCIPLE_ROW_WORDS = 12
 
 REQUIRED_ROUTER_DOCS = (
     "SKILL.md",
@@ -503,8 +505,9 @@ def _check_method_catalog(root: Path, errors: list[str]) -> None:
 
 
 def _check_principle_triggers(root: Path, errors: list[str]) -> None:
-    # The router's principle table lists every principle once, each row matching the
-    # note's Read when line; some skill or playbook must point at it so standalone runs reach it.
+    # The router's principle table lists every principle once. The router is sent every turn, so
+    # each row is a short when-phrase (the note's Read when line stays the full condition) plus a
+    # link named after the note; some skill or playbook must point at it so standalone runs reach it.
     router = root / ROUTER_REL / "SKILL.md"
     if not router.is_file():
         return
@@ -513,17 +516,26 @@ def _check_principle_triggers(root: Path, errors: list[str]) -> None:
     targets = _section_targets(router, "Apply principles")
     rows = {}
     for line in router.read_text(encoding="utf-8").splitlines():
-        row = re.match(r"^\|\s*(.+?)\s*\|\s*\[[^\]]+\]\(([^)]+)\)\s*\|$", line)
+        row = re.match(r"^\|\s*(.*?)\s*\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|$", line)
         if row:
-            rows[(router.parent / row.group(2)).resolve()] = row.group(1)
+            rows[(router.parent / row.group(3)).resolve()] = (row.group(1), row.group(2))
     for target in expected:
         note = target.read_text(encoding="utf-8")
         when = re.search(r"^\*\*Read when:\*\*\s*(.+)$", note, re.M)
         if not when:
             errors.append(f"Shared principle has no **Read when:** line: {_display(target, root)}")
-        elif target in rows and rows[target].rstrip(".").lower() != when.group(1).strip().rstrip(".").lower():
+        if target not in rows:
+            continue
+        phrase, label = rows[target]
+        if not phrase.strip():
+            errors.append(f"Router principle row has no when-phrase: {_display(target, root)}")
+        elif len(phrase.split()) > PRINCIPLE_ROW_WORDS:
             errors.append(
-                f"Router principle row drifts from the note's Read when line: {_display(target, root)}"
+                f"Router principle row exceeds {PRINCIPLE_ROW_WORDS} words: {_display(target, root)}"
+            )
+        if label.strip("`") != target.stem:
+            errors.append(
+                f"Router principle row link text {label!r} != note name: {_display(target, root)}"
             )
     for target in expected:
         count = targets.count(target)
