@@ -43,4 +43,4 @@ The visual carries the structure. The reply adds only what it can't show: what y
 
 ## Completion
 
-Done when the visual renders without `viz:` errors, every node is grounded or marked `?`, and the reader can see it: inline in T3, or at a reported path elsewhere.
+Done when the visual renders without `viz:` errors, every node is grounded or marked `?`, and you have seen it where the reader will look: inline in T3, or a screenshot of the opened page elsewhere. A headless load, a `curl`, or a clean console is not seeing it; when you could not look, say so instead of calling it rendered.
