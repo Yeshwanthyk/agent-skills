@@ -504,6 +504,31 @@ def _check_method_catalog(root: Path, errors: list[str]) -> None:
             )
 
 
+# Hosts send the router every turn and depend on these Run moments; dropping one silently changes behavior.
+RUN_REQUIRED_TEXT = ("the reply with `Method:", "todo list", "skip: <reason>", "end the turn")
+RUN_REQUIRED_LINKS = ("references/delegation.md", "references/routing.md", "references/session-records.md")
+
+
+def _check_router_run(root: Path, errors: list[str]) -> None:
+    router = root / ROUTER_REL / "SKILL.md"
+    if not router.is_file():
+        return
+    section, inside = [], False
+    for line in router.read_text(encoding="utf-8").splitlines():
+        if line.startswith("## "):
+            inside = line[3:].strip() == "Run"
+            continue
+        if inside:
+            section.append(line)
+    run = "\n".join(section)
+    if not run.strip():
+        errors.append(f"Router has no ## Run section: {_display(router, root)}")
+        return
+    for needle in RUN_REQUIRED_TEXT + RUN_REQUIRED_LINKS:
+        if needle not in run:
+            errors.append(f"Router ## Run is missing {needle!r}: {_display(router, root)}")
+
+
 def _check_principle_triggers(root: Path, errors: list[str]) -> None:
     # The router's principle table lists every principle once. The router is sent every turn, so
     # each row is a short when-phrase (the note's Read when line stays the full condition) plus a
@@ -595,6 +620,7 @@ def collect_errors(root: Path) -> list[str]:
     _check_router_entry(root, errors)
     _check_method_catalog(root, errors)
     _check_principle_triggers(root, errors)
+    _check_router_run(root, errors)
     _check_retired_names(root, errors)
 
     unique: list[str] = []

@@ -1,6 +1,6 @@
 ---
 name: yesh-router
-description: Yesh's working mode. Match each task to a skill or playbook, run its steps from the todo list, and apply the principles that change a decision.
+description: "Yesh's working mode (powerball), normally sent by the host every turn. Load it only when the user types /yesh-router or as a worker preload; do not load it on your own."
 ---
 
 # Yesh Router
@@ -9,14 +9,14 @@ This mode is on while the host sends this file, or after the user loads `/yesh-r
 
 ## Run
 
-- **New task or scope change.** Match it against Triggers: one main method, plus supporting methods for concrete parts. Begin the reply with `Method: <skill|playbook|direct> — <why>`, then read that file before acting. Settled work with no matching line, or a tiny edit, is `direct`.
+- **New task or scope change.** Match it against Triggers: one main method, plus supporting methods for concrete parts. Begin the reply with `Method: <skill|playbook|direct> — <why>`, then read that file before acting. Settled work with no matching line, or a tiny edit, is `direct`. A one-line answer to a quick question needs no Method line. When the task changes, keep the completed work and its evidence.
 - **Playbook or multi-step method.** Before task-specific todos, copy its steps verbatim into the host's todo list (Claude Code: TaskCreate/TaskUpdate, loaded through ToolSearch when deferred; pi: the todo tool). A step you skip stays, marked `skip: <reason>`. Track each step's proof there. The method's completion criteria end it; an explanation, plan, or review ends with that deliverable unless implementation was also requested.
 - **A fork on reversible work** (code, notes, plans): make the reasonable call, proceed, and name it in the reply. Ask only for product direction, a missing goal or constraint, or a consequential, hard-to-reverse choice.
 - **Edits, installs, configuration, external actions.** These need the user's request or authority already given for the task; choosing a method grants none. When a named method is unavailable, say so and use the best available path.
 - **Settled implementation.** Read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it changes the work or its proof.
 - **Before any spawn.** Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the [routing table](references/routing.md). Several children, any writer, or a long run: show the review and end the turn.
 - **Before saying done.** Prove it on the real surface the user will use.
-- **After compaction or a context gap.** Recover the method and current step from the last `Method:` line and the todo list; locate sessions under the [session-records contract](references/session-records.md).
+- **After compaction or a context gap.** Recover the method, current step, and outstanding proof from the last `Method:` line and the todo list; locate sessions under the [session-records contract](references/session-records.md).
 
 ## Triggers
 

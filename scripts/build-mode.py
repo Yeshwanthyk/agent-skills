@@ -8,6 +8,11 @@ an output style with Claude Code frontmatter.
     build-mode.py [--skills-dir DIR] [--out FILE] [--check]
 
 --check builds in memory and exits 1 if FILE differs from the build.
+--source FILE reads the mode text from FILE (e.g. the repo copy) while links
+still resolve under <skills-dir>; use it to see whether a repo edit has
+reached the installed style. The installed skills come from GitHub main via
+gitgud, so the order after a router edit is: push, gitgud sync, build,
+restart Claude Code.
 Python 3.9 compatible; stdlib only.
 """
 
@@ -53,9 +58,9 @@ def rewrite_links(body, mode_dir):
     return LINK_RE.sub(repl, body), missing
 
 
-def build(skills_dir):
+def build(skills_dir, source=None):
     mode_dir = os.path.join(skills_dir, MODE_DIR)
-    source = os.path.join(mode_dir, "SKILL.md")
+    source = source or os.path.join(mode_dir, "SKILL.md")
     with open(source, encoding="utf-8") as f:
         text = f.read()
     body, missing = rewrite_links(strip_frontmatter(text), mode_dir)
@@ -75,6 +80,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--skills-dir", default="~/.claude/skills")
     parser.add_argument("--out", default="~/.claude/output-styles/powerball.md")
+    parser.add_argument("--source", default=None,
+                        help="read the mode text from this file instead of the installed copy")
     parser.add_argument("--check", action="store_true",
                         help="compare the build with --out instead of writing it")
     args = parser.parse_args(argv)
@@ -84,7 +91,7 @@ def main(argv=None):
     out = os.path.expanduser(args.out)
 
     try:
-        content, missing = build(skills_dir)
+        content, missing = build(skills_dir, os.path.abspath(os.path.expanduser(args.source)) if args.source else None)
     except (OSError, ValueError) as exc:
         print("build-mode: " + str(exc), file=sys.stderr)
         return 1
