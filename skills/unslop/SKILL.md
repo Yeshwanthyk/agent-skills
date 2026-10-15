@@ -1,7 +1,6 @@
 ---
 name: unslop
-description: 'Write or clean padded or AI-sounding prose so a tired engineer gets it on first read: docs, PR bodies, commits, reports, skill text. On request ("bro"), plain talk for later replies.'
-disable-model-invocation: true
+description: 'Unslop: when the user says unslop or slop, or a doc has internal IDs, jargon, or walls of text. Cleans prose so a tired engineer gets it on first read: docs, PRs, commits, reports, skills. On request ("bro"), plain talk.'
 ---
 
 # Unslop
@@ -59,6 +58,7 @@ Detect each pattern, then rewrite. A pattern that serves the text can stay.
 
 - **Abstract metaphor nouns.** substrate, wedge, vector, locus, vantage, nexus, modality, primitive (noun), harness (metaphor), surface (as in "API surface"), bedrock, scaffolding (metaphor), paradigm, gold-plating, ratchet (metaphor), evacuate (moving code), endgame, north star, flywheel. Use the concrete word: base, add, way, more than the job needs, a limit that only tightens, move out, the last phase.
 - **Flourish.** Aphorisms ("wire it or delete it"), rhetorical fragments, personified code ("the plan holds it"), figurative verbs ("rides along", "stands on"), tidy closers ("the rest follows"). Say the literal thing: "a dial worth turning" → "a parameter worth varying".
+- **Internal IDs and project shorthand.** "D-29", "U26", "T4", "the gate", "Top Hat". A reader outside the working chat knows none of them. Use the thing's plain name, and define a needed term once where it first appears.
 - **Framing labels.** "the key insight", "at its core", "TL;DR", "here's where it gets interesting". Just say it.
 
 ### Density

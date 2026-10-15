@@ -1,7 +1,6 @@
 ---
 name: recap
-description: "On request, play back the user's goal in your own words and catch them up on this chat since their last message, read-only: what happened, in a few plain sentences and small visuals, plus the calls only they can make."
-disable-model-invocation: true
+description: "Status check, read-only: what's done, what's left, where things stand, what a worker is doing, or a bare '?'. Plays back the user's goal, catches them up since their last message, and lists the calls only they can make."
 ---
 
 # Recap

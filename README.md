@@ -46,7 +46,7 @@ After installing the reviewed collection, name a skill directly or ask for the r
 - `Use invariants to check the retry invariants.`
 - `Exit yesh-router.`
 
-Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, diagnose, invariants, plan, show-me, viz, interactive-explainer, research, writing-for-agents and the router are listed by default.
+Skills with `disable-model-invocation: true` stay out of the host's skill list, so a request in prose will not find them. Reach them through the router, or with `/name` in Claude Code and `/skill:name` in pi. Only how, diagnose, invariants, plan, recap, show-me, unslop, viz, interactive-explainer, research, writing-for-agents and the router are listed by default.
 
 Activate once, then describe outcomes in ordinary language. The router reads its Triggers and considers the host's installed skill descriptions, including project-local skills. It selects a main workflow and the supporting skills needed for the work, reads their instructions, and follows their completion criteria. It reconsiders selection as the task develops; small settled work stays direct when specialized guidance adds no value. The collection does not exclude other installed skills.
 

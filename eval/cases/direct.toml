@@ -42,3 +42,16 @@ activation = "router"
 tags = ["port"]
 prompt = "Use the correct skill on this repo. Report the repeated mistake classes and the level you'd fix each at, but don't change anything yet."
 expect = { methods = ["correct"], no_edits = true }
+
+# Prose mentions without the router, from 2026-10 sessions where hidden skills never loaded.
+[[case]]
+id = "plain-unslop-verb"
+activation = "plain"
+prompt = "docs.md has things like D-29 and U26 nobody outside this chat knows. unslop it so other people can read it."
+expect = { methods = ["unslop"] }
+
+[[case]]
+id = "plain-recap-status"
+activation = "plain"
+prompt = "what's done and what's left? what are the workers doing?"
+expect = { methods = ["recap"], no_edits = true }
