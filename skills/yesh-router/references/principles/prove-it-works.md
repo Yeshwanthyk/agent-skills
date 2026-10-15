@@ -6,7 +6,7 @@
 - Choose the technique that fits the gap: generated inputs for a broad contract, fuzzing for a malformed-input boundary, a focused check for a defect.
 - Check the real thing, not a proxy: process liveness directly, actual values rather than cached representations, the full chain from input to output. A fake backend, a self-test, or a headless page load does not prove a live-stack or on-screen claim, and agreement with a copy built from the same spec is consistency, not correctness. Label each claim as ran, read, or proxy.
 - For a defect, capture the failure and show the correction on the same relevant path. Trace the first contract divergence rather than assuming every guard is a workaround.
-- When verification fails, suspect the observation method before the system. Report what ran, what passed, and what remains untested.
+- When verification fails, suspect the observation method before the system. Report what ran, what passed, and what remains untested. A count (tests passed, cases matched) comes with the command and path that produced it; when it differs from the last report, name the difference and why.
 - Verify delegated work through its artifacts, not self-reports: inspect the actual diff, files, or runtime behavior.
 - Stop adding checks once the required evidence exists, unless a failure, a new change, or an open risk calls for more.
 

@@ -22,7 +22,7 @@ For staged delivery, replay, or metadata gates, apply [forward implementation fi
 1. State settled decisions and explicit exclusions.
 2. Name current files and symbols for each change. Do not invent paths.
 3. Order work into independently verifiable vertical chunks; when the work is a sweep, migration, or stack, read [sequence-verifiable-units](../yesh-router/references/principles/sequence-verifiable-units.md) first. Put a real prerequisite before its dependent behavior; keep disjoint work parallel only when it helps.
-4. For each chunk, give the behavior, files/symbols, path or state transition touched, dependencies, risk, and proof.
+4. For each chunk, give the behavior, files/symbols, path or state transition touched, dependencies, risk, and proof. Every number in the plan (a budget, cap, limit, or timeout) cites where it came from; a number with no source is left out, or marked as a placeholder for the user to set.
 5. Name the owner of shared mutable state and distinguish persisted, external, cached, derived, and displayed values.
 6. Describe migration, compatibility, rollout, observability, recovery, and rollback only where they affect delivery. When the plan removes or replaces an API, format, or behavior, or changes a persistent format, read [migrate-callers](../yesh-router/references/principles/migrate-callers.md).
 7. End with open decisions and the chunks or gates they block.
