@@ -4,6 +4,8 @@ Use this reference when work is handed to another worker: a dispatched agent, a 
 
 ## Dispatch and communication
 
+- Before a big delegation (several children, any writer, a workflow, or a long or costly run), post the review: each task's purpose, scope, order, and model and effort. Then end the turn. Comments on a preview, quoted text, and questions are not approval; a plain go is. One or two bounded read-only children need only a one-line ask.
+
 - Give each worker a clear task, owned write paths or read-only scope, relevant inputs, and expected result or proof. Use context the harness actually passes to the worker; supply what is missing rather than repeating the whole conversation. Confirm remote access to required state before launching remote work.
 - The chat that activated the router runs it: it owns the method, the todo list, and every spawn. A worker runs the step it was assigned and returns; it does not select methods, activate the router, or spawn its own workers unless the assignment says so.
 - When a worker follows a selected method, carry it into the assignment: name the method, the worker's step, its completion criteria, and the absolute path of every skill or reference file it needs to read. Most skills here are hidden from the model, so a worker reaches them only through a path it can open; a relative link like `../how/SKILL.md` resolves against nothing in its context. Pass applicable decisions and constraints from the parent; a worker may have no inherited skill context. The worker reads that guidance before acting and applies it within its assigned scope. Direct tasks can remain direct.
