@@ -505,7 +505,7 @@ def _check_method_catalog(root: Path, errors: list[str]) -> None:
 
 
 # Hosts send the router every turn and depend on these Run moments; dropping one silently changes behavior.
-RUN_REQUIRED_TEXT = ("the reply with `Method:", "todo list", "skip: <reason>", "end the turn")
+RUN_REQUIRED_TEXT = ("the reply with `Method:", "invokes directly", "`Used:", "todo list", "skip: <reason>", "end the turn")
 RUN_REQUIRED_LINKS = ("references/delegation.md", "references/routing.md", "references/session-records.md")
 
 
