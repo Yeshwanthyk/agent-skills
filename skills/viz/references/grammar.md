@@ -15,9 +15,11 @@ settle: _settle [db txn] @orders/order_service.py:210
   reads: / writes: / fails: / state: / note: …
   ref: orders/order_service.py:226 _copy_totals
 !chain: tasks 1-3 [job chain] @…:12    # a trailing " # " starts a note
-settle -> hooks: COMMIT                  # edge with label
+settle -> hooks: COMMIT                  # edge label = what moves; drawn as a numbered pill on the edge
+hooks -> chain: txn_id @…/hooks.py:41   # edges take @ref and a note like nodes
+  carries: the committed order id, once per payment  # detail lines under an edge attach to it
 hooks ~> event, receipt: emit            # ~> is async (dashed); a, b fan-out works on either side
-check -> legacy: LIVE fallback           # an edge to an earlier row draws as a back edge
+check -> legacy: LIVE fallback           # an edge to an earlier node draws upward, arrow reversed
 
 == steps                                 # replay for the flow above (or: == steps <flow name>)
 settle -> hooks | COMMIT | Commit is the moment the order counts as paid.
@@ -31,7 +33,9 @@ settle -> hooks | COMMIT | Commit is the moment the order counts as paid.
 ```
 
 - Node `id: Label [kind] @path:line # note`. A prefix on the id sets its state: `+` added, `-` removed, `~` changed, `!` fails, `*` active, `?` unverified. Edges take `+` and `-` too, for a before/after flow.
-- Declare flow nodes in execution order. Rows keep that order; adjacent edges run down the spine, longer ones take side lanes, and the first labelled edge into a row prints before its label.
+- A flow lays out as a top-to-bottom graph of boxes: label (wrapped, never truncated), then kind and `file:line`. Each edge's label sits on it as a pill with an order number.
+- Declare edges in execution order: numbers follow edge lines, one per line, so a fan-out line `a -> b, c` shares one. Cycles are fine.
+- Keep an edge label to what moves (`currency, tax_detail`). Its detail lines (`carries:` for what data moves and in what form, plus does/reads/writes/fails/state/note/ref) attach to every edge on that line and show in the inspector. `carries:` works on nodes too.
 - Tree depth is 2 spaces per level. Pasted `calldiff` ascii (`├─ │ └─`, `label  path:line`) also parses.
 - Keep labels to the symbol plus a few words. Detail lines hold the rest, because they only appear in the inspector.
 

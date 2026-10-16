@@ -9,7 +9,8 @@ One fixed renderer, [`assets/viz.js`](assets/viz.js), draws every visual. The ag
 
 ## Pick the section
 
-- A path with branches, fallbacks, async hops, or failure exits → `== flow`, plus `== steps` when order or a story matters.
+- Data moving between components (branches, fallbacks, async hops, failure exits) → `== flow`. Label each edge with what moves; its number is the order, so declare edges in the order they happen. Put the edge's `@path:line` and `carries:` detail on the edge.
+- When the why of each step matters → add `== steps`. Each narration line says what moves and why.
 - Who calls whom → `== tree`.
 - What a change did to a call tree → `== diff`. Run calldiff through the converter rather than hand-writing it:
 
