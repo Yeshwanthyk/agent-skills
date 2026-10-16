@@ -1,0 +1,6 @@
+interface:
+  display_name: "Meat review"
+  short_description: "Abridged, annotated reading of a diff, commit, branch or PR, shown where you are"
+  default_prompt: "Use $meat-review to review my current changes."
+policy:
+  allow_implicit_invocation: true

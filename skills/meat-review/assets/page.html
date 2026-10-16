@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading</title>
+<link id="hl-dark" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
+<link id="hl-light" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css" disabled>
+<script>
+// Theme before first paint: saved choice, else the system's.
+(function () {
+  const pick = localStorage.getItem('meat-review:theme') || 'auto';
+  const dark = pick === 'dark' || (pick === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  document.documentElement.dataset.pick = pick;
+})();
+</script>
+<style>
+html[data-theme=dark]{--bg:#0d0f12;--panel:#12151a;--fg:#e6e3dd;--mut:#8b8f98;--line:#1f242b;--add:#12321f;--del:#3a1518;--acc:#7cb7ff;--accbg:#1a2230;--risk:#ff7a7a;--q:#ffd27a;--ok:#5fd38d;color-scheme:dark}
+html[data-theme=light]{--bg:#fbfaf7;--panel:#f3f1ec;--fg:#1d1f23;--mut:#6b7079;--line:#e4e0d8;--add:#e3f6e8;--del:#fbe5e5;--acc:#2561c9;--accbg:#e4ecfb;--risk:#c9302c;--q:#a86b00;--ok:#1f8a4c;color-scheme:light}
+/* viz reads T3's theme variables; map ours onto them so diagrams follow the theme. */
+html{--foreground:var(--fg);--muted-foreground:var(--mut);--border:var(--line);--card:var(--panel);--destructive:var(--risk);--success:var(--ok);--warning:var(--q);--info:var(--acc);--radius:8px}
+.theme{display:flex;gap:2px;border:1px solid var(--line);border-radius:7px;padding:2px;width:max-content}.theme button{border:0;padding:1px 8px}.theme button.on{background:var(--accbg)}
+.area{font-size:10.5px;color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:0 6px}
+.verdict{font-size:11px;font-weight:700;border-radius:8px;padding:0 7px}.verdict.real{color:var(--ok)}.verdict.weak{color:var(--q)}.verdict.fake{color:var(--risk)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:inherit;text-decoration:none}code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+aside{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:var(--panel);padding:14px 12px;display:flex;flex-direction:column;gap:10px}
+.ref{font-weight:650;word-break:break-all}.mut{color:var(--mut)}.small{font-size:12px}
+.bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--acc);transition:width .2s}
+.group{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:8px 0 2px}
+.fl{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:6px;cursor:pointer;font-size:12.5px}.fl:hover{background:var(--accbg)}.fl.cur{background:var(--accbg)}
+.fl .dot{width:14px;text-align:center;color:var(--mut)}.fl.read .dot{color:var(--ok)}.fl.read .nm{color:var(--mut)}.fl .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:left}
+.cnt{font-size:11px;border-radius:8px;padding:0 5px}.cnt.risk{color:var(--risk)}.cnt.question{color:var(--q)}
+.fb{margin-top:auto;border-top:1px solid var(--line);padding-top:10px}
+button{font:inherit;font-size:12px;background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:3px 9px;cursor:pointer}button:hover{border-color:var(--acc)}
+button.on{background:var(--accbg);border-color:var(--acc)}button.primary{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:600}
+main{padding:22px 32px 120px;max-width:1080px;width:100%}
+.hero h1{font-size:19px;margin:0 0 4px}.hero .sum{font-size:15px;margin:10px 0 14px;max-width:820px}
+.first{display:inline-flex;gap:6px;align-items:center;background:var(--accbg);border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer}
+.panel{border:1px solid var(--line);border-radius:10px;margin:16px 0;overflow:hidden}.panel>summary,.panel>h2{list-style:none;cursor:pointer;margin:0;padding:10px 14px;font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center}
+.panel>summary::-webkit-details-marker{display:none}.panel[open]>summary{border-bottom:1px solid var(--line)}.panel .body{padding:12px 14px}
+.flist .f{display:flex;gap:8px;padding:4px 0;align-items:baseline}.sev{font-weight:700;width:12px;display:inline-block}.sev.risk{color:var(--risk)}.sev.question{color:var(--q)}.sev.note{color:var(--mut)}
+pre.card{margin:0;white-space:pre-wrap;font:12.5px/1.5 ui-monospace,monospace}pre.mermaid{background:transparent;text-align:center}
+.file{border:1px solid var(--line);border-radius:10px;margin:22px 0;scroll-margin-top:12px}
+.file>header{display:flex;gap:10px;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2;border-radius:10px 10px 0 0}
+.file>header .path{font-weight:650;font-family:ui-monospace,monospace;font-size:13px;word-break:break-all}.kind{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);border-radius:10px;padding:0 7px;white-space:nowrap}
+.file>header .sp{flex:1}.reason{padding:8px 14px 0;color:var(--mut)}
+.range{margin:10px 0 0;scroll-margin-top:56px}.range.cur .note{border-left-color:var(--acc)}
+.note{margin:0 14px 6px;padding:2px 10px;border-left:3px solid var(--line);font-style:italic}.note .lines{font-style:normal;font-size:11.5px;color:var(--mut);margin-left:6px}
+table.code{border-collapse:collapse;width:100%;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;table-layout:fixed}
+table.code td{padding:0 10px;white-space:pre;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+td.n{width:52px;text-align:right;color:var(--mut);user-select:none;position:relative}td.n .plus{position:absolute;left:4px;opacity:0;color:var(--acc);cursor:pointer;font-weight:700}tr:hover td.n .plus{opacity:1}
+td.m{width:18px;color:var(--mut);user-select:none;padding:0 2px}tr.add{background:var(--add)}tr.add td.m{color:var(--ok)}tr.del{background:var(--del)}tr.del td.m{color:var(--risk)}
+tr.hid td{cursor:pointer;color:var(--mut);background:repeating-linear-gradient(135deg,transparent 0 6px,var(--line) 6px 7px);font-family:-apple-system,sans-serif;font-size:12px;padding:3px 10px}
+tr.hid:hover td{color:var(--fg)}
+tr.thread td{padding:0;white-space:normal}.th{margin:6px 14px 8px 70px;border:1px solid var(--line);border-left:3px solid var(--mut);border-radius:0 8px 8px 0;background:var(--panel);padding:8px 12px;font:13px/1.45 -apple-system,sans-serif}
+.th.risk{border-left-color:var(--risk)}.th.question{border-left-color:var(--q)}.th.mine{border-left-color:var(--acc)}
+.th .hd{display:flex;gap:8px;align-items:baseline}.th .id{font:11px ui-monospace,monospace;color:var(--mut)}.th .acts{display:flex;gap:6px;margin-top:6px;align-items:center}
+.th textarea{width:100%;margin-top:6px;min-height:46px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:13px -apple-system,sans-serif;resize:vertical}
+.skim{padding:4px 14px 12px}.done-btn{font-size:12px}
+.keys{font-size:11.5px;color:var(--mut)}kbd{font:11px ui-monospace,monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--acc);color:var(--bg);padding:6px 14px;border-radius:8px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
+@media (max-width:860px){.app{grid-template-columns:1fr}aside{position:static;height:auto}main{padding:16px}}
+</style>
+</head>
+<body>
+<div class="app"><aside id="side"></aside><main id="main"></main></div>
+<div class="toast" id="toast"></div>
+<script id="data" type="application/json">/*DATA*/</script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/highlight.min.js"></script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const KEY = 'meat-review:' + D.key;
+const S = Object.assign({read: {}, verdict: {}, reply: {}, mine: []}, JSON.parse(localStorage.getItem(KEY) || '{}'));
+const save = () => { localStorage.setItem(KEY, JSON.stringify(S)); side(); };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const toast = t => { const el = $('#toast'); el.textContent = t; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 1400); };
+const GROUPS = [['core', 'Core'], ['supporting', 'Supporting'], ['config', 'Config'], ['docs', 'Docs'], ['tests', 'Tests']];
+const byFile = {};
+for (const f of D.findings) (byFile[f.file] ||= []).push(f);
+
+function findingHtml(f) {
+  const v = S.verdict[f.id], r = S.reply[f.id] || '';
+  return `<div class="th ${esc(f.severity)}" data-f="${esc(f.id)}"><div class="hd"><span class="sev ${esc(f.severity)}">${{risk:'!',question:'?',note:'·'}[f.severity] || '·'}</span>
+    <span>${esc(f.text)}</span>${f.area ? `<span class="area">${esc(f.area)}</span>` : ''}<span class="id">${esc(f.id)}${f.author ? ' · ' + esc(f.author) : ''}</span></div>
+    <div class="acts"><button data-v="agree" class="${v === 'agree' ? 'on' : ''}">Agree</button><button data-v="disagree" class="${v === 'disagree' ? 'on' : ''}">Disagree</button>
+    <button data-v="reply" class="${r ? 'on' : ''}">Reply</button></div>${r || S._open === f.id ? `<textarea data-r="${esc(f.id)}" placeholder="Your reply">${esc(r)}</textarea>` : ''}</div>`;
+}
+function mineHtml(c) {
+  return `<div class="th mine" data-c="${c.id}"><div class="hd"><span class="sev" style="color:var(--acc)">+</span><span class="id">your comment · ${esc(c.where)}</span></div>
+    <textarea data-m="${c.id}" placeholder="Comment on this line">${esc(c.text)}</textarea><div class="acts"><button data-del="${c.id}">Remove</button></div></div>`;
+}
+const mine = id => S.mine.find(c => String(c.id) === String(id));
+function rowHtml(file, r) {
+  const cls = r.m === '+' ? 'add' : r.m === '-' ? 'del' : '';
+  const lang = file.lang ? ` class="hl language-${file.lang}"` : '';
+  let out = `<tr class="${cls}" data-line="${r.s}:${r.l}"><td class="n"><span class="plus" title="Comment on this line">+</span>${r.l}</td><td class="m">${r.m === ' ' ? '' : r.m}</td><td${lang}>${esc(r.t)}</td></tr>`;
+  for (const f of (byFile[file.path] || [])) if (f.line === r.l && (f.side || 'new') === r.s && !f._placed) { f._placed = true; out += `<tr class="thread"><td colspan="3">${findingHtml(f)}</td></tr>`; }
+  S.mine.forEach(c => { if (c.path === file.path && c.line === r.l && c.side === r.s) out += `<tr class="thread"><td colspan="3">${mineHtml(c)}</td></tr>`; });
+  return out;
+}
+function rangeHtml(file, g) {
+  let rows = '';
+  g.blocks.forEach((b, i) => {
+    if (b.rows && !b.hidden) rows += b.rows.map(r => rowHtml(file, r)).join('');
+    else rows += `<tr class="hid" data-open="${g.id}:${i}" data-kind="${b.hidden}"><td colspan="3">${esc(b.label)} · click to ${b.hidden === 'imports' ? 'show imports' : 'open'}</td></tr>`
+      + `<tbody class="hidden-rows" id="h-${g.id}-${i}" hidden>${b.rows.map(r => rowHtml(file, r)).join('')}</tbody>`;
+  });
+  return `<div class="range" id="${g.id}"><div class="note">${esc(g.note || '')}<span class="lines">${g.label} · ${esc(file.path.split('/').pop())}:${g.start}-${g.end}${g.side === 'old' ? ' (old)' : ''}</span></div><table class="code">${rows}</table></div>`;
+}
+function fileHtml(file) {
+  const ranges = file.ranges.map(g => rangeHtml(file, g)).join('');
+  // Findings on lines that are not in a kept range go at the top of the file.
+  const loose = (byFile[file.path] || []).filter(f => !f._placed);
+  loose.forEach(f => f._placed = true);
+  return `<section class="file" id="${file.id}" data-path="${esc(file.path)}"><header><span class="id mono mut">${file.id}</span><span class="path">${esc(file.path)}</span><span class="kind">${esc(file.kind)}</span><span class="sp"></span>
+    <button class="done-btn" data-done="${file.id}">${S.read[file.id] ? '✓ Read' : 'Mark read'}</button></header>
+    ${file.reason ? `<div class="reason">${esc(file.reason)}</div>` : ''}${loose.map(f => `<div style="padding:0 0 4px">${findingHtml(f)}</div>`).join('')}${ranges}<div style="height:10px"></div></section>`;
+}
+
+function main() {
+  const read = D.files.filter(f => S.read[f.id]).length;
+  const first = D.files[0];
+  let h = `<div class="hero"><h1>${esc(D.title)}</h1><div class="mut small">${esc(D.label)} · ${esc(D.manifest)}</div>
+    <div class="sum">${esc(D.summary)}</div>${first ? `<span class="first" data-go="${first.id}">Start here → <b class="mono">${esc(first.path.split('/').pop())}</b> <span class="mut">${esc(first.reason || '')}</span></span>` : ''}</div>`;
+  if (D.findings.length) h += `<div class="panel"><h2>Findings <span class="mut small">${D.findings.length} · reply inline or here</span></h2><div class="body flist">${D.findings.map(f =>
+    `<div class="f"><span class="sev ${esc(f.severity)}">${{risk:'!',question:'?',note:'·'}[f.severity] || '·'}</span><a class="mono small" data-goline="${esc(f.file)}:${f.side || 'new'}:${f.line}">${esc(f.file.split('/').pop())}:${f.line}</a><span>${esc(f.text)}</span>
+    <span class="mut small" data-st="${esc(f.id)}">${S.verdict[f.id] ? '· ' + S.verdict[f.id] : ''}</span></div>`).join('')}</div></div>`;
+  if (D.tests.length) {
+    const n = v => D.tests.filter(t => t.verdict === v).length;
+    h += `<details class="panel" ${n('weak') + n('fake') ? 'open' : ''}><summary>Tests <span class="mut small">${D.tests.length} cases · <span class="verdict real">${n('real')} real</span> <span class="verdict weak">${n('weak')} weak</span> <span class="verdict fake">${n('fake')} fake</span></span></summary><div class="body flist">${D.tests.map(t =>
+      `<div class="f"><span class="verdict ${esc(t.verdict)}">${esc(t.verdict)}</span><a class="mono small" data-goline="${esc(t.file)}:new:${t.line}">${esc(t.file.split('/').pop())}:${t.line}</a><span><b>${esc(t.name)}</b> — ${esc(t.proves || '')}<span class="mut"> · ${esc(t.why || '')}</span></span></div>`).join('')}</div></details>`;
+  }
+  for (const c of D.outline) h += `<details class="panel" open><summary>${esc(c.title)}</summary><div class="body">${c.viz ? `<script type="text/viz">\n${c.viz.replace(/<\/script/g, '<\\/script')}\n<\/script>` : c.kind === 'mermaid' ? `<pre class="mermaid" data-src="${esc(c.body)}">${esc(c.body)}</pre>` : c.kind === 'tree' ? `<script type="text/viz">\n${c.body.replace(/<\/script/g, '<\\/script')}\n<\/script>` : `<pre class="card">${esc(c.body)}</pre>`}</div></details>`;
+  if (D.calls) h += `<details class="panel"><summary>Call changes <span class="mut small">calldiff · click to expand</span></summary><div class="body"><script type="text/viz">\ntitle Call changes\n${D.calls.replace(/<\/script/g, '<\\/script')}\n<\/script></div></details>`;
+  h += D.files.map(fileHtml).join('');
+  if (D.skimmed.length || D.uncovered.length) h += `<details class="panel"><summary>Not worth reading <span class="mut small">${D.skimmed.length} skimmed · ${D.uncovered.length} not covered</span></summary><div class="body skim">${
+    D.skimmed.map(s => `<div><span class="mono small">${esc(s.path)}</span> <span class="kind">${esc(s.kind)}</span> <span class="mut">${esc(s.reason || '')}</span></div>`).join('')}${
+    D.uncovered.map(p => `<div><span class="mono small">${esc(p)}</span> <span class="mut">not covered by the reading</span></div>`).join('')}</div></details>`;
+  $('#main').innerHTML = h;
+  D.findings.forEach(f => delete f._placed);
+  if (window.hljs) $$('td.hl').forEach(td => { try { td.innerHTML = hljs.highlight(td.textContent, {language: td.className.split('language-')[1], ignoreIllegals: true}).value; } catch (_) {} });
+}
+
+function feedback() {
+  const lines = [];
+  for (const f of D.findings) {
+    const v = S.verdict[f.id], r = (S.reply[f.id] || '').trim();
+    if (v || r) lines.push(`- ${f.id} (${f.file}:${f.line}): ${v || 'reply'}${r ? ' — ' + r : ''}`);
+  }
+  for (const c of S.mine) if (c.text.trim()) lines.push(`- ${c.where}: ${c.text.trim()}`);
+  const unread = D.files.filter(f => !S.read[f.id]).map(f => f.id);
+  return lines.length ? `Feedback on the meat-review reading of ${D.title}:\n${lines.join('\n')}${unread.length ? `\n(not read yet: ${unread.join(', ')})` : ''}` : '';
+}
+
+function side() {
+  const read = D.files.filter(f => S.read[f.id]).length, pct = D.files.length ? Math.round(100 * read / D.files.length) : 100;
+  const cur = document.body.dataset.cur;
+  const pick = document.documentElement.dataset.pick || 'auto';
+  let h = `<div class="theme">${['auto', 'light', 'dark'].map(t => `<button data-theme-pick="${t}" class="${pick === t ? 'on' : ''}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div><div><div class="ref">${esc(D.title)}</div><div class="mut small">${read} of ${D.files.length} files read</div></div><div class="bar"><i style="width:${pct}%"></i></div>`;
+  for (const [kind, name] of GROUPS) {
+    const fs = D.files.filter(f => f.kind === kind);
+    if (!fs.length) continue;
+    h += `<div class="group">${name}</div>` + fs.map(f => {
+      const fx = byFile[f.path] || [], risk = fx.filter(x => x.severity === 'risk').length, q = fx.filter(x => x.severity !== 'risk').length;
+      return `<a class="fl ${S.read[f.id] ? 'read' : ''} ${cur === f.id ? 'cur' : ''}" data-go="${f.id}"><span class="dot">${S.read[f.id] ? '✓' : '○'}</span><span class="nm" title="${esc(f.path)}">${esc(f.path)}</span>${risk ? `<span class="cnt risk">!${risk}</span>` : ''}${q ? `<span class="cnt question">?${q}</span>` : ''}</a>`;
+    }).join('');
+  }
+  if (D.skimmed.length) h += `<div class="group">Skimmed · ${D.skimmed.length}</div>`;
+  const fb = feedback(), n = fb ? fb.split('\n').filter(l => l.startsWith('- ')).length : 0;
+  h += `<div class="fb"><div class="small" style="margin-bottom:6px"><b>Your review</b> <span class="mut">${n} note${n === 1 ? '' : 's'}</span></div>
+    <button class="primary" id="copy" ${n ? '' : 'disabled'}>Copy feedback for the agent</button>
+    <div class="keys" style="margin-top:10px"><kbd>j</kbd>/<kbd>k</kbd> range · <kbd>]</kbd>/<kbd>[</kbd> file · <kbd>m</kbd> mark read · <kbd>o</kbd> open folds · <kbd>c</kbd> copy</div></div>`;
+  $('#side').innerHTML = h;
+}
+
+function applyTheme(pick) {
+  localStorage.setItem('meat-review:theme', pick);
+  const dark = pick === 'dark' || (pick === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  document.documentElement.dataset.pick = pick;
+  document.getElementById('hl-dark').disabled = !dark;
+  document.getElementById('hl-light').disabled = dark;
+  if (window.mermaid) {
+    window.mermaid.initialize({startOnLoad: false, theme: dark ? 'dark' : 'default'});
+    $$('pre.mermaid').forEach(el => { el.removeAttribute('data-processed'); el.innerHTML = esc(el.dataset.src); });
+    window.mermaid.run({querySelector: 'pre.mermaid'});
+  }
+  side();
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if ((localStorage.getItem('meat-review:theme') || 'auto') === 'auto') applyTheme('auto'); });
+function go(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+function current(sel) { const els = $$(sel); let best = els[0]; for (const el of els) if (el.getBoundingClientRect().top < 90) best = el; return best; }
+function refreshFinding(id) {
+  const f = D.findings.find(x => x.id === id);
+  $$(`.th[data-f="${CSS.escape(id)}"]`).forEach(el => el.outerHTML = findingHtml(f));
+  const st = $(`.flist [data-st="${CSS.escape(id)}"]`); if (st) st.textContent = S.verdict[id] ? '· ' + S.verdict[id] : '';
+  side();
+}
+function copy() { const t = feedback(); if (!t) return; navigator.clipboard?.writeText(t).then(() => toast('Copied — paste it to the agent'), () => prompt('Copy this', t)) ?? prompt('Copy this', t); }
+
+document.addEventListener('click', e => {
+  const t = e.target;
+  const th0 = t.closest('[data-theme-pick]'); if (th0) return applyTheme(th0.dataset.themePick);
+  const goEl = t.closest('[data-go]'); if (goEl) return go(goEl.dataset.go);
+  const gl = t.closest('[data-goline]'); if (gl) { const [p, s, l] = gl.dataset.goline.split(/:(?=[^:]+:[^:]+$)|:(?=[^:]+$)/); const file = D.files.find(f => f.path === p); const row = file && $(`#${file.id} tr[data-line="${s}:${l}"]`); (row ? row : document.getElementById(file?.id || ''))?.scrollIntoView({behavior: 'smooth', block: 'center'}); return; }
+  const open = t.closest('tr.hid'); if (open) { const [g, i] = open.dataset.open.split(':'); document.getElementById(`h-${g}-${i}`).hidden = false; open.remove(); return; }
+  const done = t.closest('[data-done]'); if (done) { S.read[done.dataset.done] = !S.read[done.dataset.done]; save(); done.textContent = S.read[done.dataset.done] ? '✓ Read' : 'Mark read'; return; }
+  const th = t.closest('.th[data-f]'), v = t.dataset.v;
+  if (th && v) { const id = th.dataset.f; if (v === 'reply') { S._open = id; } else { S.verdict[id] = S.verdict[id] === v ? undefined : v; } save(); refreshFinding(id); if (v === 'reply') $(`textarea[data-r="${CSS.escape(id)}"]`)?.focus(); return; }
+  const plus = t.closest('.plus'); if (plus) { const tr = plus.closest('tr'), sec = plus.closest('.file'); const [s, l] = tr.dataset.line.split(':'); const path = sec.dataset.path;
+    const c = {id: Date.now(), path, side: s, line: +l, where: `${path}:${l}${s === 'old' ? ' (old)' : ''}`, text: ''}; S.mine.push(c); save();
+    tr.insertAdjacentHTML('afterend', `<tr class="thread"><td colspan="3">${mineHtml(c)}</td></tr>`); $(`textarea[data-m="${c.id}"]`)?.focus(); return; }
+  const del = t.closest('[data-del]'); if (del) { S.mine = S.mine.filter(c => String(c.id) !== del.dataset.del); save(); del.closest('tr.thread')?.remove(); return; }
+  if (t.id === 'copy') copy();
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.r) { S.reply[t.dataset.r] = t.value; localStorage.setItem(KEY, JSON.stringify(S)); }
+  if (t.dataset.m) { const c = mine(t.dataset.m); if (c) c.text = t.value; localStorage.setItem(KEY, JSON.stringify(S)); }
+});
+document.addEventListener('focusout', e => { if (e.target.tagName === 'TEXTAREA') side(); });
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'TEXTAREA' || e.metaKey || e.ctrlKey) return;
+  const step = (sel, d) => { const els = $$(sel), cur = current(sel), i = els.indexOf(cur); const next = els[Math.max(0, Math.min(els.length - 1, i + d))]; if (next) next.scrollIntoView({behavior: 'smooth', block: 'start'}); };
+  if (e.key === 'j') step('.range', 1); else if (e.key === 'k') step('.range', -1);
+  else if (e.key === ']') step('.file', 1); else if (e.key === '[') step('.file', -1);
+  else if (e.key === 'm') { const f = current('.file'); if (f) { S.read[f.id] = !S.read[f.id]; save(); const b = $('[data-done]', f); if (b) b.textContent = S.read[f.id] ? '✓ Read' : 'Mark read'; } }
+  else if (e.key === 'o') { const r = current('.range'); if (r) $$('tr.hid', r).forEach(tr => tr.click()); }
+  else if (e.key === 'c') copy();
+  else return;
+  e.preventDefault();
+});
+// Highlight the file you are in; a file counts as read once you scroll past its end.
+addEventListener('scroll', () => {
+  const f = current('.file'); if (f && document.body.dataset.cur !== f.id) { document.body.dataset.cur = f.id; side(); }
+  for (const sec of $$('.file')) if (!S.read[sec.id] && sec.getBoundingClientRect().bottom < 0) { S.read[sec.id] = true; save(); const b = $('[data-done]', sec); if (b) b.textContent = '✓ Read'; }
+}, {passive: true});
+document.getElementById('hl-dark').disabled = document.documentElement.dataset.theme !== 'dark';
+document.getElementById('hl-light').disabled = document.documentElement.dataset.theme === 'dark';
+document.title = 'Reading · ' + D.title;
+main(); side();
+</script>
+<script type="module">
+if (document.querySelector('pre.mermaid')) {
+  const {default: m} = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.initialize({startOnLoad: false, theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default'});
+  window.mermaid = m; await m.run({querySelector: 'pre.mermaid'});
+}
+</script>
+<script src="/*VIZ_CDN*/"></script>
+</body>
+</html>
