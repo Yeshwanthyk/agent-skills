@@ -2,21 +2,9 @@
 
 Skills for Claude Code, Codex, pi, and other agents that read `SKILL.md` folders. Each skill works on its own. [`yesh-router`](./skills/yesh-router/SKILL.md) picks a skill for each task and applies the engineering principles in [`references/principles`](./skills/yesh-router/references/principles).
 
-## Install
-
-The skills install with [gitgud](https://github.com/Yeshwanthyk/gitgud). Run these from outside this repo, because inside it gitgud reads the working tree instead of GitHub:
-
-```sh
-gitgud add https://github.com/Yeshwanthyk/agent-skills/tree/main/skills
-gitgud update --global   # pull the latest skills
-gitgud apply --global    # copy enabled skills to ~/.gitgud/skills and link them into each agent
-```
-
-`gitgud update` adds new skills as disabled. Turn them on with `gitgud enable <name> --global`, then run `gitgud apply --global` again.
-
 ## Turn on powerball mode
 
-Powerball mode sends `yesh-router` to the agent on every turn, so each task starts with a method. Install the skills first, then set up each host.
+Powerball mode sends `yesh-router` to the agent on every turn, so each task starts with a method. Set it up for each host.
 
 ### Claude Code
 
