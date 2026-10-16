@@ -12,7 +12,7 @@ Build an **inspectable model**: every interaction should reveal behavior grounde
 1. Trace the implementation, tests, runtime evidence, and source-of-truth state behind the behavior being explained.
 2. Name the reader, what they already know, and the question they should answer through interaction. Assume they do not know the domain words.
 3. Choose the smallest interaction that exposes the answer: scenario stepper, state transition, execution path, comparison, or selectable diagram.
-4. Model entities, transitions, and scenarios as data consumed by a shared renderer. Give every diagram, state machines included, at least one story named by its outcome.
+4. Model entities, transitions, and scenarios as data consumed by a shared renderer. Any map of components, triggers, calls or states is a `text/viz` graph (see Supporting Files), not new SVG or layout code; reach for the starter's scenario theatre only for one cinematic scenario. Give every diagram, state machines included, at least one story named by its outcome: in viz, a named path with a `| payload | narration` tail.
 5. Show source state and derived state as distinct concepts. Mark boundary crossings with their contract, owner, state change, failure behavior, and proof point. A component's inspector names its methods in call order with `file:line`, what it reads and writes, and what happens when it fails.
 6. Cite behavioral claims with file paths and line numbers.
 7. Use the requested visual direction when specified. Otherwise use the starter's systems look: near-black, monospace, hairline boxes joined by wires, amber for active, coral for failure, green for healthy, a packet labelled with its payload on each hop, and a callout on each derived or lagging state.
@@ -34,7 +34,7 @@ UI motion answers an input; story motion (a packet on a wire, a state change) is
 ## Supporting Files
 
 - Use [`assets/starter.html`](assets/starter.html) as the base for scenario-driven explainers and as the visual-token reference for other forms.
-- For a call path, call tree, or call-diff section, write a `text/viz` block instead of building that view, following [viz](../viz/SKILL.md) for a self-contained page. Its detail lines (`does`, `reads`, `writes`, `fails`, `ref`) carry the inspector facts step 5 asks for.
+- For any graph, write a `text/viz` block instead of building that view, following [viz](../viz/SKILL.md) for a self-contained page: a flow or DAG, a ranked map (who acts → event → gate → result), a coverage strip or grid, a sequence, a state machine, a call stack, a call tree, or a call diff. Hover tracing, replay, the inspector and the key come with it. Its detail lines (`does`, `reads`, `writes`, `fails`, `ref`) carry the inspector facts step 5 asks for. To tie prose to the graph, give a caption, table row or glossary term `data-viz-id="<node id or path name>"`; hovering it lights that part of the graph.
 - When the explainer should play over time, with narration, a scrubber, or MP4 output, use [`../motion-explainer`](../motion-explainer/SKILL.md) instead. It shares this look and builds an HTML file you can edit.
 - Run `python3 scripts/validate_explainer.py <path-to-html>` before delivery. Add `--allow-local-assets` for pages that share relative local CSS and JS.
 - The validator catches common structural and dependency mistakes. It is not a complete network or accessibility check; exercise the rendered page too.

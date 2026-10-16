@@ -1,16 +1,24 @@
 ---
 name: viz
-description: "Render an interactive flow or DAG, call tree, or call diff from a few lines of text: inline in T3 Code, or as a temp HTML page elsewhere. Use when asked to viz, visualize, or graph a flow, pipeline, DAG, call path, call tree, or calldiff, or when show-me or interactive-explainer hands one off."
+description: "Render an interactive flow, DAG, ranked trigger map, coverage strip, sequence, state machine, call stack, call tree, or call diff from a few lines of text: inline in T3 Code, or as a temp HTML page elsewhere. Use when asked to viz, visualize, or graph a flow, pipeline, DAG, trigger or event map, coverage, sequence, state machine, call stack, call path, call tree, or calldiff, or when show-me or interactive-explainer hands one off."
 ---
 
 # Viz
 
 One fixed renderer, [`assets/viz.js`](assets/viz.js), draws every visual. The agent writes only data in the [grammar](references/grammar.md), so a visual costs about as many tokens as the Mermaid or ASCII tree it replaces. In exchange it gets step replay, a node inspector, edge tracing, filtering, and path copy.
 
-## Pick the section
+## Pick the view
 
-- Data moving between components (branches, fallbacks, async hops, failure exits) → `== flow`. Label each edge with what moves; its number is the order, so declare edges in the order they happen. Put the edge's `@path:line` and `carries:` detail on the edge.
-- When the why of each step matters → add `== steps`. Each narration line says what moves and why.
+Model the code as nodes, paths and a view in one `== graph` section, not as hand-built HTML. Every shape below comes from the same renderer, with hover tracing, replay and the inspector built in.
+
+- Data moving between components (branches, fallbacks, async hops, failure exits) → `view: flow`, the default. Label each edge with what moves and declare edges in the order they happen; the numbers follow.
+- Who acts, what it sends, what filters it, what results → `ranks:` columns. Write one path per trigger, ending `=> result` when it gets through and `=| result` when it is filtered out. Teams or services as bands → add `lane:`.
+- Which inputs a check reads and which triggers keep each one fresh → a `== cover` section after the graph. Rows point at path names; gaps fall out of the paths. A writer × field matrix → `columns: <rank>`.
+- Requests between services over time → `view: seq`, with `at:` times when the waiting matters.
+- The life of one field or job → `view: states`, with one path per story (`!giveup: running > blocked => dead`).
+- A call stack at one moment, with the values that went wrong → `view: stack` and `locals:`.
+- A change, on one layout → `+` and `-` on nodes and paths; the reader gets a before | both | after toggle.
+- When the why of each step matters → give paths a `| payload | narration` tail. Each one becomes a replay step.
 - Who calls whom → `== tree`.
 - What a change did to a call tree → `== diff`. Run calldiff through the converter rather than hand-writing it:
 
@@ -36,7 +44,7 @@ If the preview console shows the script failed to load, save the data to `/tmp/v
 
 **Anywhere else**: save the data to `/tmp/viz/<name>.viz`, then run `python3 <viz>/scripts/viz.py html /tmp/viz/<name>.viz --open`. It reports parse errors, writes `/tmp/viz/<name>.html` with the renderer inlined, and opens it in the browser. In pi with glimpse installed, open that file there instead ([pi](../yesh-router/references/hosts/pi.md)). Report the path.
 
-**Inside a saved page that must stay self-contained** (an interactive-explainer page): write `text/viz` blocks where the views belong, end the body with `<script data-viz></script>`, and run `viz.py inline page.html`. Rerun it after updating viz.js.
+**Inside a saved page that must stay self-contained** (an interactive-explainer page): write `text/viz` blocks where the views belong, end the body with `<script data-viz></script>`, and run `viz.py inline page.html`. Rerun it after updating viz.js. Give a story caption, table row or glossary term `data-viz-id="<node id or path name>"` and hovering it lights that part of every graph on the page, with no page script.
 
 ## Reply
 

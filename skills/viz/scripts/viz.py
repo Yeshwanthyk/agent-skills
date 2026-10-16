@@ -55,7 +55,7 @@ global.window = {}; global.document = { readyState: 'loading', addEventListener(
 require(process.argv[1]);
 const d = window.Viz.parse(require('fs').readFileSync(process.argv[2], 'utf8'));
 for (const e of d.errors) console.log(e);
-console.log(d.sections.map((s) => s.kind === 'flow' ? `flow ${s.name}: ${s.nodes.length} nodes, ${s.edges.length} edges, ${(s.steps || []).length} steps` : `tree ${s.name}`).join('\n'));
+console.log(d.sections.map((s) => s.kind === 'graph' ? `graph ${s.name} (${s.view}): ${s.nodes.length} nodes, ${s.edges.length} edges, ${s.paths.length} paths, ${s.steps.length} steps${s.cover ? `, cover ${s.cover.rows.length} rows` : ''}` : `tree ${s.name}`).join('\n'));
 process.exit(d.errors.length ? 1 : 0);
 '''
 

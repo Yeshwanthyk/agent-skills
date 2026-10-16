@@ -1,0 +1,34 @@
+title Which edits re-run the archive check
+base src/
+
+== graph Archive triggers
+ranks: Who acts | Event | Gate | Result
+-- Who acts
+draft: Editor saves a draft [actor] @docs/save.ts:40 # autosave
+approve: Reviewer approves [actor] @review/approve.ts:18
+title_edit: Editor renames the doc [actor] @docs/edit.ts:33
+*retag: Librarian re-tags [actor] @docs/tags.ts:9 # shelf · owner · labels
+-- Event
+saved: DocSaved [event] @events/doc.ts:12 # kind = DRAFT
+approved: DocSaved [event] @events/doc.ts:12 # kind = APPROVED
+updated: DocUpdated [event] @events/doc.ts:20 # fields = […]
+-- Gate
+onsave: Save handler [gate] @archive/handlers.ts:22 # passes APPROVED only
+onupdate: Update handler [gate] @archive/handlers.ts:41 # passes title, shelf, labels
+-- Result
+check: Archive check [result] @archive/run.ts:7 # new ArchiveRun
+  writes: ArchiveRun
+skip: Ignored [result] # no new check
+
+autosave: draft > saved > onsave =| skip | DRAFT | Autosaves reach the save handler, which drops anything not APPROVED.
+approval: approve > approved > onsave => check | APPROVED | Approval is the only save that starts a check.
+rename: title_edit > updated > onupdate => check
+shelf: retag > updated > onupdate => check
+owner: retag > updated > onupdate =| skip | owner | A re-tag that only changes owner is dropped at the gate: nothing re-checks owner.
+
+== cover What the check reads, and what keeps it fresh
+title: re-checks on rename <- rename
+body: set at approval <- approval
+shelf: re-checks on change <- shelf
+owner: changes don't re-check <- owner
+?labels: triggers, not read yet

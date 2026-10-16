@@ -1,0 +1,122 @@
+title One core, many shapes
+sub nodes, paths that end in => or =|, and a view
+
+== graph Call stack
+view: stack
+main: main() [frame] @app/main.ts:3
+  locals: argv = ["--qty", "x"]
+parse: parseArgs(argv) [frame] @app/args.ts:11
+  locals: qty = NaN   // Number("x")
+price: price(qty) [frame] @cart/price.ts:30
+  locals: unit = 4.5
+  locals: total = NaN
+!print: printReceipt(total) [frame] @cart/receipt.ts:8 # prints "Total: NaN"
+frames: main > parse > price > print
+main > parse | argv | The flag value arrives as the string "x".
+parse > price | qty | Number("x") is NaN, and nothing checks it.
+!price > print | total | NaN times anything is NaN, so the receipt prints NaN.
+
+== graph Sequence
+view: seq
+browser: Browser
+api: API [service] @api/checkout.ts:14
+db: Postgres [store]
+pay: Payment provider
+mail: Email queue [queue]
+browser -> api: POST /checkout
+  at: 0ms
+api -> db: SELECT cart
+  at: 12ms
+db -> api: 3 rows
+  at: 30ms
+api -> pay: charge
+  at: 34ms
+pay -> api: ok
+  at: 720ms
+api ~> mail: receipt
+  at: 730ms
+api -> browser: 200
+  at: 840ms
+browser > api > db > api | cart | Reading the cart takes 18 ms.
+api > pay > api | charge | The charge is synchronous: 686 of the 840 ms are spent waiting on it.
+api > mail | receipt | The receipt is queued, so the email does not hold the response.
+
+== graph States
+view: states
+queued: queued [state] @jobs/export.ts:20
+running: running [state] @jobs/export.ts:41
+  does: heartbeat every 10 s
+*blocked: blocked [state] @jobs/export.ts:77 # rate-limited
+done: done [state]
+!dead: dead letter [state] @jobs/export.ts:90 # after 5 tries
+queued -> running: picked up
+running -> running: heartbeat
+running -> blocked: 429
+blocked -> queued: retry, backoff 2^n s
+running -> done: finished
+blocked -> dead: 5th failure
+ok: queued > running => done | job 7 | Picked up, runs, done.
+retry: queued > running > blocked > queued | job 8 | Rate-limited: it goes back to queued with backoff.
+!giveup: running > blocked => dead | job 9 | After five tries it lands in dead letter and stops.
+
+== graph Before and after
+ranks: Caller | Lookup | Store | Result
+-- Caller
+api: GET /user/:id @api/user.ts:12
+-- Lookup
++cache: Redis cache [store] @cache/user.ts:8 # TTL 60 s
+-direct: direct read @api/user.ts:20
+-- Store
+db: Postgres [store] @db/users.ts:30
+-- Result
+user: User JSON
+-before: api > direct > db => user | id | Before: every request read Postgres.
++hit: api > cache => user | id | After: a hit returns from Redis and skips the database.
++miss: api > cache > db => user | id | A miss still reads Postgres, then fills the cache.
+
+== graph Lanes
+ranks: Request | Service | Payment | Store | Report
+-- Request
+cart: Cart page @shop/cart.ts:8
+  lane: Storefront team
+-- Service
+checkout: Checkout API @shop/checkout.ts:30
+  lane: Storefront team
+-- Payment
+charge: Charge card @pay/charge.ts:44
+  lane: Payments team
+-- Store
+ledger: Ledger entry @pay/ledger.ts:19
+  lane: Payments team
+-- Report
+report: Revenue report @data/report.sql:1
+  lane: Data team
+buy: cart > checkout > charge => ledger | order | An order crosses from storefront into payments at the charge.
+rev: ledger > report | ledger rows | The nightly report reads the ledger: a second boundary.
+
+== graph Coverage grid
+ranks: Writer | Event | Cache
+-- Writer
+signup: Signup flow @auth/signup.ts:20
+edit: Profile edit @profile/edit.ts:33
+admin: Admin console @admin/users.ts:51
+*sync: Nightly HR sync [job] @jobs/hr_sync.ts:12
+-- Event
+changed: UserChanged [event] @events/user.ts:6
+?direct: direct SQL update [event] @jobs/hr_sync.ts:40 # no event emitted
+-- Cache
+refresh: Cache refreshed @cache/profile.ts:18
+stale: Cache stays stale
+s_name: signup > changed => refresh
+e_name: edit > changed => refresh
+e_avatar: edit > changed => refresh
+a_role: admin > changed => refresh
+h_title: sync > direct =| stale
+h_role: sync > direct =| stale | role | The HR sync writes role with direct SQL, so no event fires and the cache keeps the old role.
+
+== cover Cached field × writer
+columns: Writer
+name <- s_name, e_name
+avatar <- e_avatar
+role <- a_role, h_role
+title <- h_title

@@ -73,6 +73,7 @@
     .node.orb { min-width: 0; padding: 0; border: 0; border-radius: 50%; background: none; box-shadow: none; }
     .node.orb .label { position: absolute; left: 50%; top: calc(100% + 14px); transform: translateX(-50%); }
     .node:focus-visible { outline: none; }
+    .node.vz-linked { border-color: rgba(230, 176, 79, .7); }
     .dimmed { opacity: .25; }
     .callout { position: absolute; transform: translateY(-50%); padding: 6px 13px; border: 1px solid var(--line); border-radius: 7px; background: rgba(12, 12, 12, .94); color: var(--dim); white-space: nowrap; opacity: 0; transition: opacity .3s; }
     .callout em { font-style: normal; color: var(--amber); }
@@ -180,6 +181,7 @@
       if (n.r) Object.assign(n.el.style, { width: `${n.r * 2}px`, height: `${n.r * 2}px` });
       n.el.style.left = `${n.x}px`; n.el.style.top = `${n.y}px`;
       n.el.setAttribute('role', 'button'); n.el.setAttribute('aria-label', `inspect ${n.title}`);
+      n.el.dataset.vizId = id; // a text/viz graph on the same page with the same ids lights this box, and this box lights it
       n.el.addEventListener('click', () => select(id));
       n.el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); select(id); } });
       n.el.addEventListener('pointerenter', () => trace(id));
