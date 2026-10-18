@@ -26,7 +26,7 @@ color:var(--vz-fg);font:12.5px/1.45 var(--font-mono,"IBM Plex Mono","Berkeley Mo
 .vz-flow path{transition:stroke 160ms var(--vz-out),opacity 160ms var(--vz-out)}
 .vz-box{position:absolute;transform:translateX(-50%);padding:6px 9px;border:1px solid color-mix(in srgb,var(--vz-fg) 28%,transparent);border-radius:var(--vz-r);
 background:linear-gradient(var(--vz-card),var(--vz-card)),linear-gradient(var(--vz-card),var(--vz-card)),var(--vz-bg);cursor:pointer;line-height:17px;white-space:nowrap;
-transition:opacity 160ms var(--vz-out),border-color 160ms var(--vz-out),box-shadow 160ms var(--vz-out)}
+transition:opacity 160ms var(--vz-out),border-color 160ms var(--vz-out),box-shadow 160ms var(--vz-out),scale 200ms var(--vz-out)}
 .vz-box .vz-bs{color:var(--vz-dim);font-size:11px;line-height:15px}.vz-mk{font-weight:600}
 .vz-box.s-add{border-color:var(--vz-green)}.vz-box.s-del{border-color:var(--vz-coral);border-style:dashed}.vz-box.s-del .vz-bl{text-decoration:line-through}
 .vz-box.s-mod{border-color:var(--vz-amber)}.vz-box.s-fail{border-color:var(--vz-coral)}.vz-box.s-active{border-color:var(--vz-amber);border-style:dashed}.vz-box.s-unk{border-style:dashed}
@@ -50,7 +50,11 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 .vz-insp dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 10px;margin:0}.vz-insp dt{color:var(--vz-dim)}.vz-insp dd{margin:0}
 .vz-insp code,.vz-detail code{cursor:copy;color:var(--vz-blue)}
 .vz-link{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
-.vz-narr{min-height:2.9em;margin:0 0 8px;color:var(--vz-fg)}
+.vz-narr{min-height:2.9em;margin:0 0 8px;color:var(--vz-fg);display:flex;gap:8px;align-items:baseline}.vz-st{flex:none;width:1.2ch;text-align:center}
+.vz-spin{display:inline-block;width:9px;height:9px;border:1.5px solid var(--vz-amber);border-right-color:transparent;border-radius:50%;animation:vz-spin .7s linear infinite}
+@keyframes vz-spin{to{rotate:360deg}}
+.vz-shim{background:linear-gradient(100deg,var(--vz-fg) 38%,color-mix(in srgb,var(--vz-fg) 35%,transparent) 50%,var(--vz-fg) 62%) 0 0/300% 100% no-repeat;-webkit-background-clip:text;background-clip:text;color:transparent;animation:vz-shim 1.5s linear infinite}
+@keyframes vz-shim{from{background-position:100% 0}to{background-position:0 0}}
 .vz-tree{overflow:auto;max-height:460px}
 .vz-node{display:flex;align-items:baseline;gap:6px;white-space:nowrap;padding:1px 6px 1px 0;border-radius:var(--vz-r);cursor:pointer}
 .vz-node.sel{background:color-mix(in srgb,var(--vz-amber) 14%,transparent)}
@@ -68,7 +72,8 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 .vz-box .vz-bn{color:var(--vz-dim);font-size:11px;line-height:15px}.vz-box .vz-bv{color:var(--vz-blue);font-size:11px;line-height:15px}
 .vz-box.k-event{border-style:dashed}.vz-box.e-reach{border-color:var(--vz-green)}.vz-box.e-dropped{color:var(--vz-dim)}
 .vz-pill.plain{padding:0 8px}
-.vz-before .s-add,.vz-after .s-del{opacity:.1!important;pointer-events:none}
+.vz-before .s-add,.vz-after .s-del{opacity:.1!important;pointer-events:none}.vz-before .vz-box.s-add,.vz-after .vz-box.s-del{scale:.96}
+.vz-flow .vz-box.ghost,.vz-flow .vz-pill.ghost{opacity:.13;border-style:dashed;box-shadow:none}.vz-flow path.ghost{opacity:.1}.vz-building.vz-dimmed .vz-box:not(.hot):not(.ghost),.vz-building.vz-dimmed .vz-pill:not(.hot):not(.ghost){opacity:.65}
 .vz-cover{margin-top:10px;border-top:1px solid var(--vz-line);padding-top:8px}.vz-ctitle{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--vz-dim);margin-bottom:6px}
 .vz-chips{display:flex;flex-wrap:wrap;gap:6px}
 .vz .vz-chip{border-radius:999px;padding:2px 10px;font-size:11.5px;transition:opacity 160ms var(--vz-out),border-color 160ms var(--vz-out)}.vz-chip b{font-weight:600}
@@ -79,7 +84,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 .vz-cover.vz-dimmed .vz-chip:not(.hot){opacity:.4}.vz-chip.hot{box-shadow:0 0 0 1px var(--vz-amber)}
 .vz-linked{outline:1px solid var(--vz-amber);outline-offset:2px;border-radius:3px}
 @media (max-width:480px){.vz-node .vz-ref{display:none}}
-@media (prefers-reduced-motion:reduce){.vz *{transition:none!important}}`;
+@media (prefers-reduced-motion:reduce){.vz *{transition:none!important;animation:none!important}}`;
 
   const STATUS = { '+': 'add', '-': 'del', '~': 'mod', '!': 'fail', '*': 'active', '?': 'unk' };
   const STATUS_WORD = { add: 'added', del: 'removed', mod: 'changed', fail: 'fails', active: 'active', unk: 'unverified', ok: 'done' };
@@ -703,16 +708,22 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     let side = 'both';
     const sideBtns = twoSided ? ['before', 'both', 'after'].map((k) => h('button', { 'aria-pressed': k === side, onclick: () => setSide(k) }, k)) : [];
     function setSide(k) {
+      const was = side;
       side = k; sideBtns.forEach((b) => b.setAttribute('aria-pressed', b.textContent === k));
       wrapEl.classList.toggle('vz-before', k === 'before'); wrapEl.classList.toggle('vz-after', k === 'after'); restore();
+      // The boxes that just came back pulse once in their colour, so the eye lands on what the change touched.
+      boxes.forEach((b, i) => {
+        const st = s.nodes[i].st;
+        if ((st === 'add' && was === 'before') || (st === 'del' && was === 'after')) pulse(b, st === 'add' ? '--vz-green' : '--vz-coral', 0);
+      });
     }
     const shown = (p) => !(side === 'before' && p.st === 'add') && !(side === 'after' && p.st === 'del');
 
     // Highlight: a node lights every path through it (or, off any path, its edges and neighbours); a chip lights its paths.
-    let selNode = null, selEdge = null, selRow = null, step = -1, timer = null;
+    let selNode = null, selEdge = null, selRow = null, step = -1, timer = null, lit = null;
     const chips = [];
     function light(nodes, edges, paths) {
-      const any = nodes || edges;
+      const any = nodes || edges; lit = edges;
       wrapEl.classList.toggle('vz-dimmed', !!any);
       boxes.forEach((b, i) => b.classList.toggle('hot', !!nodes && nodes.has(i)));
       for (const e of s.edges) { const on = !!edges && edges.has(e); paint(e, on); e.pillEl?.classList.toggle('hot', on); }
@@ -844,27 +855,95 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       else if (steps.length && ev.key === ' ') { play(); ev.preventDefault(); }
     });
 
-    // Replay: each step lights its path and sends a packet along it; visited boxes stay marked done.
-    let bar = null, narr = null, range = null, playBtn = null, count = null;
+    // Replay builds the graph. Each box and edge is born at the first step that reaches it; parts no step reaches
+    // arrive with the last. Unborn parts wait as ghosts in their final place, so the layout never moves. Stepping
+    // forward animates the births in time with the packet; jumping or stepping back only sets the state.
+    let bar = null, narr = null, range = null, playBtn = null, count = null, anims = [], timers = [];
+    const PER = 520, EASE = 'cubic-bezier(.23,1,.32,1)', lastStep = steps.length - 1;
+    const nBirth = new Map(), eBirth = new Map();
+    steps.forEach((st, k) => {
+      for (const id of st.ids) if (!nBirth.has(idx[id])) nBirth.set(idx[id], k);
+      for (const e of st.edges) if (!eBirth.has(e)) eBirth.set(e, k);
+    });
+    const bornN = (i) => nBirth.get(i) ?? lastStep;
+    const bornE = (e) => eBirth.get(e) ?? Math.max(bornN(idx[e.from]), bornN(idx[e.to]));
+    const later = (ms, f) => { if (ms <= 0) f(); else timers.push(setTimeout(f, ms)); };
+    const anim = (el, kf, o) => { const a = el.animate(kf, { easing: EASE, fill: 'backwards', ...o }); anims.push(a); return a; };
+    const settle = () => { for (const a of anims) a.finish(); anims = []; timers.forEach(clearTimeout); timers = []; };
+    const tone = (v) => getComputedStyle(wrapEl).getPropertyValue(v).trim();
+    function pulse(el, v, delay) {
+      if (reduced()) return;
+      anim(el, [{ boxShadow: `0 0 0 0 ${tone(v)}` }, { boxShadow: '0 0 0 7px transparent' }], { duration: 700, delay, fill: 'none' });
+    }
+    // The status line: a spinner and a shimmer while the packet is in flight, then how the step ended.
+    function say(st, text, flight) {
+      const glyph = h('span', { class: 'vz-st' }), words = h('span', {}, text);
+      const line = h('span', {}, st?.payload ? h('span', { class: 'vz-payload' }, st.payload) : '', st?.payload ? ' ' : '', words);
+      narr.replaceChildren(glyph, line);
+      if (!reduced()) line.animate([{ opacity: 0, translate: '0 5px', filter: 'blur(2px)' }, { opacity: 1, translate: '0 0', filter: 'blur(0)' }], { duration: 260, easing: EASE });
+      if (!st) return;
+      const land = () => {
+        glyph.replaceChildren(st.fail ? h('span', { class: 's-fail' }, '✕') : st.out === 'drop' ? h('span', { class: 's-unk' }, '⊘') : h('span', { class: 's-ok' }, '✓'));
+        words.classList.remove('vz-shim');
+      };
+      if (flight) { glyph.append(h('span', { class: 'vz-spin' })); words.classList.add('vz-shim'); later(flight, land); } else land();
+    }
     function go(k) {
-      k = Math.max(-1, Math.min(k, steps.length - 1)); step = k;
+      k = Math.max(-1, Math.min(k, lastStep));
+      const fwd = k >= 0 && k === step + 1 && !reduced();
+      settle(); step = k; wrapEl.classList.toggle('vz-building', k >= 0);
       if (range) range.value = k + 1;
       count.textContent = `${k + 1}/${steps.length}`;
-      boxes.forEach((b) => b.classList.remove('done', 'now', 'nowfail'));
+      boxes.forEach((b, i) => { b.classList.remove('done', 'now', 'nowfail'); b.classList.toggle('ghost', k >= 0 && bornN(i) > k); });
+      for (const e of s.edges) for (const el of [e.path, e.hit, e.pillEl]) el?.classList.toggle('ghost', k >= 0 && bornE(e) > k);
       pkt.setAttribute('opacity', 0);
-      if (k < 0) { narr.replaceChildren(`Press ▶ or → to step through the ${view === 'seq' ? 'messages' : 'paths'}.`); restore(); return; }
+      if (k < 0) { say(null, `Press ▶ or → to build it ${view === 'seq' ? 'message by message' : 'path by path'}.`); restore(); return; }
       for (let j = 0; j < k; j++) for (const id of steps[j].ids) boxes[idx[id]].classList.add('done');
-      const st = steps[k], last = st.ids[st.ids.length - 1], hops = st.edges, es = new Set(hops);
-      for (const id of st.ids) boxes[idx[id]].classList.add(st.fail ? 'nowfail' : 'now');
-      narr.replaceChildren(st.fail ? h('span', { class: 's-fail' }, '✕ ') : st.out === 'drop' ? h('span', { class: 's-unk' }, '⊘ ') : '',
-        st.payload ? h('span', { class: 'vz-payload' }, st.payload) : '', st.payload ? ' ' : '',
-        st.narr || st.ids.map((id) => s.byId[id].label).join(' → '));
-      pickNode(idx[last]); light(new Set(st.ids.map((id) => idx[id])), es, s.paths.includes(st) ? new Set([st]) : null);
+      const st = steps[k], last = st.ids[st.ids.length - 1], hops = st.edges, flight = reduced() ? 0 : PER * hops.length;
+      pickNode(idx[last]); light(new Set(st.ids.map((id) => idx[id])), new Set(hops), s.paths.includes(st) ? new Set([st]) : null);
+      say(st, st.narr || st.ids.map((id) => s.byId[id].label).join(' → '), flight);
+      // `now` lands on each box as the packet reaches it.
+      st.ids.forEach((id, p) => later(fwd ? p * PER : 0, () => boxes[idx[id]].classList.add(st.fail ? 'nowfail' : 'now')));
+      if (fwd) born(k, st, flight);
       animate(hops);
+      if (fwd && k === lastStep) later(flight + 260, () => finale(st));
+    }
+    function born(k, st, flight) {
+      const when = new Map();
+      st.ids.forEach((id, p) => { if (!when.has(idx[id])) when.set(idx[id], p * PER); });
+      boxes.map((_, i) => i).filter((i) => bornN(i) === k && !when.has(i))
+        .sort((a, b) => s.nodes[a].box.y - s.nodes[b].box.y || s.nodes[a].box.x - s.nodes[b].box.x)
+        .forEach((i, j) => when.set(i, flight + 160 + j * 45));
+      boxes.forEach((b, i) => {
+        if (bornN(i) !== k) return;
+        anim(b, [{ opacity: 0.13, scale: 0.94, translate: '0 6px' }, { opacity: 1, scale: 1, translate: '0 0' }], { duration: 420, delay: when.get(i) });
+      });
+      for (const e of s.edges) {
+        if (bornE(e) !== k) continue;
+        const j = st.edges.indexOf(e), d = j >= 0 ? j * PER : Math.max(when.get(idx[e.from]) ?? 0, when.get(idx[e.to]) ?? 0);
+        if (j >= 0 && !e.path.getAttribute('stroke-dasharray')) {
+          // A hop the packet travels draws itself under the packet; the arrowhead waits for the line.
+          const len = e.path.getTotalLength(), dash = `${len} ${len}`, mk = e.rev ? 'marker-start' : 'marker-end';
+          e.path.removeAttribute(mk);
+          const a = anim(e.path, [{ strokeDasharray: dash, strokeDashoffset: e.rev ? -len : len }, { strokeDasharray: dash, strokeDashoffset: 0 }], { duration: PER, delay: d, easing: 'linear' });
+          a.onfinish = () => paint(e, !!lit && lit.has(e));
+        } else anim(e.path, [{ opacity: 0.1 }, { opacity: 1 }], { duration: 320, delay: d });
+        if (e.pillEl) anim(e.pillEl, [{ opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1 }], { duration: 260, delay: d + (j >= 0 ? PER * 0.6 : 120) });
+      }
+    }
+    // Reaching the last step forward: every box the replay visited settles green in reading order. An ending that
+    // fails or is filtered out pulses only where it stopped.
+    function finale(st) {
+      const end = boxes[idx[st.ids[st.ids.length - 1]]];
+      if (st.fail || st.out === 'drop') { pulse(end, st.fail ? '--vz-coral' : '--vz-dim', 0); return; }
+      const seen = boxes.map((_, i) => i).filter((i) => nBirth.has(i))
+        .sort((a, b) => s.nodes[a].box.y - s.nodes[b].box.y || s.nodes[a].box.x - s.nodes[b].box.x);
+      seen.forEach((i, j) => { later(j * 40, () => boxes[i].classList.add('done')); pulse(boxes[i], '--vz-green', j * 40); });
+      pulse(end, '--vz-green', seen.length * 40 + 120);
     }
     function animate(es) {
       if (!es.length || reduced()) return;
-      const t0 = performance.now(), per = 520, total = per * es.length, mine = step;
+      const t0 = performance.now(), per = PER, total = per * es.length, mine = step;
       const tick = (t) => {
         if (step !== mine) return;
         const f = Math.min(Math.max(t - t0, 0) / total, 0.999), e = es[Math.floor(f * es.length)], p = e.path, local = (f * es.length) % 1, len = p.getTotalLength();
@@ -874,12 +953,14 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       };
       requestAnimationFrame(tick);
     }
+    const stop = () => { clearTimeout(timer); timer = null; playBtn.textContent = '▶'; playBtn.setAttribute('aria-pressed', false); };
     function play() {
-      if (timer) { clearInterval(timer); timer = null; playBtn.textContent = '▶'; playBtn.setAttribute('aria-pressed', false); return; }
-      if (step >= steps.length - 1) go(-1);
+      if (timer) return stop();
+      if (step >= lastStep) go(-1);
       playBtn.textContent = '❚❚'; playBtn.setAttribute('aria-pressed', true);
-      go(step + 1);
-      timer = setInterval(() => { if (step >= steps.length - 1) play(); else go(step + 1); }, 1900);
+      // The next step waits for this one's packet, so a long path is never cut off mid-flight.
+      const next = () => { go(step + 1); if (step >= lastStep) stop(); else timer = setTimeout(next, Math.max(1900, PER * steps[step].edges.length + 1100)); };
+      next();
     }
     if (steps.length) {
       playBtn = h('button', { 'aria-label': 'play', 'aria-pressed': false, onclick: play }, '▶');
@@ -898,6 +979,21 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (k !== zoom) { zoom = k; stage.style.zoom = k; }
     })).observe(wrapEl);
     if (steps.length) go(-1);
+    // The first time the graph scrolls into view (or its tab opens), boxes rise in reading order, then the edges.
+    if (typeof IntersectionObserver !== 'undefined' && !reduced()) {
+      const io = new IntersectionObserver((xs) => { if (xs.some((x) => x.isIntersecting)) { io.disconnect(); enter(); } });
+      io.observe(wrapEl);
+    }
+    function enter() {
+      if (step >= 0) return;
+      const order = boxes.map((_, i) => i).sort((a, b) => s.nodes[a].box.y - s.nodes[b].box.y || s.nodes[a].box.x - s.nodes[b].box.x);
+      const gap = Math.min(22, 360 / Math.max(order.length, 1)), fade = [{ opacity: 0 }, { opacity: 1 }];
+      order.forEach((i, j) => boxes[i].animate([{ opacity: 0, translate: '0 4px' }, { opacity: 1, translate: '0 0' }], { duration: 320, delay: j * gap, easing: EASE, fill: 'backwards' }));
+      for (const e of s.edges) {
+        e.path.animate(fade, { duration: 360, delay: 140, easing: EASE, fill: 'backwards' });
+        e.pillEl?.animate(fade, { duration: 280, delay: 220, easing: EASE, fill: 'backwards' });
+      }
+    }
   }
 
   /* ---------- tree / diff ---------- */
@@ -913,10 +1009,10 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const box = h('div', { class: 'vz-tree', role: 'tree', tabindex: 0, 'aria-label': s.name });
     const detail = h('div', { class: 'vz-detail', 'aria-live': 'polite' }, 'Select a call to see where it lives.');
     const search = h('input', { type: 'search', placeholder: 'filter calls', 'aria-label': 'filter calls' });
-    const chgBtn = anyChange ? h('button', { 'aria-pressed': onlyChanged, onclick: () => { onlyChanged = !onlyChanged; chgBtn.setAttribute('aria-pressed', onlyChanged); draw(); } }, 'changes only') : null;
+    const chgBtn = anyChange ? h('button', { 'aria-pressed': onlyChanged, onclick: () => { onlyChanged = !onlyChanged; chgBtn.setAttribute('aria-pressed', onlyChanged); draw(true); } }, 'changes only') : null;
     const sum = [counts.add && h('span', { class: 's-add' }, `+${counts.add}`), counts.del && h('span', { class: 's-del' }, ` −${counts.del}`), counts.mod && h('span', { class: 's-mod' }, ` ~${counts.mod}`)].filter(Boolean);
     const bar = h('div', { class: 'vz-bar' }, search, chgBtn,
-      h('button', { onclick: () => { all.forEach((n) => (n.open = true)); draw(); } }, 'expand'),
+      h('button', { onclick: () => { all.forEach((n) => (n.open = true)); draw(true); } }, 'expand'),
       h('button', { onclick: () => { all.forEach((n) => (n.open = n.depth < 1)); draw(); } }, 'collapse'),
       h('span', { class: 'vz-count' }, all.length + ' calls ', ...sum));
     search.addEventListener('input', () => { query = search.value.trim().toLowerCase(); draw(); });
@@ -927,8 +1023,10 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       const self = (!onlyChanged || nd.changed) && matches(nd);
       return (nd._k = self || nd.kids.some(keep));
     };
-    function draw() {
+    // A toggle that reveals rows slides them in, staggered; filtering and the first draw do not animate.
+    function draw(reveal) {
       for (const nd of all) nd._k = null;
+      const before = new Set(visible), fresh = [];
       visible = []; const frag = document.createDocumentFragment();
       const emit = (nd) => {
         if (!keep(nd)) return;
@@ -942,12 +1040,14 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
           h('span', { class: 'vz-lab' }, nd.label),
           nd.note ? h('span', { class: 'vz-note' }, '# ' + nd.note) : null,
           nd.ref ? h('span', { class: 'vz-ref', title: nd.ref }, short(nd.ref)) : null);
-        row.addEventListener('click', (ev) => { if (ev.target.classList.contains('vz-car') || nd === sel) { nd.open = !nd.open; } pick(nd); draw(); });
+        row.addEventListener('click', (ev) => { const flip = ev.target.classList.contains('vz-car') || nd === sel; if (flip) nd.open = !nd.open; pick(nd); draw(flip); });
+        if (reveal && !before.has(nd)) fresh.push(row);
         frag.append(row);
         if (open) kidsShown.forEach(emit);
       };
       s.root.kids.forEach(emit);
       box.replaceChildren(frag);
+      if (reveal && !reduced()) fresh.slice(0, 24).forEach((r, j) => r.animate([{ opacity: 0, translate: '-4px 0' }, { opacity: 1, translate: '0 0' }], { duration: 200, delay: j * 14, easing: 'cubic-bezier(.23,1,.32,1)', fill: 'backwards' }));
     }
     function pick(nd) {
       sel = nd;
@@ -962,7 +1062,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       const mv = (j) => { if (visible[j]) { pick(visible[j]); draw(); box.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); } };
       if (ev.key === 'ArrowDown' || ev.key === 'j') mv(i + 1);
       else if (ev.key === 'ArrowUp' || ev.key === 'k') mv(Math.max(i - 1, 0));
-      else if (sel && (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft' || ev.key === 'Enter')) { sel.open = ev.key === 'Enter' ? !sel.open : ev.key === 'ArrowRight'; draw(); }
+      else if (sel && (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft' || ev.key === 'Enter')) { sel.open = ev.key === 'Enter' ? !sel.open : ev.key === 'ArrowRight'; draw(true); }
       else return;
       ev.preventDefault();
     });
@@ -986,8 +1086,11 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const panels = secs.map((s) => { s.uid = ++uid; const p = h('div', { class: 'vz-panel', role: 'tabpanel' }); (s.kind === 'graph' ? renderGraph : renderTree)(s, doc, p); return p; });
     if (secs.length > 1) {
       const tabs = secs.map((s, i) => h('button', { role: 'tab', 'aria-selected': i === 0, onclick: () => show(i) }, s.name));
-      const show = (i) => { tabs.forEach((t, j) => t.setAttribute('aria-selected', i === j)); panels.forEach((p, j) => (p.hidden = i !== j)); };
-      root.append(h('div', { class: 'vz-tabs', role: 'tablist' }, tabs), ...panels); show(0);
+      const show = (i, quiet) => {
+        tabs.forEach((t, j) => t.setAttribute('aria-selected', i === j)); panels.forEach((p, j) => (p.hidden = i !== j));
+        if (!quiet && !reduced()) panels[i].animate([{ opacity: 0, translate: '0 4px' }, { opacity: 1, translate: '0 0' }], { duration: 220, easing: 'cubic-bezier(.23,1,.32,1)' });
+      };
+      root.append(h('div', { class: 'vz-tabs', role: 'tablist' }, tabs), ...panels); show(0, true);
     } else root.append(...panels);
     el.replaceChildren(root);
     // Outside T3 there are no theme variables and the fallback palette is dark; give it a dark ground unless the page has its own.
