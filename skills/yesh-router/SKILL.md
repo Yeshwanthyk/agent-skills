@@ -49,7 +49,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - review structure / ownership / maintainability → [structure-review](../structure-review/SKILL.md)
 - blast radius / what could this break: beyond the diff → [blast-radius](../blast-radius/SKILL.md)
 - interrogate / challenge / are we sure: independent reviewers → [interrogate](../interrogate/SKILL.md)
-- verifier / verification skill: create, audit, or repair a project-local verifier for a real surface → [verification-skill](../verification-skill/SKILL.md)
+- verifier / verification skill / formally verify / model-check / prove: create, audit, or repair a project-local verifier for a real surface or a high-risk property → [verification-skill](../verification-skill/SKILL.md)
 - eval / does this skill change help: agent behavior before and after → [eval](playbooks/eval.md)
 
 **Coordinate**

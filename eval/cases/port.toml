@@ -33,3 +33,18 @@ activation = "router"
 tags = ["port"]
 prompt = "Agents keep adding new order states by editing TRANSITIONS in one place and forgetting the others. Pick a structure for the state machine that makes that mistake impossible. Design only."
 expect = { any_method = ["architect", "correct"], no_edits = true }
+
+# pstack 0.15.27 port: formal verification skill.
+[[case]]
+id = "port-formal-verify-skill"
+activation = "router"
+tags = ["port"]
+prompt = "Formally verify that two concurrent retries of the payment job can never charge the same order twice, and leave something the next agent can rerun on every change."
+expect = { methods = ["verification-skill"], reads = ["verification-skill/references/formal.md"] }
+notes = "verification-skill is user-invoked, so the case needs the router."
+
+[[case]]
+id = "port-model-only-stays-invariants"
+tags = ["port"]
+prompt = "Model the order state machine and tell me which transitions can race. Don't write any code yet."
+expect = { methods = ["invariants"], no_edits = true }

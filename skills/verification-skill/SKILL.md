@@ -1,12 +1,14 @@
 ---
 name: verification-skill
-description: Create, audit, or repair a project-local verify-* skill that launches, drives, and proves a real application surface.
+description: Create, audit, or repair a project-local verify-* skill that launches, drives, and proves a real application surface, or formally verifies a high-risk property of the code.
 disable-model-invocation: true
 ---
 
 # Verification Skill
 
 A verification skill is a project-local `verify-<app>/` skill that lets a cold agent launch, inspect, drive, and prove one application surface. This skill owns its lifecycle: create one, audit one, or repair one.
+
+**Formal.** When the request is to model-check, prove, or formally verify a property (a race, retry, state machine, parser, or unsafe code), the skill is a `verify-formal-<area>/` instead. Read [formal](references/formal.md): it replaces Create's discovery, generation, and proof, and adjusts Audit and repair. The branches, outcomes, and defect split below still apply.
 
 ## Branches
 

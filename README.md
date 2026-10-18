@@ -47,7 +47,7 @@ It reads the router from `~/.pi/agent/skills/yesh-router/SKILL.md` and is on in 
 | [`how`](./skills/how) | Explain how code works and why it was built that way. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Build an interactive HTML model of behavior or state. |
 | [`interrogate`](./skills/interrogate) | Run independent adversarial reviews and merge them into one judgment. |
-| [`invariants`](./skills/invariants) | Model state in Quint or Lean, then break the invariants with property tests or fuzzing. |
+| [`invariants`](./skills/invariants) | Model state in Quint, TLA+, or Lean, then break the invariants with property tests or fuzzing. |
 | [`meat-review`](./skills/meat-review) | Review a diff, branch, or PR as a short annotated reading. |
 | [`motion-explainer`](./skills/motion-explainer) | Build a narrated, timeline-driven explainer, optionally rendered to MP4. |
 | [`plan`](./skills/plan) | Turn a settled approach into ordered chunks with risks and proof. |
@@ -59,7 +59,7 @@ It reads the router from `~/.pi/agent/skills/yesh-router/SKILL.md` and is on in 
 | [`structure-review`](./skills/structure-review) | Audit code structure and propose fixes backed by evidence. |
 | [`swarm`](./skills/swarm) | Run parallel agents for coverage, a solution race, or a best-of pick. |
 | [`unslop`](./skills/unslop) | Clean up prose, docs, PR bodies, and commits. |
-| [`verification-skill`](./skills/verification-skill) | Build or fix a project skill that drives and proves one real app surface. |
+| [`verification-skill`](./skills/verification-skill) | Build or fix a project skill that drives one real app surface, or formally verifies one high-risk property. |
 | [`viz`](./skills/viz) | Render a flow, DAG, call tree, or call diff from a few lines of text. |
 | [`writing-for-agents`](./skills/writing-for-agents) | Write or review docs agents read: skills, `AGENTS.md`, `CLAUDE.md`. |
 | [`yesh-router`](./skills/yesh-router) | Pick the method for each task and apply the principles. |
@@ -74,8 +74,9 @@ None of these are required. A few skills call them when they are installed.
 | --- | --- |
 | [`gh`](https://cli.github.com/) | `show-me` PR workflow |
 | [`calldiff`](https://github.com/tanishqkancharla/calldiff) (Node 22+) | `show-me`, `viz`, `meat-review` |
-| [Quint](https://quint-lang.org/) (JDK 17+ for `quint verify`) | `invariants` |
-| [Lean 4](https://lean-lang.org/) | `invariants` |
+| [Quint](https://quint-lang.org/) (JDK 17+ for `quint verify`) or [TLA+](https://lamport.azurewebsites.net/tla/tla.html) | `invariants`, `verification-skill` |
+| [Lean 4](https://lean-lang.org/) | `invariants`, `verification-skill` |
+| [Kani](https://model-checking.github.io/kani/), [Verus](https://github.com/verus-lang/verus), [CBMC](https://www.cprover.org/cbmc/), or [Dafny](https://dafny.org/) | `invariants`, `verification-skill` |
 
 ## Changing a skill
 
@@ -89,4 +90,4 @@ None of these are required. A few skills call them when they are installed.
 
 ## Credits
 
-`research` and `writing-for-agents` are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT). The `show-me` PR sections draw on its `pr` skill and on Dex Horthy's [humanlayer/skills](https://github.com/humanlayer/skills). The router and its playbooks draw on the [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack) (MIT). The [forward implementation first](skills/yesh-router/references/principles/forward-implementation-first.md) principle draws on [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first).
+`research` and `writing-for-agents` are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT). The `show-me` PR sections draw on its `pr` skill and on Dex Horthy's [humanlayer/skills](https://github.com/humanlayer/skills). The router and its playbooks draw on the [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack) (MIT), and the formal branch of `verification-skill` on its `create-formal-verification-skill` (0.15.27). The [forward implementation first](skills/yesh-router/references/principles/forward-implementation-first.md) principle draws on [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first).

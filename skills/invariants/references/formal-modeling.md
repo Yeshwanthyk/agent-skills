@@ -1,6 +1,6 @@
 # Formal Modeling
 
-Use this branch when critical or concurrent behavior remains ambiguous after the transition model.
+Use this branch when critical or concurrent behavior remains ambiguous after the transition model, or when a property must hold for every case in a stated scope rather than the cases someone wrote.
 
 ## Model
 
@@ -15,46 +15,35 @@ Capture:
 
 Keep the model at the smallest boundary that contains the invariant.
 
+## Rules
+
+- **True to the code.** Each variable and transition cites the file and symbol it models, and uses this repo's names. A step the model treats as atomic is atomic in the code: one lock, one transaction, no `await` or I/O inside it.
+- **Able to fail.** Show each property going red on a broken variant of what it guards (a removed guard, a reordered write, a dropped retry check), then restore. A check never seen red proves nothing.
+- **Findings stay findings.** When the current design or code breaks the property, report the counterexample. Keep the property and the model as stated; fix product code only when asked.
+- **Scoped.** Every result names its reach: sampled traces, every trace up to a bound, every input up to a bound, or every input. List the assumptions (bounds, fairness, axioms, trusted code) it rests on.
+- **Plain.** State the property and the harm in one sentence each. Tell a counterexample as a numbered sequence of steps in the code's nouns.
+
 ## Choose the tool
 
-| Question | Tool | What a pass means |
+Pick the cheapest tool that answers the question. When the repo already uses one, use it. Read only the matching reference.
+
+| Question | Tool | Reference |
 | --- | --- | --- |
-| Can any interleaving of these transitions break the invariant? Races, retries, recovery, ordering | **Quint** (`quint run`, then `quint verify`) | `run`: no violation in the sampled traces. `verify`: none in any trace up to `--max-steps` |
-| Does the invariant hold for every state and every length, beyond any bound? Arithmetic, a pure transition function, a refinement | **Lean 4** | A proof about the model, for all inputs |
+| Can events happen in a bad order? Races, retries, recovery, distributed protocols | Model checker: **Quint** or **TLA+** | [model-checkers.md](model-checkers.md) |
+| Does a pure function, transition, or algorithm hold for every input and every length? Or is an executable spec needed as a test oracle? | Proof assistant: **Lean 4** | [lean.md](lean.md) |
+| Does the code itself avoid undefined behavior, overflow, or a broken data-structure invariant for every input up to a bound? | Verifier on the code: **Kani**, **Verus**, **CBMC**, **Dafny** | [code-verifiers.md](code-verifiers.md) |
 
-Start with Quint for state machines: it searches for a counterexample automatically and returns the trace. Use Lean only after the model checks clean and an unbounded guarantee is worth the proof effort. Lean returns no trace when the claim is false, so find the counterexample in Quint first. When the repo already uses TLA+, Alloy, or another tool, use that tool with the same packet.
+For a state machine, find counterexamples with a model checker first. A model checker returns a trace, and a failed proof returns none. Move to Lean when the model checks clean and a guarantee beyond the bound is worth the proof effort.
 
-Both prove facts about the model, not the code. Tie each invariant back to its enforcement point and a boundary test.
+## Feed generated tests
 
-## Quint
+A model and its proofs establish facts about the model. Property and fuzz tests establish that the code behaves like the model. Wire each verified property to the invariants Property or Fuzz branch (steps 2-5), or record why none applies:
 
-Create a `.qnt` module with `init`, `step`, and named invariants, then run:
-
-```sh
-quint parse model.qnt
-quint typecheck model.qnt
-quint run model.qnt --invariant inv_safety --max-steps 20        # random simulation
-quint verify model.qnt --invariant inv_safety --max-steps 10     # bounded model check (Apalache)
-```
-
-`--invariants a b` checks several invariants together. `quint verify` downloads Apalache on first use and needs a JDK 17 or newer on `PATH`. Raise `--max-steps` until every scenario in the model fits inside the bound, and report the bound with the result. Add temporal properties for progress where the model supports them.
-
-## Lean 4
-
-Write the state as an inductive type or structure, the transition as a total function, and the invariant as a theorem over every reachable sequence:
-
-```lean
-def run (s : State) : List Op → State
-  | [] => s
-  | o :: os => run (step s o) os
-
-theorem inv_preserved (s : State) (os : List Op) (h : Safe s) : Safe (run s os) := by
-  induction os generalizing s with
-  | nil => simpa [run]
-  | cons o os ih => exact ih _ (step_preserves s o h)
-```
-
-Prove the one-step lemma (`step_preserves`) first; the sequence theorem follows by induction. Check a single file with `lean Model.lean`. Name the invariant something other than `Inv`, which core Lean already defines. Use `lake new` with Mathlib only when the proof needs its libraries. `sorry` is an open question, not a proof: report each one.
+1. **Invariant as oracle.** Each named invariant becomes the assertion in the step 2 record. A stateful property test checks it against the real entry point after each transition, with the operation alphabet taken from the model's transitions.
+2. **Counterexample as regression.** Translate each counterexample trace into concrete operations and replay it on the real code. A replay that fails is the irrefutable proof of the defect and becomes a regression case in the ordinary suite. A trace that does not replay is a modeling gap: fix the model before trusting its other results.
+3. **Model as differential oracle.** When the model is executable (a Lean model compiled with `lake build`, or Quint traces exported as ITF), generate inputs or traces, run them through both model and code, and compare results at each step. This is the conformance check, and it catches model drift that proofs cannot.
+4. **One harness, several engines.** A code-level verifier harness that takes symbolic input can often also run as a property test and a fuzz target. See [code-verifiers.md](code-verifiers.md).
+5. **Disagreement is classified.** When generated tests and the model disagree, decide whether the model, the code, or the harness is wrong before changing any of them.
 
 ## Structured Machine Spec
 
@@ -74,4 +63,4 @@ boundary test matrix
 
 ## Completion
 
-Complete the formal branch when the model parses and typechecks, and the report states what each result covers: sampled traces (`quint run`), every trace up to a named bound (`quint verify`), or every state (a Lean proof with no `sorry`). Each counterexample is connected to a concrete design correction and a boundary test.
+The model parses and typechecks, each property has been seen red on a broken variant, and the report states each result's reach and assumptions. Each counterexample has replayed on the code or is named as a modeling gap, and connects to a design correction and a regression case. Each verified property names its linked property or fuzz test, or says why none applies.
