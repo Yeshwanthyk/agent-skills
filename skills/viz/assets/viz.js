@@ -980,8 +980,15 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     })).observe(wrapEl);
     if (steps.length) go(-1);
     // The first time the graph scrolls into view (or its tab opens), boxes rise in reading order, then the edges.
+    // A graph already on screen when it renders starts built, so a screenshot taken at load shows all of it.
     if (typeof IntersectionObserver !== 'undefined' && !reduced()) {
-      const io = new IntersectionObserver((xs) => { if (xs.some((x) => x.isIntersecting)) { io.disconnect(); enter(); } });
+      let first = true;
+      const io = new IntersectionObserver((xs) => {
+        const seen = xs.some((x) => x.isIntersecting);
+        if (seen) io.disconnect();
+        if (seen && !first) enter();
+        first = false;
+      });
       io.observe(wrapEl);
     }
     function enter() {
