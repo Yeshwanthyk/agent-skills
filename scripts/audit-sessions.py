@@ -57,6 +57,63 @@ def extra_counts(path):
     return todo, spawns, mode_on
 
 
+NOT_USER = ("<task-notification", "This session is being continued", "<command-", "[SYSTEM NOTIFICATION",
+            "<local-command", "Caveat:")
+OLD_ROUTER = b"Activation is explicit and sticky"
+
+
+def _user_text(msg):
+    c = msg.get("content")
+    if isinstance(c, str):
+        return c
+    if isinstance(c, list) and not any(isinstance(b, dict) and b.get("type") == "tool_result" for b in c):
+        return " ".join(b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text")
+    return ""
+
+
+def turns(path):
+    """Real user turns in a Claude transcript: [{prompt, hook, work, header}].
+
+    hook: the per-turn reminder was injected. work: the reply used a tool (a one-line
+    answer needs no header). header: the reply has a Method: line. Repeated prompts
+    (T3 resends) count once.
+    """
+    out, cur, seen = [], None, set()
+    with open(path, "rb") as f:
+        for raw in f:
+            try:
+                e = json.loads(raw)
+            except ValueError:
+                continue
+            if e.get("isSidechain"):
+                continue
+            if e.get("type") == "attachment" and (e.get("attachment") or {}).get("type") == "hook_additional_context":
+                if cur:
+                    cur["hook"] = True
+                continue
+            msg = e.get("message") if isinstance(e.get("message"), dict) else {}
+            if e.get("type") == "user":
+                text = _user_text(msg).strip()
+                if not text or text.startswith(NOT_USER):
+                    continue
+                cur = None
+                if text[:300] in seen:
+                    continue
+                seen.add(text[:300])
+                cur = {"prompt": text[:300], "hook": False, "work": False, "header": False}
+                out.append(cur)
+            elif e.get("type") == "assistant" and cur:
+                for b in msg.get("content") or []:
+                    if not isinstance(b, dict):
+                        continue
+                    if b.get("type") == "tool_use":
+                        cur["work"] = True
+                    elif b.get("type") == "text" and usage.LINE_RE.search(b.get("text", "")):
+                        if any(m.group(1) == "Method" for m in usage.LINE_RE.finditer(b["text"])):
+                            cur["header"] = True
+    return out
+
+
 def sessions(roots, days):
     cutoff = time.time() - days * 86400
     for host, root in roots:
@@ -74,10 +131,18 @@ def main(argv=None):
     ap.add_argument("--pi", default="~/.pi/agent/sessions")
     args = ap.parse_args(argv)
 
-    rows = []
+    rows, firsts = [], set()
     for host, path in sessions([("claude", args.claude), ("pi", args.pi)], args.days):
         state, _ = usage.parse(path)
         todo, spawns, mode_on = extra_counts(path)
+        ts = turns(path) if host == "claude" else []
+        if ts:  # a T3 fork or continuation repeats the parent's opening turns
+            key = ts[0]["prompt"]
+            if key in firsts:
+                continue
+            firsts.add(key)
+        with open(path, "rb") as f:
+            old_router = OLD_ROUTER in f.read()
         rows.append({
             "host": host, "session": os.path.basename(path)[:-6].split("_")[-1], "path": path,
             "mtime": os.path.getmtime(path),
@@ -87,7 +152,8 @@ def main(argv=None):
             "method_lines": len(state["method"]), "used_lines": len(state["used"]),
             "skills": state["skills"], "playbooks": state["playbooks"],
             "principles": state["principles"], "unread_claims": usage.unread_claims(state),
-            "todo_calls": todo, "spawns": spawns,
+            "todo_calls": todo, "spawns": spawns, "old_router": old_router,
+            "turns": [{k: t[k] for k in ("hook", "work", "header")} for t in ts],
         })
     rows.sort(key=lambda r: r["mtime"])
     if args.json:
@@ -111,6 +177,10 @@ def main(argv=None):
               share(on, "method_lines"), share(on, "used_lines"), share(on, "skills"),
               share(on, "playbooks"), share(on, "principles"), share(on, "todo_calls"),
               share(on, "unread_claims")))
+    work = [t for r in on if not r["old_router"] for t in r["turns"] if t["work"]]
+    for label, hook in (("with reminder", True), ("without reminder", False)):
+        ws = [t for t in work if t["hook"] is hook]
+        print("work turns %s: header %d/%d" % (label, sum(t["header"] for t in ws), len(ws)))
     return 0
 
 

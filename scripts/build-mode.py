@@ -8,6 +8,9 @@ an output style with Claude Code frontmatter.
     build-mode.py [--skills-dir DIR] [--out FILE] [--check]
 
 --check builds in memory and exits 1 if FILE differs from the build.
+Writing the style also installs the per-turn reminder hook
+(yesh-router/scripts/turn-reminder.py) in ~/.claude/settings.json as a
+UserPromptSubmit hook; --no-hook skips that, and --check reports it.
 --source FILE reads the mode text from FILE (e.g. the repo copy) while links
 still resolve under <skills-dir>; use it to see whether a repo edit has
 reached the installed style. The installed skills come from GitHub main via
@@ -76,6 +79,40 @@ def build(skills_dir, source=None):
     return header + body, missing
 
 
+HOOK_SCRIPT = "scripts/turn-reminder.py"
+SETTINGS = "~/.claude/settings.json"
+
+
+def hook_command(skills_dir):
+    return "python3 " + os.path.join(skills_dir, MODE_DIR, HOOK_SCRIPT)
+
+
+def ensure_hook(skills_dir, write):
+    """Point one UserPromptSubmit hook at the reminder script; drop stale copies."""
+    script = os.path.join(skills_dir, MODE_DIR, HOOK_SCRIPT)
+    if not os.path.isfile(script):
+        return "turn reminder: %s missing; hook left as is" % script
+    path = os.path.expanduser(SETTINGS)
+    try:
+        with open(path, encoding="utf-8") as f:
+            settings = json.load(f)
+    except FileNotFoundError:
+        settings = {}
+    groups = settings.setdefault("hooks", {}).setdefault("UserPromptSubmit", [])
+    want = {"type": "command", "command": hook_command(skills_dir), "timeout": 5}
+    kept = [g for g in groups
+            if not any("turn-reminder.py" in h.get("command", "") for h in g.get("hooks", []))]
+    if kept + [{"hooks": [want]}] == groups:
+        return "turn reminder: installed"
+    if not write:
+        return "turn reminder: not installed; rerun build-mode.py"
+    settings["hooks"]["UserPromptSubmit"] = kept + [{"hooks": [want]}]
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(settings, f, indent=2)
+        f.write("\n")
+    return "turn reminder: installed in " + path
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--skills-dir", default="~/.claude/skills")
@@ -84,6 +121,8 @@ def main(argv=None):
                         help="read the mode text from this file instead of the installed copy")
     parser.add_argument("--check", action="store_true",
                         help="compare the build with --out instead of writing it")
+    parser.add_argument("--no-hook", action="store_true",
+                        help="do not install the per-turn reminder hook")
     args = parser.parse_args(argv)
 
     # Expand ~ but keep the path as given; do not resolve symlinks.
@@ -102,6 +141,8 @@ def main(argv=None):
         return 1
 
     if args.check:
+        if not args.no_hook:
+            print(ensure_hook(skills_dir, write=False), file=sys.stderr)
         try:
             with open(out, encoding="utf-8") as f:
                 current = f.read()
@@ -122,6 +163,8 @@ def main(argv=None):
     with open(out, "w", encoding="utf-8") as f:
         f.write(content)
     print("wrote " + out)
+    if not args.no_hook:
+        print(ensure_hook(skills_dir, write=True))
     return 0
 
 

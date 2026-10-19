@@ -1,0 +1,39 @@
+# Phrasings from real powerball sessions (2026-10-16..18) where no method fired.
+# skilleval is single-turn, so the mid-thread misses ("Status", "blast radius" late
+# in a thread) are not covered here; these test the words alone.
+
+[[case]]
+id = "usage-broken-why"
+activation = "router"
+tags = ["usage"]
+prompt = "the discount thing is broken, when two discounts match the same sku only one applies. why is it doing that. dont change anything yet"
+expect = { methods = ["diagnose"], no_edits = true }
+
+[[case]]
+id = "usage-cant-retry"
+activation = "router"
+tags = ["usage"]
+prompt = "cant get a failed webhook to go through after a retry, it just gives up. figure out why"
+expect = { methods = ["diagnose"] }
+
+[[case]]
+id = "usage-search-wide"
+activation = "router"
+tags = ["usage"]
+prompt = "search wide. what else is out there for reliable webhook delivery besides what we do here, libraries, services, patterns. dont change code"
+expect = { methods = ["research"], not_methods = ["diagnose"] }
+notes = "research saves a cited notes file by design, so no_edits does not apply"
+
+[[case]]
+id = "usage-break-slices"
+activation = "router"
+tags = ["usage"]
+prompt = "we decided: discounts move to a dict keyed by sku and we add a max stacked percent cap. break it into slices i can hand out to agents"
+expect = { methods = ["plan"], no_edits = true }
+
+[[case]]
+id = "usage-speed-it-up"
+activation = "router"
+tags = ["usage"]
+prompt = "order_total takes forever on big carts, speed it up"
+expect = { methods = ["perf-issue"] }

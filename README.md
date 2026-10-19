@@ -14,6 +14,8 @@ Powerball mode sends `yesh-router` to the agent on every turn, so each task star
    python3 scripts/build-mode.py   # writes ~/.claude/output-styles/powerball.md
    ```
 
+   It also installs the per-turn reminder: a `UserPromptSubmit` hook in `~/.claude/settings.json` that runs [`turn-reminder.py`](skills/yesh-router/scripts/turn-reminder.py) and adds one line asking the agent to re-match each new ask. The router text loses weight deep into long threads; this line sits next to the newest message. Pass `--no-hook` to skip it. T3 Code runs the same `claude` binary, so it gets the hook too.
+
 2. Link the worker subagent, so delegated steps start with the router loaded:
 
    ```sh
@@ -33,6 +35,16 @@ pi install git:github.com/Yeshwanthyk/pi-powerball
 ```
 
 It reads the router from `~/.pi/agent/skills/yesh-router/SKILL.md` and is on in every new session. Toggle it with `/powerball on` or `/powerball off`. To confirm it found the router, run `pi -p "/powerball status"`.
+
+### Per-turn reminder by host
+
+| Host | Reminder |
+| --- | --- |
+| Claude Code, T3 Code | On, installed by `build-mode.py` |
+| pi | Not set up. Port it into pi-powerball (run `turn-reminder.py` on each user message) only if the session audit shows the header fading in long pi threads too |
+| Codex | Not set up; check for a per-prompt hook first |
+
+Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, which splits header and read rates by turns with and without the reminder.
 
 ## Skills
 
