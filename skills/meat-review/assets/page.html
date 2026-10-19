@@ -7,9 +7,15 @@
 <link id="hl-dark" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
 <link id="hl-light" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css" disabled>
 <script>
+// A frame that denies storage (an opaque-origin sandbox) throws on any localStorage access, which would stop the
+// scripts that build the page; there the page keeps its state in memory for the visit.
+const store = (() => {
+  try { localStorage.getItem('meat-review:probe'); return localStorage; }
+  catch { const m = new Map(); return {getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v))}; }
+})();
 // Theme before first paint: saved choice, else the system's.
 (function () {
-  const pick = localStorage.getItem('meat-review:theme') || 'auto';
+  const pick = store.getItem('meat-review:theme') || 'auto';
   const dark = pick === 'dark' || (pick === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   document.documentElement.dataset.pick = pick;
@@ -75,8 +81,8 @@ tr.thread td{padding:0;white-space:normal}.th{margin:6px 14px 8px 70px;border:1p
 <script>
 const D = JSON.parse(document.getElementById('data').textContent);
 const KEY = 'meat-review:' + D.key;
-const S = Object.assign({read: {}, verdict: {}, reply: {}, mine: []}, JSON.parse(localStorage.getItem(KEY) || '{}'));
-const save = () => { localStorage.setItem(KEY, JSON.stringify(S)); side(); };
+const S = Object.assign({read: {}, verdict: {}, reply: {}, mine: []}, JSON.parse(store.getItem(KEY) || '{}'));
+const save = () => { store.setItem(KEY, JSON.stringify(S)); side(); };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const toast = t => { const el = $('#toast'); el.textContent = t; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 1400); };
@@ -180,7 +186,7 @@ function side() {
 }
 
 function applyTheme(pick) {
-  localStorage.setItem('meat-review:theme', pick);
+  store.setItem('meat-review:theme', pick);
   const dark = pick === 'dark' || (pick === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   document.documentElement.dataset.pick = pick;
@@ -188,7 +194,7 @@ function applyTheme(pick) {
   document.getElementById('hl-light').disabled = dark;
   side();
 }
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if ((localStorage.getItem('meat-review:theme') || 'auto') === 'auto') applyTheme('auto'); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if ((store.getItem('meat-review:theme') || 'auto') === 'auto') applyTheme('auto'); });
 function go(id) { const el = document.getElementById(id); if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'}); }
 function current(sel) { const els = $$(sel); let best = els[0]; for (const el of els) if (el.getBoundingClientRect().top < 90) best = el; return best; }
 function refreshFinding(id) {
@@ -216,8 +222,8 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target;
-  if (t.dataset.r) { S.reply[t.dataset.r] = t.value; localStorage.setItem(KEY, JSON.stringify(S)); }
-  if (t.dataset.m) { const c = mine(t.dataset.m); if (c) c.text = t.value; localStorage.setItem(KEY, JSON.stringify(S)); }
+  if (t.dataset.r) { S.reply[t.dataset.r] = t.value; store.setItem(KEY, JSON.stringify(S)); }
+  if (t.dataset.m) { const c = mine(t.dataset.m); if (c) c.text = t.value; store.setItem(KEY, JSON.stringify(S)); }
 });
 document.addEventListener('focusout', e => { if (e.target.tagName === 'TEXTAREA') side(); });
 document.addEventListener('keydown', e => {
