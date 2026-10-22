@@ -21,7 +21,7 @@ Keep the model at the smallest boundary that contains the invariant.
 - **Able to fail.** Show each property going red on a broken variant of what it guards (a removed guard, a reordered write, a dropped retry check), then restore. A check never seen red proves nothing.
 - **Findings stay findings.** When the current design or code breaks the property, report the counterexample. Keep the property and the model as stated; fix product code only when asked.
 - **Scoped.** Every result names its reach: sampled traces, every trace up to a bound, every input up to a bound, or every input. List the assumptions (bounds, fairness, axioms, trusted code) it rests on.
-- **Plain.** State the property and the harm in one sentence each. Tell a counterexample as a numbered sequence of steps in the code's nouns.
+- **Plain.** State the property and the harm in one sentence each. Tell a counterexample as a numbered sequence of steps in the user's nouns when the flow has a statechart ("you walk away, then open it on your phone"), each step citing the code symbol it runs; otherwise in the code's nouns.
 
 ## Choose the tool
 
@@ -45,6 +45,10 @@ A model and its proofs establish facts about the model. Property and fuzz tests 
 4. **One harness, several engines.** A code-level verifier harness that takes symbolic input can often also run as a property test and a fuzz target. See [code-verifiers.md](code-verifiers.md).
 5. **Disagreement is classified.** When generated tests and the model disagree, decide whether the model, the code, or the harness is wrong before changing any of them.
 
+## Report on the statechart
+
+When step 1 drew a statechart, report the results on that same chart, re-rendered, rather than in a separate list. A path that checked clean stays plain. A counterexample adds its path with a `!` prefix ending at a `!` node naming what the user wrongly sees. After a fix, add a `+` path ending at a `+` node naming what they see now. Give each `!` path a `| | narration` tail with the counterexample in one sentence, so replay walks it. A story the model could not reach is a modeling gap: mark its leaf `?`. The reader sees which flows work, which broke, and which the fix changed, without reading the spec.
+
 ## Structured Machine Spec
 
 When no modeling tool fits, express the same packet as a structured spec:
@@ -63,4 +67,4 @@ boundary test matrix
 
 ## Completion
 
-The model parses and typechecks, each property has been seen red on a broken variant, and the report states each result's reach and assumptions. Each counterexample has replayed on the code or is named as a modeling gap, and connects to a design correction and a regression case. Each verified property names its linked property or fuzz test, or says why none applies.
+The model parses and typechecks, each property has been seen red on a broken variant, and the report states each result's reach and assumptions. Each counterexample has replayed on the code or is named as a modeling gap, and connects to a design correction and a regression case. Each verified property names its linked property or fuzz test, or says why none applies. When a statechart exists, it is re-rendered with every story marked as clean, failing, fixed, or unreached.
