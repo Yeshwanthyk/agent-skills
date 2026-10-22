@@ -4,12 +4,12 @@ Pick the worker for a spawn, `Agent`/`Task` call, or `pi -p` run from this table
 
 | role | model | run it in |
 | --- | --- | --- |
-| scout, lint fix | Haiku 5.5 | Claude Code subagent |
-| scout, lint fix (from Pi or Codex) | GPT-6 Luna | Pi |
+| scout, lint fix | Haiku 5.5 | Claude Code subagent. A scout locates and extracts: it returns paths, quotes and raw rows, and the parent does the counting, verdicts and drafting. |
+| scout, lint fix (from Pi or Codex) | GPT-6 Luna | Pi; in T3 Code, `delegate_task` on the pi provider |
 | implementation | Opus 5.5 | Claude Code |
 | verification, structure, slop-code and correction gates | Opus 5.5 | Claude Code |
 | design challenge, high-feedback review (run both) | Fable 5.1 | Claude Code subagent |
-| design challenge, high-feedback review (run both) | GPT-6 Astra | Pi |
+| design challenge, high-feedback review (run both) | GPT-6 Astra | Pi; in T3 Code, `delegate_task` on the pi provider so it shows in the sidebar |
 
 ## Pi
 Headless run: `command pi -p --model openai-codex/<model> --thinking medium --no-session "<task>"`. Pi's own models and defaults are in its `agent/settings.json`; if this file disagrees, settings.json wins.

@@ -16,7 +16,7 @@ This mode is on while the host sends this file, or after the user loads `/yesh-r
 - **A fork on reversible work** (code, notes, plans): make the reasonable call, proceed, and name it in the reply. Ask only for product direction, a missing goal or constraint, or a consequential, hard-to-reverse choice.
 - **Edits, installs, configuration, external actions.** These need the user's request or authority already given for the task; choosing a method grants none. When a named method is unavailable, say so and use the best available path.
 - **Settled implementation.** Read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it changes the work or its proof.
-- **Before any spawn.** Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the [routing table](references/routing.md). Several children, any writer, or a long run: show the review and end the turn.
+- **Before any spawn.** Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the [routing table](references/routing.md). Four or more children, any writer other than a lint fix, or a long run: show the review and end the turn.
 - **Before saying done.** Prove it on the real surface the user will use, the one `ends:` names; for UI work, show what that surface shows (screenshot or URL), not a test log.
 - **After compaction or a context gap.** Recover the method, current step, and outstanding proof from the last `Method:` and `Plan:` lines and the todo list; locate sessions under the [session-records contract](references/session-records.md).
 
@@ -58,7 +58,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - program / own this migration: dependent units or several owners → [orchestrate](playbooks/orchestrate.md)
 - decision trail / going to bed / review later: alongside the main method, never instead → [decision trail](references/decision-trail.md)
 - *On request:* pause / stop safely: leave a safe resume point → [pause-safely](playbooks/pause-safely.md)
-- status / what's done / what's left / where are we / ?: progress, a worker's state, or a catch-up with the user's open decisions → [recap](../recap/SKILL.md)
+- status / what's done / what's left / where are we / ?: progress, a worker's state, or a catch-up with the user's open decisions → [recap](../recap/SKILL.md). "Recap" of an answer or topic asks for a summary of the result, which is unslop's job.
 
 **Explain and write**
 - show me / draw / diagram / sketch: the current topic → [show-me](../show-me/SKILL.md)
@@ -106,4 +106,4 @@ Skills point at their principles where the decision happens. For direct work, or
 
 ## Reply
 
-Lead with the result. Give each claim its evidence or its label (measured, inferred, or guess) in the same sentence. Link only artifacts you produced or read. End with material limits.
+Lead with the result. Give each claim its evidence or its label (measured, inferred, or guess) in the same sentence. Link only artifacts you produced or read. Name threads, worktrees, branches and PRs by what they do, never by internal labels. End with material limits.
