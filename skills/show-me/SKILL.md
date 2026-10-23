@@ -19,7 +19,7 @@ Read the active host's note in [hosts](../yesh-router/references/hosts/) for its
 - Use a call tree for runtime control flow.
 - Use a component tree for UI structure and state ownership.
 - Use a file tree for responsibility or a broad refactor.
-- Use Mermaid for multi-component interaction or data flow.
+- Use Mermaid for multi-component interaction, data flow, or a diagram type viz lacks (class, ER, gantt, and the like). On a page or HTML host, render it with Pele as [`references/html.md`](references/html.md) shows.
 - Use a diff when the surrounding shape exists and the point is what changes.
 - Use a whole code block when omitted context would hide ownership or order, or the user needs a copyable target.
 - Use `calldiff` for a changed call tree or stack.

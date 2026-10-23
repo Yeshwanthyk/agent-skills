@@ -264,7 +264,7 @@ main(); side();
 <script type="module">
 // Pele draws Mermaid synchronously, and a static import holds the load event, so a screenshot taken at load
 // (T3's html_preview) shows the diagram. Mermaid itself drew after load, so the capture showed its source.
-import {render} from 'https://cdn.jsdelivr.net/npm/pele@1.6.0/+esm';
+import {render} from 'https://cdn.jsdelivr.net/npm/pele@1.9.0/+esm';
 for (const el of document.querySelectorAll('pre.mermaid')) {
   const src = el.dataset.src, tall = src.replace(/^(\s*(?:flowchart|graph)\s+)(LR|RL)\b/, '$1TD');
   try {
