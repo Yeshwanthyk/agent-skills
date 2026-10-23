@@ -73,7 +73,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 .vz-box.k-event{border-style:dashed}.vz-box.e-reach{border-color:var(--vz-green)}.vz-box.e-dropped{color:var(--vz-dim)}
 .vz-pill.plain{padding:0 8px}
 .vz-group{position:absolute;border:1px solid color-mix(in srgb,var(--vz-fg) 16%,transparent);border-radius:calc(var(--vz-r) + 2px);background:color-mix(in srgb,var(--vz-fg) 3%,transparent);transition:border-color 160ms var(--vz-out)}
-.vz-group>span{display:block;height:26px;line-height:26px;text-align:left;border-bottom:1px solid color-mix(in srgb,var(--vz-fg) 10%,transparent);color:var(--vz-fg);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px;font-weight:600;cursor:pointer}
+.vz-group>span{display:block;height:26px;line-height:26px;text-align:left;border-bottom:1px solid color-mix(in srgb,var(--vz-fg) 10%,transparent);color:var(--vz-fg);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px;font-weight:600;cursor:pointer;position:relative;z-index:1;background:color-mix(in srgb,var(--vz-fg) 3%,var(--vz-bg));border-radius:calc(var(--vz-r) + 2px) calc(var(--vz-r) + 2px) 0 0}
 .vz-group.hot{border-color:var(--vz-amber)}
 .vz-box.t-1,.vz-sw.t-1{--vz-t:var(--chart-1,#5fb3a3)}.vz-box.t-2,.vz-sw.t-2{--vz-t:var(--chart-2,#7aa2d6)}.vz-box.t-3,.vz-sw.t-3{--vz-t:var(--chart-3,#b08ee0)}
 .vz-box.t-4,.vz-sw.t-4{--vz-t:var(--chart-4,#e6b04f)}.vz-box.t-5,.vz-sw.t-5{--vz-t:var(--chart-5,#d98e6a)}.vz-box.t-6,.vz-sw.t-6{--vz-t:var(--chart-6,#9cc48a)}
@@ -412,6 +412,12 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     });
     return bl.flatMap((b) => Array(b.n).fill(b.v));
   }
+  // Down from (x1, y1), across at my, down to (x2, y2), with rounded corners; the path continues an open `M`.
+  const vjog = (x1, x2, y1, y2, my) => {
+    if (Math.abs(x2 - x1) < 1) return ` L${x2},${y2}`;
+    const sx = Math.sign(x2 - x1), r = Math.max(0, Math.min(6, Math.abs(x2 - x1) / 2, my - y1, y2 - my));
+    return ` L${x1},${my - r} Q${x1},${my} ${x1 + sx * r},${my} L${x2 - sx * r},${my} Q${x2},${my} ${x2},${my + r} L${x2},${y2}`;
+  };
   const selfLoop = (b) => { const x = b.x + b.w / 2, y0 = b.y + b.h * 0.3, y1 = b.y + b.h * 0.7; return `M${x},${y0} C${x + 26},${y0 - 8} ${x + 26},${y1 + 8} ${x},${y1}`; };
 
   // flow and states: a top-to-bottom layered graph. Real nodes sit on even ranks; every edge gets one virtual item on
@@ -578,19 +584,41 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (it.kind !== 'node') continue;
       for (const [list, key] of [[it.down, 'outs'], [it.up, 'ins']]) {
         const sorted = list.slice().sort((a, b) => a.x - b.x), m = sorted.length, step = m > 1 ? Math.min(16, (it.w - 20) / (m - 1)) : 0;
-        it[key] = new Map(sorted.map((nb, j) => [nb, it.x + (j - (m - 1) / 2) * step]));
+        // A neighbour straight below or above the box gets a port at its own x, so the line runs straight.
+        const lo = it.x - it.w / 2 + 8, hi = it.x + it.w / 2 - 8;
+        it[key] = new Map(sorted.map((nb, j) => [nb, nb.x >= lo && nb.x <= hi && sorted.filter((o) => Math.abs(o.x - nb.x) < 6).length === 1 ? nb.x : it.x + (j - (m - 1) / 2) * step]));
       }
     }
+    // Edges are orthogonal: straight down, one horizontal jog per rank gap, rounded corners. Jogs that share a gap
+    // get their own track, so two edges never run along the same line.
+    const routes = [], gaps = new Map();
     for (const { e, u, v } of E) {
       const a = s.nodes[u].box, b = s.nodes[v].box, ch = e.chain;
       const pts = [[a.outs.get(ch[0] || b), a.y + a.h]];
       for (const it of ch) pts.push([it.x, it.top], [it.x, it.bot]);
       pts.push([b.ins.get(ch[ch.length - 1] || a), b.y]);
+      const jogs = [];
+      for (let j = 1; j < pts.length; j += 2) {
+        if (Math.abs(pts[j][0] - pts[j - 1][0]) < 6) { pts[j][0] = pts[j - 1][0]; if (j + 1 < pts.length - 1) pts[j + 1][0] = pts[j][0]; continue; }
+        const g = { y1: pts[j - 1][1], y2: pts[j][1], x1: pts[j - 1][0], x2: pts[j][0], my: 0 };
+        const key = Math.round(g.y1);
+        if (!gaps.has(key)) gaps.set(key, []);
+        gaps.get(key).push(g); jogs[j] = g;
+      }
+      routes.push({ e, ch, pts, jogs });
+    }
+    for (const list of gaps.values()) {
+      // Rightward jogs take tracks from the top, leftward ones from the bottom, so a fan-out never crosses itself.
+      list.sort((p, q) => (Math.sign(q.x2 - q.x1) - Math.sign(p.x2 - p.x1)) || (p.x2 > p.x1 ? q.x1 - p.x1 : p.x1 - q.x1));
+      const n = list.length, span = Math.min(6 * (n - 1), (list[0].y2 - list[0].y1) * 0.5);
+      list.forEach((g, k) => (g.my = Math.round((g.y1 + g.y2) / 2 - span / 2 + (n > 1 ? (span * k) / (n - 1) : 0))));
+    }
+    for (const { e, ch, pts, jogs } of routes) {
       let d = `M${pts[0][0]},${pts[0][1]}`;
       for (let j = 1; j < pts.length; j++) {
-        const [x1, y1] = pts[j - 1], [x2, y2] = pts[j];
-        if (x1 === x2 || j % 2 === 0) d += ` L${x2},${y2}`;
-        else { const my = (y1 + y2) / 2; d += ` C${x1},${my} ${x2},${my} ${x2},${y2}`; }
+        const [x1] = pts[j - 1], [x2, y2] = pts[j], g = jogs[j];
+        if (!g) { d += ` L${x2},${y2}`; continue; }
+        d += vjog(x1, x2, g.y1, y2, g.my);
       }
       e.d = d; e.pill = ch[0]?.kind === 'pill' ? ch[0] : null;
     }
@@ -656,6 +684,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       }
     }
     let maxY = cursor;
+    const jogN = new Map();
     for (const e of s.edges) {
       const a = s.byId[e.from].box, b = s.byId[e.to].box;
       if (e.from === e.to) { e.d = selfLoop(a); continue; }
@@ -676,12 +705,16 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
         for (let j = 1; j < pts.length; j++) {
           const [px, py] = pts[j - 1], [qx, qy] = pts[j];
           if (j % 2 === 0 && j < pts.length - 1) { d += ` L${qx},${qy}`; continue; }
-          const dx = Math.max(24, (qx - px) / 2);
-          d += ` C${px + dx},${py} ${qx - dx},${qy} ${qx},${qy}`;
+          if (Math.abs(qy - py) < 6) { d += ` L${qx},${qy}`; continue; }
+          // Across, one vertical jog in the gap, across again; jogs in the same gap take their own track.
+          const key = Math.round(px), k = (jogN.get(key) || 0); jogN.set(key, k + 1);
+          const mx = Math.min(qx - 8, Math.max(px + 8, (px + qx) / 2 + ((k % 5) - 2) * 6)), sy = Math.sign(qy - py);
+          const r = Math.max(0, Math.min(6, Math.abs(qy - py) / 2, mx - px, qx - mx));
+          d += ` L${mx - r},${py} Q${mx},${py} ${mx},${py + sy * r} L${mx},${qy - sy * r} Q${mx},${qy} ${mx + r},${qy} L${qx},${qy}`;
         }
         e.d = d;
       } else if (b.x === a.x && b.y > a.y) {
-        e.d = `M${a.x},${a.y + a.h} C${a.x},${a.y + a.h + 12} ${b.x},${b.y - 12} ${b.x},${b.y}`;
+        e.d = `M${a.x},${a.y + a.h}` + vjog(a.x, b.x, a.y + a.h, b.y, (a.y + a.h + b.y) / 2);
       } else {
         // Back to an earlier column (or up the same one): dip below both boxes.
         const yb = Math.max(a.y + a.h, b.y + b.h) + 30; maxY = Math.max(maxY, yb);
@@ -705,7 +738,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     for (const e of s.edges) {
       const a = s.byId[e.from].box, b = s.byId[e.to].box;
       if (e.from === e.to) e.d = selfLoop(a);
-      else if (b.y > a.y) { const x1 = a.left + 14, x2 = b.left + 14; e.d = `M${x1},${a.y + a.h} C${x1},${a.y + a.h + 10} ${x2},${b.y - 10} ${x2},${b.y}`; }
+      else if (b.y > a.y) { const x1 = a.left + 14, x2 = b.left + 14; e.d = `M${x1},${a.y + a.h}` + vjog(x1, x2, a.y + a.h, b.y, (a.y + a.h + b.y) / 2); }
       else { const xr = Math.max(a.x + a.w / 2, b.x + b.w / 2) + 26; e.d = `M${a.x + a.w / 2},${a.y + a.h / 2} C${xr},${a.y + a.h / 2} ${xr},${b.y + b.h / 2} ${b.x + b.w / 2},${b.y + b.h / 2}`; }
     }
     return { w: w + 40, h: Math.max(0, y - 18) + 4, decor: [] };
