@@ -73,7 +73,9 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 .vz-box.k-event{border-style:dashed}.vz-box.e-reach{border-color:var(--vz-green)}.vz-box.e-dropped{color:var(--vz-dim)}
 .vz-pill.plain{padding:0 8px}
 .vz-group{position:absolute;border:1px solid color-mix(in srgb,var(--vz-fg) 16%,transparent);border-radius:calc(var(--vz-r) + 2px);background:color-mix(in srgb,var(--vz-fg) 3%,transparent);transition:border-color 160ms var(--vz-out)}
-.vz-group>span{display:block;height:26px;line-height:26px;text-align:left;border-bottom:1px solid color-mix(in srgb,var(--vz-fg) 10%,transparent);color:var(--vz-fg);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px;font-weight:600;cursor:pointer;position:relative;z-index:1;background:color-mix(in srgb,var(--vz-fg) 3%,var(--vz-bg));border-radius:calc(var(--vz-r) + 2px) calc(var(--vz-r) + 2px) 0 0}
+.vz-group>span{display:block;height:26px;line-height:26px;text-align:left;border-bottom:1px solid color-mix(in srgb,var(--vz-fg) 10%,transparent);color:var(--vz-fg);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px;font-weight:600;cursor:pointer}
+.vz-group.r>span{text-align:right}
+.vz-group>span>b{position:relative;z-index:1;font-weight:inherit;padding:0 4px;margin:0 -4px;background:linear-gradient(color-mix(in srgb,var(--vz-fg) 3%,transparent),color-mix(in srgb,var(--vz-fg) 3%,transparent)),linear-gradient(var(--vz-card),var(--vz-card)),var(--vz-bg)}
 .vz-group.hot{border-color:var(--vz-amber)}
 .vz-box.t-1,.vz-sw.t-1{--vz-t:var(--chart-1,#5fb3a3)}.vz-box.t-2,.vz-sw.t-2{--vz-t:var(--chart-2,#7aa2d6)}.vz-box.t-3,.vz-sw.t-3{--vz-t:var(--chart-3,#b08ee0)}
 .vz-box.t-4,.vz-sw.t-4{--vz-t:var(--chart-4,#e6b04f)}.vz-box.t-5,.vz-sw.t-5{--vz-t:var(--chart-5,#d98e6a)}.vz-box.t-6,.vz-sw.t-6{--vz-t:var(--chart-6,#9cc48a)}
@@ -510,7 +512,9 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       });
     }
     // x: each item wants the mean of its neighbours' centres; pav keeps the rank order and minimum spacing.
-    const sep = (a, b) => (a.w + b.w) / 2 + (a.kind === 'node' && b.kind === 'node' ? GAP : a.kind === 'v' && b.kind === 'v' ? 8 : 14);
+    // A self-loop and its label take room right of their box.
+    for (const e of s.edges) if (e.from === e.to) { const b = s.byId[e.from].box; b.xr = Math.max(b.xr || 0, 30 + (e.label ? Math.ceil(e.label.length * c * PFS / FS) + 22 : 0)); }
+    const sep = (a, b) => (a.w + b.w) / 2 + (a.xr || 0) + (a.kind === 'node' && b.kind === 'node' ? GAP : a.kind === 'v' && b.kind === 'v' ? 8 : 14);
     for (const rk of ranks) { let x = 0; rk.forEach((it, j) => { if (j) x += sep(rk[j - 1], it); it.x = x; }); }
     const place = (rk, want) => {
       if (!rk.length) return;
@@ -537,11 +541,11 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const blocks = () => [...s.groups.map((gr) => {
       const mem = items.filter((it) => gkey(it) === gr.id);
       if (!mem.length) return null;
-      let l = Math.min(...mem.map((it) => it.x - it.w / 2)) - GPAD, rr = Math.max(...mem.map((it) => it.x + it.w / 2)) + GPAD;
+      let l = Math.min(...mem.map((it) => it.x - it.w / 2)) - GPAD, rr = Math.max(...mem.map((it) => it.x + it.w / 2 + (it.xr || 0))) + GPAD;
       const lw = Math.ceil(gr.label.length * c) + 2 * GPAD;
       if (rr - l < lw) { const mid = (l + rr) / 2; l = mid - lw / 2; rr = mid + lw / 2; }
       return { gr, mem, k: gorder[gr.id], l, r: rr, r0: Math.min(...mem.map((it) => it.r)), r1: Math.max(...mem.map((it) => it.r)) };
-    }), ...items.filter((it) => it.kind === 'node' && !it.nd.group).map((it) => ({ gr: null, mem: [it], k: it.gk ?? 0, l: it.x - it.w / 2, r: it.x + it.w / 2, r0: it.r, r1: it.r }))]
+    }), ...items.filter((it) => it.kind === 'node' && !it.nd.group).map((it) => ({ gr: null, mem: [it], k: it.gk ?? 0, l: it.x - it.w / 2, r: it.x + it.w / 2 + (it.xr || 0), r0: it.r, r1: it.r }))]
       .filter(Boolean).sort((p, q) => p.k - q.k);
     // Pull each group's members toward its centre, as far as their rank neighbours allow, so a group stays one tight box.
     for (let k = 0; k < 3; k++) for (const gr of s.groups) {
@@ -566,7 +570,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (!moved) break;
     }
     const gb = blocks().filter((b) => b.gr);
-    const lo = Math.min(...items.map((it) => it.x - it.w / 2), ...gb.map((b) => b.l)), hi = Math.max(...items.map((it) => it.x + it.w / 2), ...gb.map((b) => b.r));
+    const lo = Math.min(...items.map((it) => it.x - it.w / 2), ...gb.map((b) => b.l)), hi = Math.max(...items.map((it) => it.x + it.w / 2 + (it.xr || 0)), ...gb.map((b) => b.r));
     for (const it of items) it.x = Math.round(it.x - lo + 2);
     // y: rank bands. Node ranks are as tall as their tallest box; label ranks are one pill tall.
     let y = 0;
@@ -588,20 +592,36 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
         const lo = it.x - it.w / 2 + 8, hi = it.x + it.w / 2 - 8;
         it[key] = new Map(sorted.map((nb, j) => [nb, nb.x >= lo && nb.x <= hi && sorted.filter((o) => Math.abs(o.x - nb.x) < 6).length === 1 ? nb.x : it.x + (j - (m - 1) / 2) * step]));
       }
+      // A line into a group's top row crosses the group's title: move its port right of the title text when the box allows.
+      const gd = it.nd.group && decor.find((d) => d.id === it.nd.group && band[it.r].top - GHEAD + 6 === d.y);
+      if (gd) {
+        const end = gd.x + Math.ceil(gd.text.length * c * 12 / FS) + 26, hi = it.x + it.w / 2 - 8;
+        let next = end;
+        for (const [nb, px] of [...it.ins].sort((p, q) => p[1] - q[1])) if (px < end && next <= hi) { it.ins.set(nb, next); next += 12; }
+      }
     }
     // Edges are orthogonal: straight down, one horizontal jog per rank gap, rounded corners. Jogs that share a gap
     // get their own track, so two edges never run along the same line.
     const routes = [], gaps = new Map();
     for (const { e, u, v } of E) {
       const a = s.nodes[u].box, b = s.nodes[v].box, ch = e.chain;
-      const pts = [[a.outs.get(ch[0] || b), a.y + a.h]];
-      for (const it of ch) pts.push([it.x, it.top], [it.x, it.bot]);
-      pts.push([b.ins.get(ch[ch.length - 1] || a), b.y]);
+      // Waypoints on rank bands with no height (no pill or box on them) would leave a jog no room, so they drop out.
+      const via = ch.filter((it) => band[it.r].h > 0);
+      const pts = [[a.outs.get(ch[0] || b), a.y + a.h]], rs = [a.r];
+      for (const it of via) { pts.push([it.x, it.top], [it.x, it.bot]); rs.push(it.r, it.r); }
+      pts.push([b.ins.get(ch[ch.length - 1] || a), b.y]); rs.push(b.r);
+      // With a dropped waypoint, a line that already falls on the box keeps its x instead of a small last jog.
+      if (via.length < ch.length) {
+        const px = pts[pts.length - 2][0], ex = pts[pts.length - 1][0];
+        if (Math.abs(px - b.x) < b.w / 2 - 8 && ![...b.ins.values()].some((x) => x !== ex && Math.abs(x - px) < 6)) pts[pts.length - 1][0] = px;
+      }
       const jogs = [];
       for (let j = 1; j < pts.length; j += 2) {
         if (Math.abs(pts[j][0] - pts[j - 1][0]) < 6) { pts[j][0] = pts[j - 1][0]; if (j + 1 < pts.length - 1) pts[j + 1][0] = pts[j][0]; continue; }
-        const g = { y1: pts[j - 1][1], y2: pts[j][1], x1: pts[j - 1][0], x2: pts[j][0], my: 0 };
-        const key = Math.round(g.y1);
+        // The jog runs in the clear space between two rank bands, outside any group's title or foot.
+        const r = rs[j - 1], rn = rs[j], z1 = band[r].top + band[r].h + (feet[r] ? GFOOT : 0), z2 = band[rn].top - (heads[rn] ? GHEAD - 6 : 0);
+        const g = { y1: z1, y2: z2, x1: pts[j - 1][0], x2: pts[j][0], my: 0 };
+        const key = r;
         if (!gaps.has(key)) gaps.set(key, []);
         gaps.get(key).push(g); jogs[j] = g;
       }
@@ -610,17 +630,23 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     for (const list of gaps.values()) {
       // Rightward jogs take tracks from the top, leftward ones from the bottom, so a fan-out never crosses itself.
       list.sort((p, q) => (Math.sign(q.x2 - q.x1) - Math.sign(p.x2 - p.x1)) || (p.x2 > p.x1 ? q.x1 - p.x1 : p.x1 - q.x1));
-      const n = list.length, span = Math.min(6 * (n - 1), (list[0].y2 - list[0].y1) * 0.5);
+      const n = list.length, span = Math.min(6 * (n - 1), Math.min(...list.map((g) => g.y2 - g.y1)) * 0.5);
       list.forEach((g, k) => (g.my = Math.round((g.y1 + g.y2) / 2 - span / 2 + (n > 1 ? (span * k) / (n - 1) : 0))));
     }
+    const vsegs = [];
     for (const { e, ch, pts, jogs } of routes) {
       let d = `M${pts[0][0]},${pts[0][1]}`;
       for (let j = 1; j < pts.length; j++) {
-        const [x1] = pts[j - 1], [x2, y2] = pts[j], g = jogs[j];
-        if (!g) { d += ` L${x2},${y2}`; continue; }
-        d += vjog(x1, x2, g.y1, y2, g.my);
+        const [x1, y1] = pts[j - 1], [x2, y2] = pts[j], g = jogs[j];
+        if (!g) { d += ` L${x2},${y2}`; vsegs.push([x2, y1, y2]); continue; }
+        d += vjog(x1, x2, y1, y2, g.my); vsegs.push([x1, y1, g.my], [x2, g.my, y2]);
       }
       e.d = d; e.pill = ch[0]?.kind === 'pill' ? ch[0] : null;
+    }
+    // A group title moves to the right end of its header when a line would cross it on the left.
+    for (const d of decor) {
+      const tw = Math.ceil(d.text.length * c * 12 / FS) + 28, hit = (l, r) => vsegs.some(([x, y1, y2]) => x > l && x < r && y1 < d.y + 26 && y2 > d.y);
+      if (hit(d.x, d.x + tw) && !hit(d.x + d.w - tw, d.x + d.w)) d.align = 'right';
     }
     let right = hi - lo + 4 + 30;
     for (const e of s.edges) if (e.from === e.to) {
@@ -785,7 +811,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (d.kind === 'head') stage.append(h('div', { class: 'vz-colhead', style: `left:${d.x}px;top:${d.y}px;width:${d.w}px` }, d.text));
       if (d.kind === 'tick') stage.append(h('div', { class: 'vz-tick', style: `left:${d.x}px;top:${d.y}px` }, d.text));
       if (d.kind === 'group') {
-        const el = h('div', { class: 'vz-group', style: `left:${d.x}px;top:${d.y}px;width:${d.w}px;height:${d.h}px`, 'data-viz-id': d.id }, h('span', { title: d.text }, d.text));
+        const el = h('div', { class: 'vz-group' + (d.align === 'right' ? ' r' : ''), style: `left:${d.x}px;top:${d.y}px;width:${d.w}px;height:${d.h}px`, 'data-viz-id': d.id }, h('span', { title: d.text }, h('b', {}, d.text)));
         const head = el.firstChild;
         head.addEventListener('mouseenter', () => hoverGroup(d.id)); head.addEventListener('mouseleave', () => hoverGroup(null));
         head.addEventListener('click', () => pickGroup(d.id));

@@ -66,6 +66,7 @@ tone busy: Printing
 group up: Printer ready
 empty: No job {idle}
 printing: Page printing {busy}
+empty -> printing: a job arrives
 printing -> printing: next page
 group end
 !twice: Page printed twice
