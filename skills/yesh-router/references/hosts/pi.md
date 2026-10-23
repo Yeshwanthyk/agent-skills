@@ -14,7 +14,7 @@ The TUI draws Mermaid as terminal art with `grok-mermaid`. A diagram wider than 
 - Supported types are `flowchart`/`graph`, `sequenceDiagram`, `stateDiagram`, `classDiagram`, and `erDiagram`. `pie` is not.
 - Prefer `TD` over `LR`, keep at most three boxes side by side, and keep labels to a few words.
 - Keep hyphens out of edge labels; `no re-check` renders as a stray box.
-- When a diagram cannot fit, use a text tree or ASCII instead.
+- When a diagram cannot fit, use a text tree instead.
 
 ## Ask
 

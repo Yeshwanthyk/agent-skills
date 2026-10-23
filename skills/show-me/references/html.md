@@ -2,19 +2,10 @@
 
 Use one self-contained HTML file for a visual UI, layout, state comparison, or concept too dense for Mermaid.
 
-A Mermaid diagram on any page renders with [Pele](https://pele.run), never Mermaid.js: it draws synchronously, so a preview screenshot shows the diagram, not its source. Put the source in `<pre class="mermaid">` and add, after it:
-
-```html
-<script type="module">
-import {render} from 'https://cdn.jsdelivr.net/npm/pele@1.9.0/+esm';
-for (const el of document.querySelectorAll('pre.mermaid')) el.innerHTML = render(el.textContent).svg;
-</script>
-```
-
-Theme it through the `--pele-bg`, `--pele-fg`, `--pele-muted`, `--pele-line`, `--pele-surface`, `--pele-surface-alt`, and `--pele-border` CSS variables.
+A Mermaid diagram on any page renders with [Pele](https://pele.run), never Mermaid.js. Copy [`assets/pele-page.html`](../assets/pele-page.html) and fill in only the title and the Mermaid source; it carries the theme, error handling, and load timing, so html_preview's screenshot shows the drawn diagram. The browser parses the block as HTML first, so write `<` and `&` in labels as `&lt;` and `&amp;`. Several diagrams take several `<pre class="mermaid">` blocks on one page. A parse error shows in red in place of its diagram, not in the console, so check the preview screenshot.
 
 - Choose one form: diagram, infographic, comparison, or short slide deck.
-- For a product UI or mockup, match the product's colors, type, spacing, components, and real labels when the source exposes them. Otherwise use the explainer look: take the type, hairline boxes, and accent colors from [starter.html](../../interactive-explainer/assets/starter.html) (monospace, amber for active, coral for failure, green for healthy) instead of inventing a style. When the host's inline tool supplies the page background, leave the page background to it.
+- For a product UI or mockup, match the product's colors, type, spacing, components, and real labels when the source exposes them. Otherwise use the explainer look rather than inventing a style: monospace, 1px hairline boxes, `--bg #0a0a0a`, `--ink #e9e6e1`, `--dim #8a857e`, `--faint #57534e`, and amber `#e6b04f` for active, coral `#e0736a` for failure, green `#9cc48a` for healthy. When the host's inline tool supplies the page background, leave the page background to it.
 - Use representative data.
 - Support desktop and mobile when the product does.
 - Keep the file focused on the current question.

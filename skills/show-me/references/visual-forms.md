@@ -50,7 +50,7 @@ src/
 
 ## Mermaid
 
-Use for multi-component interactions or data flow.
+Use for multi-component interactions or data flow where nothing renders HTML. Where a host renders HTML, a flow or plain sequence goes to viz, and Mermaid is kept for what viz lacks (see show-me's form list).
 
 ```mermaid
 sequenceDiagram

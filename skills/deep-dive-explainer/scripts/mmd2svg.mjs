@@ -23,7 +23,16 @@ if (!existsSync(lib)) {
   writeFileSync(lib, await res.text());
 }
 const { render } = await import(pathToFileURL(lib).href);
-const theme = '--pele-bg:transparent;--pele-fg:#e8e8e8;--pele-muted:#b3b3b3;--pele-line:#b3b3b3;' +
-  '--pele-surface:#2a2a2a;--pele-surface-alt:#333;--pele-border:#626262;';
-const { svg } = render(readFileSync(input, 'utf8'), { responsive: false });
-writeFileSync(output, svg.replace('style="', `style="${theme}`));
+// A <style> inside the SVG still applies in an image context, including the print media query.
+const css = '<style>.pele{--pele-bg:transparent;--pele-fg:#e8e8e8;--pele-muted:#b3b3b3;--pele-line:#b3b3b3;' +
+  '--pele-surface:#2a2a2a;--pele-surface-alt:#333;--pele-border:#626262}' +
+  '@media print{.pele{--pele-fg:#000;--pele-muted:#444;--pele-line:#444;--pele-surface:#f3f3f3;' +
+  '--pele-surface-alt:#e6e6e6;--pele-border:#888}}</style>';
+let svg;
+try {
+  ({ svg } = render(readFileSync(input, 'utf8'), { responsive: false }));
+} catch (e) {
+  console.error(`${input}: ${e.message}`);
+  process.exit(1);
+}
+writeFileSync(output, svg.replace(/(<svg[^>]*>)/, `$1${css}`));

@@ -58,7 +58,8 @@ def extra_counts(path):
     return todo, spawns, mode_on
 
 
-DIAGRAM = re.compile(r"[─│┌┐└┘├┤┬┴┼▶◀▼▲→←↓↑]|-->|<--")
+# Arrows and box corners, not tree connectors: a file tree in a code block is a fine text form.
+DIAGRAM = re.compile(r"[┌┐┘▶◀▼▲→←↓↑]|-->|<--")
 FENCE = re.compile(r"```(\w*)\n(.*?)```", re.S)
 CODE_LANGS = {"python", "py", "ts", "tsx", "js", "javascript", "bash", "sh", "zsh", "json", "sql", "diff",
               "rust", "go", "yaml", "toml", "mermaid", "viz"}

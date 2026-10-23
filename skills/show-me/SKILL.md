@@ -19,14 +19,14 @@ Read the active host's note in [hosts](../yesh-router/references/hosts/) for its
 - Use a call tree for runtime control flow.
 - Use a component tree for UI structure and state ownership.
 - Use a file tree for responsibility or a broad refactor.
-- Use Mermaid for multi-component interaction, data flow, or a diagram type viz lacks (class, ER, gantt, and the like). On a page or HTML host, render it with Pele as [`references/html.md`](references/html.md) shows.
+- Use Mermaid for a diagram viz lacks: class, ER, gantt, or a sequence with `alt`, `loop`, or notes; where nothing renders HTML, also for multi-component interaction or data flow. On a page or HTML host, render it with Pele as [`references/html.md`](references/html.md) shows.
 - Use a diff when the surrounding shape exists and the point is what changes.
 - Use a whole code block when omitted context would hide ownership or order, or the user needs a copyable target.
 - Use `calldiff` for a changed call tree or stack.
 - Use [viz](../viz/SKILL.md) for a flow or DAG with branches or failure paths, a call tree or call diff too long to read as text, or whenever the user wants to click through it. Elsewhere it opens a temp HTML page.
 - Use focused HTML for a visual comparison or concept too dense for Mermaid or viz.
 
-Load [`references/visual-forms.md`](references/visual-forms.md) for text and diagram patterns. Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch. For viz, read and follow its skill.
+Load [`references/visual-forms.md`](references/visual-forms.md) only when drawing a text form (tree, diff, pseudocode, Mermaid). Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch. For viz, read and follow its skill.
 
 ## Present
 
