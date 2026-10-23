@@ -58,8 +58,9 @@ def extra_counts(path):
     return todo, spawns, mode_on
 
 
-# Arrows and box corners, not tree connectors: a file tree in a code block is a fine text form.
-DIAGRAM = re.compile(r"[┌┐┘▶◀▼▲→←↓↑]|-->|<--")
+DIAGRAM = re.compile(r"[─│┌┐└┘├┤┬┴┼▶◀►◄▼▲→←↓↑]|-->|<--")
+# A file tree in a code block is a fine text form, so its entry lines (`│   ├── name`) don't count.
+TREE_ENTRY = re.compile(r"^\s*(?:│\s*)*[├└]──")
 FENCE = re.compile(r"```(\w*)\n(.*?)```", re.S)
 CODE_LANGS = {"python", "py", "ts", "tsx", "js", "javascript", "bash", "sh", "zsh", "json", "sql", "diff",
               "rust", "go", "yaml", "toml", "mermaid", "viz"}
@@ -86,7 +87,8 @@ def text_diagrams(path):
                 if isinstance(b, dict) and b.get("type") == "text":
                     for lang, body in FENCE.findall(b.get("text", "")):
                         if lang.lower() not in CODE_LANGS and sum(
-                                1 for line in body.splitlines() if DIAGRAM.search(line)) >= 3:
+                                1 for line in body.splitlines()
+                                if DIAGRAM.search(line) and not TREE_ENTRY.match(line)) >= 3:
                             n += 1
     return n
 
