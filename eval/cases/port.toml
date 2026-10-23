@@ -44,6 +44,13 @@ expect = { methods = ["verification-skill"], reads = ["verification-skill/refere
 notes = "verification-skill is user-invoked, so the case needs the router."
 
 [[case]]
+id = "formal-statechart-check"
+activation = "router"
+prompt = "Draw the coupon redeem flow as a state diagram, then model-check that two browser tabs can never both apply the same coupon, and show me which paths work and which break."
+expect = { methods = ["invariants"], reads = ["invariants/references/formal-modeling.md"] }
+notes = "The statechart -> TLC -> marked statechart path: the Formal sub-branch must be reached from a race on a drawn flow."
+
+[[case]]
 id = "port-model-only-stays-invariants"
 tags = ["port"]
 prompt = "Model the order state machine and tell me which transitions can race. Don't write any code yet."

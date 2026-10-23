@@ -6,7 +6,7 @@ A formal verify skill is a project-local `verify-formal-<area>/` skill that lets
 
 Answer from the codebase; ask the user only what you cannot observe. Start from the area or bug the user named, if any.
 
-A strong target is a promise the code makes, where a break harms users and tests rarely reach the breaking case: concurrent writers, retries and recovery, state machines, parsers of untrusted input, unsafe or arithmetic-heavy code. Rank candidates by harm times how poorly current tests reach them, and choose the strongest, not the easiest to verify. Build the packet for it with step 1 of [invariants](../../invariants/SKILL.md), then pick the tool there. Tell the user why this target and this tool.
+A strong target is a promise the code makes, where a break harms users and tests rarely reach the breaking case: concurrent writers, retries and recovery, state machines, parsers of untrusted input, unsafe or arithmetic-heavy code. Rank candidates by harm times how poorly current tests reach them, and choose the strongest, not the easiest to verify. Build the packet for it with step 1 of [invariants](../../invariants/SKILL.md). When users see the flow, that includes the statechart (`chart.viz`). Then pick the tool from the decision table in formal-modeling; for a charted flow or a race the default is TLA+ with TLC. Tell the user why this target and this tool.
 
 ## Generate
 
@@ -14,8 +14,9 @@ Write the skill in the repository's configured skill location, with a `verify-fo
 
 - **Scope**: the verified paths and symbols, as the drift trigger. A change touching them means the verification needs another look.
 - **Property**: each property and its harm, one plain sentence each, and the reach and assumptions of a pass.
-- **Run**: one command with pinned tool versions (`lean-toolchain`, a pinned jar or CLI version), its expected runtime, and how to install the tool. Ship the command as a script inside the skill; read [build-the-lever](../../yesh-router/references/principles/build-the-lever.md).
-- **Read the result**: what a pass covers, how to turn a counterexample into code steps and replay it, and how to tell a product defect (the replay fails on the code) from a modeling error (it does not).
+- **Run**: one command with pinned tool versions (`lean-toolchain`, a pinned jar or CLI version), its expected runtime, and how to install the tool. Ship the command as a script inside the skill; read [build-the-lever](../../yesh-router/references/principles/build-the-lever.md). For TLA+, copy [`tlc_chart.py`](../../invariants/scripts/tlc_chart.py) into the skill, which pins `tla2tools.jar` 1.7.4 by sha256, and make the run script one line: `tlc_chart.py run <Area>.tla --viz chart.viz [--fix <Area>Fixed.cfg]`.
+- **Chart**: when the flow has a statechart, keep `chart.viz` (the intended stories, drawn before modeling) in the skill, and say where the run writes `chart.checked.viz`. That file is the result: each story marked works, `!` bug found, `+` fixed, or `?` unreached, per formal-modeling's "Report on the statechart".
+- **Read the result**: what a pass covers, how to turn a counterexample into code steps (each trace step names the action, which cites a code symbol) and replay it, and how to tell a product defect (the replay fails on the code) from a modeling error (it does not).
 - **Linked tests**: the property or fuzz tests wired from each property per formal-modeling's "Feed generated tests", with their commands.
 - **Update**: when an intended change alters verified behavior, update the model or proof in the same change, show each property red on a broken variant again, and rerun the linked tests.
 - **Known findings**: counterexamples the current code exhibits, each with its replay.
@@ -25,8 +26,8 @@ Write the skill in the repository's configured skill location, with a `verify-fo
 Read [prove-it-works](../../yesh-router/references/principles/prove-it-works.md). Then follow the generated skill once, cold, as the next agent would:
 
 1. Make a scratch change in the real code that breaks a property (remove a guard, reorder a write).
-2. Run the skill's command. It must go red, and its counterexample must replay on the scratch code.
-3. Drop the scratch change and rerun. The check returns to its baseline: passing, or failing only on known findings.
+2. Run the skill's command. It must go red, its counterexample must replay on the scratch code, and on a charted flow the checked chart must show a `!` path ending at the harm node.
+3. Drop the scratch change and rerun. The check returns to its baseline: passing, or failing only on known findings, with the chart's stories back to their baseline marks.
 
 When the skill misses the break or a step does not run, fix the skill or the verification, not the scratch change. A verify skill that has never caught a break is a draft.
 
@@ -41,4 +42,4 @@ These follow the main Audit and repair steps, with these substitutions:
 
 ## Hand off
 
-Report what was verified, the tool and why, the bounds and assumptions, the findings in plain words with their replays, the run command, the linked tests, and what is not covered. Suggest a second target only when a close one turned up.
+Render the checked chart with [viz](../../viz/SKILL.md) and lead the report with it. Then report what was verified, the tool and why, the bounds and assumptions, the findings in plain words with their replays, the run command, the linked tests, and what is not covered. Suggest a second target only when a close one turned up.

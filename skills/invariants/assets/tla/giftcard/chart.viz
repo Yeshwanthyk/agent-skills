@@ -1,0 +1,22 @@
+title Redeem a gift card
+sub Invented example for tlc_chart.py; drawn before modeling
+
+== graph Redeem a gift card
+view: states
+form: Redeem form [state]
+checking: Checking your code [state]
+credited: Balance goes up [state]
+rejected: This card was already used [state]
+offline: Connection lost, try again [state]
+both: Two tabs: one credit, the other says already used [state]
+  state: credits = 1 /\ \A t \in Tabs : seen[t] = "unused" /\ ui[t] \in {"credited", "rejected"}
+twice: The card paid out twice [state]
+  fails: NoDoubleCredit
+form -> checking: press Redeem
+checking -> credited: code good
+checking -> rejected: code used
+checking -> offline: network drops
+redeem: form > checking => credited | one tab | You redeem once and the balance goes up.
+reuse: form > checking => rejected | second visit | Redeeming a used card is turned away.
+twotabs: form > checking => both | two tabs | You press Redeem in two tabs; only one credit lands.
+dropped: form > checking => offline | flaky network | The network drops while checking; you can try again.
