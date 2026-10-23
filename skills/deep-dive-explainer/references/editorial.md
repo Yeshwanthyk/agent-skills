@@ -38,4 +38,4 @@ When adjacent concepts can be confused, follow one concrete value through them a
 
 For lifecycle questions, trace the caller as well as the helper: identify what happens at construction, per request, and per execution; what is reused; and what resets. Distinguish a library's possible lifetime from the lifetime its actual host chooses.
 
-Use a small Mermaid diagram for branching, shared-versus-fresh state, or a short sequence. Explain the consequence in prose and cite the source that establishes each boundary. Keep diagrams beside the relevant explanation; omit boxes that add names without clarifying a relationship. Diagram block mechanics live in content.md.
+Use a small viz diagram for branching, shared-versus-fresh state, or a short sequence. Explain the consequence in prose and cite the source that establishes each boundary. Keep diagrams beside the relevant explanation; omit boxes that add names without clarifying a relationship. Diagram block mechanics live in content.md.

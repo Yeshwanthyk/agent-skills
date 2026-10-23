@@ -67,15 +67,9 @@ imports/
 
 Examples illustrate notation, not facts to reuse. Ground every actual node, path, and relationship in inspected evidence. Label pseudocode and uncertainty. Keep prose beside the visual it explains. Order views to teach the change: establish the contract or data model before the flow when the flow depends on it.
 
-### Mermaid exception
+### No diagram languages
 
-Use Mermaid only when it clarifies relationships that the default formats cannot show clearly and its rendering can be verified on GitHub. Otherwise use a text sequence, tree, or diff.
-
-- Use a fenced `mermaid` block with conservative syntax supported by GitHub. Keep participant or node identifiers simple and distinct from display labels.
-- In sequence diagrams, put each declaration or message on its own line. Use commas or short separate messages instead of raw semicolons in message labels: semicolons can terminate a statement. For example, use `Config->>Cache: Stream bytes, verify checksum`, not a semicolon between the clauses.
-- Quote flowchart display labels containing punctuation; follow the selected diagram type's escaping rules rather than assuming prose is safe syntax.
-- Render-check locally when a compatible validator is available, then inspect the actual rendered PR body on GitHub. A local parser, Markdown source readback, or API response alone does not prove GitHub rendering.
-- Verify every diagram displays its expected nodes and relationships, readable labels, and no parse-error panel. If GitHub rendering is inaccessible or a diagram cannot be repaired and verified, replace it with a fenced text or diff view before declaring the description complete.
+GitHub runs no script in a PR body, so every view is text: a tree, a numbered sequence, pseudocode, or a diff. Do not use Mermaid or any other diagram language. When a flow needs a picture, render it with [viz](../../viz/SKILL.md) as an HTML artifact or screenshot and link it from the body, beside the text view.
 
 For complex visual UI changes, a focused HTML comparison may supplement the PR. Match the actual product, use representative labels and data, and cover desktop and mobile. The PR body still needs a readable structural outline; a local HTML path alone is insufficient.
 
@@ -93,7 +87,7 @@ Classify merge danger. A two-way door is fully undone by a revert. A one-way doo
 
 Save the body as `pr-description.md` in the existing task-artifact directory, or a temporary Markdown file when none exists. Inspect the saved content. Use the host's PR tools to create or update the intended PR; GitHub accepts `gh pr create --body-file <path>` and `gh pr edit <number> --body-file <path>`. Follow repository requirements for base, title, and draft state.
 
-Read the published body back. Confirm the comparison is correct, the structural view and required sections survived, and verification claims match the checks. For Mermaid, also open the PR on GitHub and inspect every rendered diagram under the Mermaid exception above; repair or replace broken diagrams, publish again, and repeat verification. If publishing is blocked, retain the prepared description and report the exact blocker. Never report a draft file as a successfully published PR.
+Read the published body back. Confirm the comparison is correct, the structural view and required sections survived, and verification claims match the checks. If publishing is blocked, retain the prepared description and report the exact blocker. Never report a draft file as a successfully published PR.
 
 ## 5. Hand back the result
 

@@ -55,6 +55,28 @@ pay -> api: ok
 api > pay > api | charge | 686 of the 840 ms are spent waiting on the charge.
 ```
 
+**Statecharts** (`view: states`; groups also work in `flow`):
+
+```text
+== graph What happens to a print job
+view: states
+tone idle: Idle
+tone busy: Printing
+[*] -> empty
+group up: Printer ready
+empty: No job {idle}
+printing: Page printing {busy}
+printing -> printing: next page
+group end
+!twice: Page printed twice
+  fails: NoDoublePrint
+```
+
+- `tone id: Label` declares a colour category for the legend, up to six; `{id}` on a node, before any `[kind]`, applies it.
+- `[*] -> id` draws the start dot; `[*] -> id: label` labels its edge.
+- `group id: Label` at column 0 opens a box around the nodes that follow, until the next `group` or `group end`. A group must hold a node. Hovering its header lights the paths through it; clicking lists its states and paths.
+- A `!` node is drawn red, and the legend adds "breaks a rule" when tones are present.
+
 **Before and after on one layout:** mark nodes and paths `+` and `-` (`-before: api > direct > db => user`, `+hit: api > cache => user`). The graph gets a before | both | after toggle.
 
 ## Coverage

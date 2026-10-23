@@ -48,9 +48,7 @@ main{padding:22px 32px 120px;max-width:1080px;width:100%}
 .panel{border:1px solid var(--line);border-radius:10px;margin:16px 0;overflow:hidden}.panel>summary,.panel>h2{list-style:none;cursor:pointer;margin:0;padding:10px 14px;font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center}
 .panel>summary::-webkit-details-marker{display:none}.panel[open]>summary{border-bottom:1px solid var(--line)}.panel .body{padding:12px 14px}
 .flist .f{display:flex;gap:8px;padding:4px 0;align-items:baseline}.sev{font-weight:700;width:12px;display:inline-block}.sev.risk{color:var(--risk)}.sev.question{color:var(--q)}.sev.note{color:var(--mut)}
-pre.card{margin:0;white-space:pre-wrap;font:12.5px/1.5 ui-monospace,monospace}pre.mermaid{background:transparent;text-align:center;white-space:pre-wrap}pre.mermaid svg{max-width:100%;height:auto}
-/* Pele colours diagrams from these; they follow the theme without a redraw. */
-pre.mermaid,pre.mermaid .pele{--pele-bg:transparent;--pele-fg:var(--fg);--pele-muted:var(--mut);--pele-line:var(--mut);--pele-surface:var(--panel);--pele-surface-alt:var(--accbg);--pele-border:var(--line)}
+pre.card{margin:0;white-space:pre-wrap;font:12.5px/1.5 ui-monospace,monospace}
 .file{border:1px solid var(--line);border-radius:10px;margin:22px 0;scroll-margin-top:12px}
 .file>header{display:flex;gap:10px;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2;border-radius:10px 10px 0 0}
 .file>header .path{font-weight:650;font-family:ui-monospace,monospace;font-size:13px;word-break:break-all}.kind{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);border-radius:10px;padding:0 7px;white-space:nowrap}
@@ -144,7 +142,7 @@ function main() {
     h += `<details class="panel" ${n('weak') + n('fake') ? 'open' : ''}><summary>Tests <span class="mut small">${D.tests.length} cases · <span class="verdict real">${n('real')} real</span> <span class="verdict weak">${n('weak')} weak</span> <span class="verdict fake">${n('fake')} fake</span></span></summary><div class="body flist">${D.tests.map(t =>
       `<div class="f"><span class="verdict ${esc(t.verdict)}">${esc(t.verdict)}</span><a class="mono small" data-goline="${esc(t.file)}:new:${t.line}">${esc(t.file.split('/').pop())}:${t.line}</a><span><b>${esc(t.name)}</b> — ${esc(t.proves || '')}<span class="mut"> · ${esc(t.why || '')}</span></span></div>`).join('')}</div></details>`;
   }
-  for (const c of D.outline) h += `<details class="panel" open><summary>${esc(c.title)}</summary><div class="body">${c.viz ? `<script type="text/viz">\n${c.viz.replace(/<\/script/g, '<\\/script')}\n<\/script>` : c.kind === 'mermaid' ? `<pre class="mermaid" data-src="${esc(c.body)}">${esc(c.body)}</pre>` : c.kind === 'tree' ? `<script type="text/viz">\n${c.body.replace(/<\/script/g, '<\\/script')}\n<\/script>` : `<pre class="card">${esc(c.body)}</pre>`}</div></details>`;
+  for (const c of D.outline) h += `<details class="panel" open><summary>${esc(c.title)}</summary><div class="body">${c.kind === 'viz' || c.kind === 'tree' ? `<script type="text/viz">\n${c.body.replace(/<\/script/g, '<\\/script')}\n<\/script>` : `<pre class="card">${esc(c.body)}</pre>`}</div></details>`;
   if (D.calls) h += `<details class="panel" open><summary>Call changes <span class="mut small">calldiff</span></summary><div class="body"><script type="text/viz">\ntitle Call changes\n${D.calls.replace(/<\/script/g, '<\\/script')}\n<\/script></div></details>`;
   h += D.files.map(fileHtml).join('');
   if (D.skimmed.length || D.uncovered.length) h += `<details class="panel"><summary>Not worth reading <span class="mut small">${D.skimmed.length} skimmed · ${D.uncovered.length} not covered</span></summary><div class="body skim">${
@@ -260,20 +258,6 @@ document.getElementById('hl-dark').disabled = document.documentElement.dataset.t
 document.getElementById('hl-light').disabled = document.documentElement.dataset.theme === 'dark';
 document.title = 'Reading · ' + D.title;
 main(); side();
-</script>
-<script type="module">
-// Pele draws Mermaid synchronously, and a static import holds the load event, so a screenshot taken at load
-// (T3's html_preview) shows the diagram. Mermaid itself drew after load, so the capture showed its source.
-import {render} from 'https://cdn.jsdelivr.net/npm/pele@1.9.0/+esm';
-for (const el of document.querySelectorAll('pre.mermaid')) {
-  const src = el.dataset.src, tall = src.replace(/^(\s*(?:flowchart|graph)\s+)(LR|RL)\b/, '$1TD');
-  try {
-    // A left-to-right flowchart wider than its panel is redrawn top to bottom rather than shrunk past reading.
-    let out = render(src);
-    if (out.width > el.clientWidth && tall !== src) out = render(tall);
-    el.innerHTML = out.svg;
-  } catch (e) { console.error(`pele: ${el.closest('details')?.querySelector('summary')?.textContent}: ${e.message}`); }
-}
 </script>
 <script src="/*VIZ_CDN*/"></script>
 </body>

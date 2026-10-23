@@ -3,15 +3,23 @@ sub Invented example for tlc_chart.py; drawn before modeling
 
 == graph Redeem a gift card
 view: states
-form: Redeem form [state]
-checking: Checking your code [state]
-credited: Balance goes up [state]
-rejected: This card was already used [state]
-offline: Connection lost, try again [state]
-both: Two tabs: one credit, the other says already used [state]
+tone wait: Waiting for you
+tone ask: Asking the server
+tone done: Answered
+tone lost: No answer
+[*] -> form
+group tab: In one tab
+form: Redeem form {wait}
+checking: Checking your code {ask}
+credited: Balance goes up {done}
+rejected: This card was already used {done}
+offline: Connection lost, try again {lost}
+group both: Both tabs answered
+both: One credit, the other says already used {done}
   state: credits = 1 /\ \A t \in Tabs : seen[t] = "unused" /\ ui[t] \in {"credited", "rejected"}
-twice: The card paid out twice [state]
+twice: The card paid out twice
   fails: NoDoubleCredit
+group end
 form -> checking: press Redeem
 checking -> credited: code good
 checking -> rejected: code used

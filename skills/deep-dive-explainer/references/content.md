@@ -36,15 +36,13 @@ Render with the command in SKILL.md. To check without writing a file, use `--che
 
 ## Diagrams
 
-Draw every flow, including a short linear one, as a Mermaid diagram block rather than ASCII in a `code` block:
+Draw every flow, including a short linear one, as a viz diagram block rather than ASCII in a `code` block:
 
 ```json
-{"mermaid":"diagrams/call.mmd","svg":"diagrams/call.svg","caption":"Where the call is checked.","alt":"Describe the flow and the meaningful branch outcomes."}
+{"viz":"diagrams/call.viz","caption":"Where the call is checked.","alt":"Describe the flow and the meaningful branch outcomes."}
 ```
 
-Keep `.mmd` as the authoritative diagram source. Render it to SVG with [Pele](https://pele.run) at authoring time, then regenerate the article. Both paths are relative to the article JSON and must stay within its directory. The renderer embeds the SVG as an image and includes collapsible Mermaid source, so the delivered HTML works offline without Mermaid JavaScript. SVG is displayed in an image context, not injected as page markup. A diagram edit requires regenerating its SVG; the renderer does not check that the two match.
-
-Render with `node <skill>/scripts/mmd2svg.mjs diagrams/call.mmd diagrams/call.svg`; it needs only Node, fetches a pinned Pele once, and colors the SVG to match the reading theme. It is needed only when making or changing Mermaid diagrams; ordinary article rendering still requires only Python. Inspect labels at the final article width, use short labels and a vertical flow on narrow pages, and split a dense diagram rather than shrinking its text.
+The `.viz` file is the diagram, written in the [viz grammar](../../viz/references/grammar.md); its path is relative to the article JSON and must stay within its directory. Check it with `python3 <viz>/scripts/viz.py check diagrams/call.viz` before rendering. The renderer inlines the viz renderer once, so the article stays one offline file and each diagram stays interactive: hover traces a path, click opens the inspector, and replay steps play. Inspect labels at the final article width, prefer a vertical flow on narrow pages, and split a dense diagram rather than shrinking its text.
 
 ## Explanatory sequences
 

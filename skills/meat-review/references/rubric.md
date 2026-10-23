@@ -168,7 +168,7 @@ Reply with only one JSON object, no prose:
 {
   "summary": "One sentence: what this change does and the one thing to check.",
   "outline": [
-    { "title": "Shape of the change", "kind": "mermaid", "body": "flowchart LR\n  A[client] -->|refresh| B[session]" },
+    { "title": "Shape of the change", "kind": "viz", "body": "== graph Refresh\nclient: Client\nsession: Session\nclient -> session: refresh" },
     { "title": "Files", "kind": "markdown", "body": "src/auth/\n├── session.ts  # owns refresh\n└── store.ts    # persists tokens" }
   ],
   "files": [
@@ -197,12 +197,13 @@ Reply with only one JSON object, no prose:
 }
 ```
 
-- `outline`: one to three views, smallest that shows the shape. Use a
-  Mermaid flowchart or sequenceDiagram for interaction, a `tree` card for a
-  changed call path, a markdown text tree for responsibilities, pseudocode
-  for logic, a before/after `diff` block for a changed flow. Mermaid supports
-  flowchart, sequenceDiagram, stateDiagram, classDiagram and erDiagram; keep
-  flowcharts to about eight nodes so they fit a terminal.
+- `outline`: one to three views, smallest that shows the shape. Use a `viz`
+  card for interaction, a flow, a sequence or a state machine (its body is
+  [viz grammar](../../viz/references/grammar.md); `view: seq` for a sequence,
+  `view: states` for states), a `tree` card for a changed call path, a
+  markdown text tree for responsibilities, pseudocode for logic, a
+  before/after `diff` block for a changed flow. Keep a `viz` card to about
+  eight nodes; chat shows its source as text.
 - `tree` cards: one node per line, two spaces per level, an optional marker
   in column 0 (`+` added, `-` removed, `~` changed, `!` fails, `?` not
   verified), then `label @path:line # note`. Give every node a real

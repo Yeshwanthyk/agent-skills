@@ -48,18 +48,14 @@ src/
 └── transport/      # sends API requests
 ```
 
-## Mermaid
+## Sequence
 
-Use for multi-component interactions or data flow where nothing renders HTML. Where a host renders HTML, a flow or plain sequence goes to viz, and Mermaid is kept for what viz lacks (see show-me's form list).
+Use for multi-component interactions or data flow. In chat and on GitHub, write it as numbered text; where HTML or a page renders, draw it with [viz](../../viz/SKILL.md) `view: seq` instead.
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI
-    participant Daemon
-    User->>UI: choose command
-    UI->>Daemon: send expanded prompt
-    Daemon-->>UI: stream result
+```text
+1. User  -> UI      choose command
+2. UI    -> Daemon  send expanded prompt
+3. Daemon -> UI     stream result
 ```
 
 ## Diff

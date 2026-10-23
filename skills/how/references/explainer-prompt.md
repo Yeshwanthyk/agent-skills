@@ -23,7 +23,7 @@ Write for a senior engineer unfamiliar with this area. Use the findings as leads
 - For Inventory, enumerate mechanically from the named registrations, route tables, factories, exports, call sites, or other source of truth. Never label a representative sample complete.
 - For Contrast, compare the same dimensions for both live paths.
 - Mark material claims as **direct evidence**, **inference**, or **unresolved gap** when the reader could otherwise mistake an inference for a fact.
-- Draw a diagram only when it clarifies a multi-component flow: a viz block through `html_render` where the host renders HTML (T3 Code), otherwise Mermaid, never box or arrow art in a code block.
+- Draw a diagram only when it clarifies a multi-component flow: a viz block through `html_render` where the host renders HTML (T3 Code), otherwise a viz page (`viz.py html`) plus a text tree or numbered sequence in the reply; never Mermaid, and never box or arrow art in a code block.
 
 ## Output
 

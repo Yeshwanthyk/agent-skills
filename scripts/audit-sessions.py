@@ -63,7 +63,7 @@ DIAGRAM = re.compile(r"[─│┌┐└┘├┤┬┴┼▶◀►◄▼▲→�
 TREE_ENTRY = re.compile(r"^\s*(?:│\s*)*[├└]──")
 FENCE = re.compile(r"```(\w*)\n(.*?)```", re.S)
 CODE_LANGS = {"python", "py", "ts", "tsx", "js", "javascript", "bash", "sh", "zsh", "json", "sql", "diff",
-              "rust", "go", "yaml", "toml", "mermaid", "viz"}
+              "rust", "go", "yaml", "toml", "viz"}
 
 
 def text_diagrams(path):

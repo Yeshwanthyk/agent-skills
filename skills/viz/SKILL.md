@@ -5,7 +5,7 @@ description: "Render an interactive flow, DAG, trigger map, sequence, state mach
 
 # Viz
 
-One fixed renderer, [`assets/viz.js`](assets/viz.js), draws every visual. The agent writes only data in the [grammar](references/grammar.md), so a visual costs about as many tokens as the Mermaid or ASCII tree it replaces. In exchange it gets step replay, a node inspector, edge tracing, filtering, and path copy.
+One fixed renderer, [`assets/viz.js`](assets/viz.js), draws every visual. The agent writes only data in the [grammar](references/grammar.md), so a visual costs about as many tokens as the ASCII tree it replaces. In exchange it gets step replay, a node inspector, edge tracing, filtering, and path copy.
 
 ## Pick the view
 
@@ -15,7 +15,7 @@ Model the code as nodes, paths and a view in one `== graph` section, not as hand
 - Who acts, what it sends, what filters it, what results → `ranks:` columns. Write one path per trigger, ending `=> result` when it gets through and `=| result` when it is filtered out. Teams or services as bands → add `lane:`.
 - Which inputs a check reads and which triggers keep each one fresh → a `== cover` section after the graph. Rows point at path names; gaps fall out of the paths. A writer × field matrix → `columns: <rank>`.
 - Requests between services over time → `view: seq`, with `at:` times when the waiting matters.
-- The life of one field or job → `view: states`, with one path per story (`!giveup: running > blocked => dead`).
+- The life of one field or job → `view: states`, with one path per story (`!giveup: running > blocked => dead`). A user-facing flow adds a start dot (`[*] -> form`), tones for categories, and `group` boxes for phases ([grammar](references/grammar.md#views)).
 - A call stack at one moment, with the values that went wrong → `view: stack` and `locals:`.
 - A change, on one layout → `+` and `-` on nodes and paths; the reader gets a before | both | after toggle.
 - When the why of each step matters → give paths a `| payload | narration` tail. Each one becomes a replay step.

@@ -45,6 +45,7 @@ These let the script map a trace onto the chart drawn in [invariants](../SKILL.m
 - **Outcome nodes.** A chart node that is not an actor's position, such as "two tabs: one credit, one refusal", carries a `state:` detail line with a TLA+ predicate. Every other node is reached when some actor's `ui` equals its id.
 - **Harm nodes.** The node for what the user wrongly sees when an invariant breaks carries `fails: <InvariantName>`.
 - **Fix.** A second config with the fix switched on (a `Fix` constant), or `--fix` pointed at a fixed copy's config.
+- **Layout.** The chart may use viz's start dot (`[*] -> form`), `tone` categories, and `group` boxes for phases ([grammar](../../viz/references/grammar.md#views)). The script ignores those lines and keeps them in the output.
 
 With `--viz`, the script finds each named story path in the chart by checking `~(end node predicate)` as an invariant, which makes TLC return a witness trace. Then it writes `chart.checked.viz`:
 

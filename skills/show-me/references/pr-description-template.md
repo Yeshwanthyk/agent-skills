@@ -23,7 +23,7 @@ Replace placeholders and remove guidance before publication. Retain the reposito
 +[replacement structure or behavior]
 ```
 
-[For predominantly new structures, use a complete language-tagged block or a text tree instead. Add a second view only for distinct information. Omit categories that do not help explain this PR. Prefer these formats over Mermaid; include Mermaid only after verifying its actual GitHub rendering under the visual PR workflow.]
+[For predominantly new structures, use a complete language-tagged block or a text tree instead. Add a second view only for distinct information. Omit categories that do not help explain this PR. Never use Mermaid or another diagram language; GitHub shows text views only.]
 
 ## Checks
 

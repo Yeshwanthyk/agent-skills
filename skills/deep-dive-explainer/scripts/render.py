@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Render article content using the bundled offline reading layout."""
 import argparse
-import base64
 import datetime
 import html
 import json
@@ -36,7 +35,7 @@ def render(data, source_dir=None):
     keys(data, ('title', 'summary', 'date', 'intro', 'sections'), ('author',))
     datetime.date.fromisoformat(string(data['date']))
     ids, fragments, toc = set(), set(), []
-    sequence_count = 0
+    sequence_count = viz_count = 0
 
     def inline(value):
         value = string(value)
@@ -61,7 +60,7 @@ def render(data, source_dir=None):
         return ''.join(result)
 
     def blocks(values):
-        nonlocal sequence_count
+        nonlocal sequence_count, viz_count
         output = []
         for value in sequence(values, nonempty=False):
             if isinstance(value, str):
@@ -79,22 +78,17 @@ def render(data, source_dir=None):
             elif isinstance(value, dict) and 'sequence' in value:
                 sequence_count += 1
                 output.append(render_sequence(value, source_dir, sequence_count, inline, keys, string, sequence))
-            elif isinstance(value, dict) and 'mermaid' in value:
-                keys(value, ('mermaid', 'svg', 'caption', 'alt'))
+            elif isinstance(value, dict) and 'viz' in value:
+                keys(value, ('viz', 'caption', 'alt'))
                 if source_dir is None:
                     raise ValueError('Diagram blocks require an article source directory')
-                def asset(field, suffix):
-                    path = (source_dir / string(value[field])).resolve()
-                    if not path.is_relative_to(source_dir.resolve()) or path.suffix != suffix:
-                        raise ValueError(f'Diagram {field} must be a {suffix} file within the article directory')
-                    return path.read_bytes()
-                source = asset('mermaid', '.mmd').decode('utf-8')
-                svg = asset('svg', '.svg')
-                if b'<svg' not in svg:
-                    raise ValueError('Diagram SVG is missing its root element')
-                encoded = base64.b64encode(svg).decode('ascii')
+                path = (source_dir / string(value['viz'])).resolve()
+                if not path.is_relative_to(source_dir.resolve()) or path.suffix != '.viz':
+                    raise ValueError('Diagram viz must be a .viz file within the article directory')
+                viz_count += 1
+                source = path.read_text().replace('</script', '<\\/script')
                 alt = html.escape(string(value['alt']), quote=True)
-                output.append(f'<figure class="diagram"><div class="diagram-scroll" tabindex="0" role="region" aria-label="Scrollable diagram"><img src="data:image/svg+xml;base64,{encoded}" alt="{alt}"></div><figcaption>{inline(value["caption"])}</figcaption><details><summary>Mermaid source</summary><pre tabindex="0"><code>{html.escape(source)}</code></pre></details></figure>')
+                output.append(f'<figure class="diagram" aria-label="{alt}"><script type="text/viz">\n{source}\n</script><figcaption>{inline(value["caption"])}</figcaption></figure>')
             elif isinstance(value, dict) and 'quote' in value:
                 keys(value, ('quote',))
                 output.append('<blockquote><p>' + inline(value['quote']) + '</p></blockquote>')
@@ -141,6 +135,9 @@ def render(data, source_dir=None):
     if sequence_count:
         css += '\n' + (assets / 'sequences.css').read_text()
         script += '\n' + (assets / 'sequences.js').read_text()
+    if viz_count:
+        # The viz skill's renderer, inlined so the article stays one offline file with interactive diagrams.
+        script = (Path(__file__).resolve().parents[2] / 'viz' / 'assets' / 'viz.js').read_text() + '\n' + script
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title><style>{css}</style></head>
 <body><a class="skip" href="#article">Skip to article</a><div class="layout"><aside><nav aria-label="In this article"><details open><summary>In this article</summary><ol>{''.join(toc)}</ol></details><details class="reading-controls" data-reading-controls hidden><summary>Keyboard reading</summary><label><input type="checkbox" data-reading-keys checked> Enable shortcuts</label><p><kbd>j</kbd> / <kbd>k</kbd> down / up<br><kbd>d</kbd> / <kbd>u</kbd> half page<br><kbd>gg</kbd> top · <kbd>G</kbd> bottom</p><p>Ctrl+D / Ctrl+U also work. Browser Find stays available.</p></details></nav></aside><main id="article"><header><h1>{title}</h1><p class="meta">{author}<time datetime="{data['date']}">{data['date']}</time></p><p class="summary">{summary}</p></header><article>{intro}{body}</article><footer><a href="#article">Back to top ↑</a></footer></main></div><script>{script}</script></body></html>'''

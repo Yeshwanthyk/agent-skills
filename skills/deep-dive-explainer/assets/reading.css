@@ -5,9 +5,9 @@
 
 .reading-controls{margin-top:24px;border-top:1px solid var(--line);padding-top:16px}.reading-controls label{display:flex;align-items:center;gap:8px;margin:14px 0;cursor:pointer}.reading-controls input{accent-color:var(--link)}.reading-controls p{margin:12px 0}kbd{font:inherit;color:var(--text);font-weight:700}
 
-.diagram img{display:block;width:100%;height:auto}.diagram{margin:2rem 0}.diagram details{margin-top:.75rem}.diagram summary{cursor:pointer;color:var(--link)}
+.diagram{margin:2rem 0}
 
-.diagram-scroll{overflow-x:auto}.diagram img{min-width:640px}.diagram figcaption{overflow-wrap:anywhere}
+.diagram figcaption{overflow-wrap:anywhere}
 
 nav ol a{display:block;border-left:3px solid transparent;padding:3px 7px;margin-left:-10px}nav ol a[aria-current="location"]{border-left-color:var(--link);background:#8ab8ff18;color:var(--text);text-decoration:none}
 

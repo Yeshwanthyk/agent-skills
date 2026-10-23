@@ -41,7 +41,7 @@ VIZ_CDN = "https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@cb37067410d19bf5
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 KINDS = ("core", "supporting", "tests", "config", "docs", "mechanical", "generated")
 SEVERITIES = ("risk", "question", "note")
-CARD_KINDS = ("markdown", "mermaid", "tree")
+CARD_KINDS = ("markdown", "viz", "tree")
 MAX_FILE_BYTES = 1024 * 1024
 
 
@@ -566,7 +566,7 @@ def cmd_render_md(change, reading, args):
         for card in reading.get("outline", []) or []:
             out.append(f"**{card['title']}**")
             kind = card.get("kind", "markdown")
-            out += [f"```{'mermaid' if kind == 'mermaid' else 'text'}" if kind != "markdown" else "", card["body"].rstrip(), "```" if kind != "markdown" else "", ""]
+            out += ["```text" if kind != "markdown" else "", card["body"].rstrip(), "```" if kind != "markdown" else "", ""]
         found = findings_sorted(reading, read)
         if found:
             out.append("**Findings**")

@@ -72,6 +72,16 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 .vz-box .vz-bn{color:var(--vz-dim);font-size:11px;line-height:15px}.vz-box .vz-bv{color:var(--vz-blue);font-size:11px;line-height:15px}
 .vz-box.k-event{border-style:dashed}.vz-box.e-reach{border-color:var(--vz-green)}.vz-box.e-dropped{color:var(--vz-dim)}
 .vz-pill.plain{padding:0 8px}
+.vz-group{position:absolute;border:1px solid color-mix(in srgb,var(--vz-fg) 16%,transparent);border-radius:calc(var(--vz-r) + 2px);background:color-mix(in srgb,var(--vz-fg) 3%,transparent);transition:border-color 160ms var(--vz-out)}
+.vz-group>span{display:block;height:26px;line-height:26px;text-align:left;border-bottom:1px solid color-mix(in srgb,var(--vz-fg) 10%,transparent);color:var(--vz-fg);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px;font-weight:600;cursor:pointer}
+.vz-group.hot{border-color:var(--vz-amber)}
+.vz-box.t-1,.vz-sw.t-1{--vz-t:var(--chart-1,#5fb3a3)}.vz-box.t-2,.vz-sw.t-2{--vz-t:var(--chart-2,#7aa2d6)}.vz-box.t-3,.vz-sw.t-3{--vz-t:var(--chart-3,#b08ee0)}
+.vz-box.t-4,.vz-sw.t-4{--vz-t:var(--chart-4,#e6b04f)}.vz-box.t-5,.vz-sw.t-5{--vz-t:var(--chart-5,#d98e6a)}.vz-box.t-6,.vz-sw.t-6{--vz-t:var(--chart-6,#9cc48a)}
+.vz-box[class*=" t-"]{background:linear-gradient(color-mix(in srgb,var(--vz-t) 24%,transparent),color-mix(in srgb,var(--vz-t) 24%,transparent)),var(--vz-bg);border-color:color-mix(in srgb,var(--vz-t) 60%,transparent)}
+.vz-box.s-fail{background:linear-gradient(color-mix(in srgb,var(--vz-coral) 14%,transparent),color-mix(in srgb,var(--vz-coral) 14%,transparent)),var(--vz-bg);border-color:var(--vz-coral);border-width:1.5px}
+.vz-box.k-start{width:14px;height:14px;min-height:14px!important;padding:0;border:none;border-radius:50%;background:var(--vz-dim)}
+.vz-sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:color-mix(in srgb,var(--vz-t) 45%,transparent);border:1px solid var(--vz-t)}
+.vz-sw.s-fail{background:color-mix(in srgb,var(--vz-coral) 20%,transparent);border-color:var(--vz-coral)}
 .vz-before .s-add,.vz-after .s-del{opacity:.1!important;pointer-events:none}.vz-before .vz-box.s-add,.vz-after .vz-box.s-del{scale:.96}
 .vz-flow .vz-box.ghost,.vz-flow .vz-pill.ghost{opacity:.13;border-style:dashed;box-shadow:none}.vz-flow path.ghost{opacity:.1}.vz-building.vz-dimmed .vz-box:not(.hot):not(.ghost),.vz-building.vz-dimmed .vz-pill:not(.hot):not(.ghost){opacity:.65}
 .vz-cover{margin-top:10px;border-top:1px solid var(--vz-line);padding-top:8px}.vz-ctitle{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--vz-dim);margin-bottom:6px}
@@ -135,7 +145,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
           sec = { kind, graph: target }; return;
         }
         sec = kind === 'graph' || kind === 'flow'
-          ? { kind: 'graph', name: name.trim() || 'graph', nodes: [], edges: [], byId: {}, paths: [], steps: [], ranks: [], view: '', group: -1 }
+          ? { kind: 'graph', name: name.trim() || 'graph', nodes: [], edges: [], byId: {}, paths: [], steps: [], ranks: [], view: '', group: -1, groups: [], tones: [], box: '' }
           : { kind: 'tree', diff: kind === 'diff', name: name.trim() || kind, lines: [] };
         doc.sections.push(sec); if (sec.kind === 'graph') lastGraph = sec; node = null; lastEdges = null; return;
       }
@@ -153,6 +163,25 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
         else if (VIEWS.includes(facet[2].trim())) g.view = facet[2].trim();
         else doc.errors.push(`line ${n}: view must be one of ${VIEWS.join(', ')}`);
         return;
+      }
+      // `group id: Label` opens a box drawn around the nodes declared after it, until the next group line or `group end`.
+      const gb = /^\S/.test(raw) && t.match(/^group\s+(?:end|([\w.$-]+):\s*(.*))$/);
+      if (gb) {
+        if (!gb[1]) { g.box = ''; node = null; return; }
+        if (g.groups.some((x) => x.id === gb[1])) doc.errors.push(`line ${n}: group "${gb[1]}" declared twice`);
+        g.groups.push({ id: gb[1], label: gb[2].trim() || gb[1], n }); g.box = gb[1]; node = null; return;
+      }
+      // `tone id: Label` names a fill colour; a node takes it with `{id}` and the legend lists it.
+      const tn = /^\S/.test(raw) && t.match(/^tone\s+([\w.$-]+):\s*(.*)$/);
+      if (tn) { g.tones.push({ id: tn[1], label: tn[2].trim() || tn[1], k: g.tones.length % 6 + 1, n }); node = null; return; }
+      // `[*] -> id: label` draws the start dot.
+      const sd = t.match(/^\[\*\]\s*->\s*([\w.$-]+)\s*(?::\s*(.*))?$/);
+      if (sd) {
+        const id = `__start${g.nodes.filter((x) => x.kind === 'start').length || ''}`;
+        const dot = { id, label: 'start', kind: 'start', ref: '', note: '', st: '', info: {}, refs: [], rank: g.group, group: '', tone: '', n };
+        g.byId[id] = dot; g.nodes.push(dot);
+        const e = { from: id, to: sd[1], label: (sd[2] || '').trim(), ref: '', note: '', async: false, st: '', n, info: {}, refs: [], paths: [] };
+        g.edges.push(e); lastEdges = [e]; node = null; return;
       }
       const grp = t.match(/^--\s+(.+)$/);
       if (grp) {
@@ -189,10 +218,13 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (nd) {
         const [, st, id, body] = nd;
         const { rest, ref, note } = splitTail(body);
-        const km = rest.match(/\[([^\]]+)\]\s*$/);
-        const label = (km ? rest.slice(0, km.index) : rest).trim() || id;
+        // `{tone}` sits next to the kind: `Label [state] {run}` or `Label {run} [state]`.
+        let tone = '';
+        const txt = rest.replace(/\s*\{([\w.$-]+)\}(?=\s*(\[[^\]]*\])?\s*$)/, (_, x) => { tone = x; return ''; });
+        const km2 = txt.match(/\[([^\]]+)\]\s*$/);
+        const label = (km2 ? txt.slice(0, km2.index) : txt).trim() || id;
         if (g.byId[id]) doc.errors.push(`line ${n}: node "${id}" declared twice`);
-        node = { id, label, kind: km ? km[1] : '', ref, note, st: STATUS[st] || '', info: {}, refs: [], rank: g.group, n };
+        node = { id, label, kind: km2 ? km2[1] : '', ref, note, st: STATUS[st] || '', info: {}, refs: [], rank: g.group, group: g.box, tone, n };
         g.byId[id] = node; g.nodes.push(node); lastEdges = null; return;
       }
       doc.errors.push(`line ${n}: not a node (id: Label), edge (a -> b), path (a > b => c), or detail (  does: …): ${t}`);
@@ -243,6 +275,9 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     for (const e of s.edges) for (const id of [e.from, e.to]) if (!s.byId[id]) errors.push(`line ${e.n}: edge uses undeclared node "${id}"`);
     s.edges = s.edges.filter((e) => s.byId[e.from] && s.byId[e.to]);
     if (!s.view) s.view = s.ranks.length ? 'ranked' : 'flow';
+    for (const nd of s.nodes) if (nd.tone && !s.tones.some((t) => t.id === nd.tone)) errors.push(`line ${nd.n}: node "${nd.id}" uses tone "${nd.tone}", which no tone line declares`);
+    if (s.groups.length && s.view !== 'flow' && s.view !== 'states') errors.push(`${s.name}: group boxes need view flow or states`);
+    for (const gr of s.groups) if (!s.nodes.some((nd) => nd.group === gr.id)) errors.push(`line ${gr.n}: group "${gr.id}" has no nodes`);
     if (s.view === 'ranked') {
       if (!s.ranks.length) errors.push(`${s.name}: view ranked needs a ranks: line`);
       for (const nd of s.nodes) if (nd.rank < 0) errors.push(`line ${nd.n}: node "${nd.id}" has no rank; put it under a -- line`);
@@ -350,13 +385,14 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
   const MARK = { add: '+', del: '−', mod: '~', fail: '!', active: '*', unk: '?' };
 
   // A box: label (wrapped, never truncated), kind and file:line, the note, then frame locals.
-  function boxOf(nd, max) {
-    const c = cw(), mark = MARK[nd.st] ? MARK[nd.st] + ' ' : '';
+  function boxOf(nd, max, view) {
+    if (nd.kind === 'start') return { kind: 'node', nd, lines: [], mark: '', sub: [], notes: [], locals: [], w: 14, h: 14 };
+    const c = cw(), kind = view === 'states' && nd.kind === 'state' ? '' : nd.kind, mark = MARK[nd.st] ? MARK[nd.st] + ' ' : '';
     const lines = wrap(nd.label, max);
     const r = nd.ref && short(nd.ref), lw = Math.max(...lines.map((l, j) => l.length + (j ? 0 : mark.length)));
     // The kind and file:line share a line when they fit under the label; otherwise each takes its own.
-    const both = [nd.kind, r].filter(Boolean).join(' · ');
-    const sub = !both ? [] : both.length * PFS / FS <= Math.max(lw, max) ? [both] : [nd.kind, r].filter(Boolean);
+    const both = [kind, r].filter(Boolean).join(' · ');
+    const sub = !both ? [] : both.length * PFS / FS <= Math.max(lw, max) ? [both] : [kind, r].filter(Boolean);
     const notes = nd.note ? wrap(nd.note, Math.round(Math.max(lw, max) * FS / PFS)) : [];
     const locals = (nd.info.locals || '').split('\n').filter(Boolean);
     const small = [...sub, ...notes, ...locals];
@@ -401,7 +437,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     }
     const items = [], ranks = [];
     const put = (it, r) => { it.r = r; it.up = []; it.down = []; (ranks[r] = ranks[r] || []).push(it); items.push(it); return it; };
-    s.nodes.forEach((nd, i) => { nd.box = put(Object.assign(boxOf(nd, WRAP), { i }), 2 * layer[i]); });
+    s.nodes.forEach((nd, i) => { nd.box = put(Object.assign(boxOf(nd, WRAP, s.view), { i }), 2 * layer[i]); });
     // Order numbers: one per edge line, so a fan-out line shares its number.
     const lines = [...new Set(s.edges.filter((e) => !e.derived).map((e) => e.n))].sort((a, b) => a - b);
     for (const e of s.edges) e.num = e.derived ? 0 : lines.indexOf(e.n) + 1;
@@ -440,6 +476,33 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (x < best) { best = x; snap = ranks.map((rk) => rk.slice()); }
     }
     snap.forEach((rk, r) => { ranks[r] = rk; rk.forEach((it, j) => (it.o = j)); });
+    // Group boxes: a group's items stay side by side in every rank, gathered where its first item sits. An edge's
+    // bends belong to the group when both its ends do.
+    const gkey = (it) => (it.kind === 'node' ? it.nd.group || '' : s.byId[it.e.from].group && s.byId[it.e.from].group === s.byId[it.e.to].group ? s.byId[it.e.from].group : '');
+    // Every rank lists the groups in one left-to-right order (their mean position after the sweeps), so a group's
+    // boxes never interleave with another's. Items outside groups sit by the groups they connect.
+    let gorder = {};
+    if (s.groups.length) {
+      const pos = {}, cnt = {};
+      ranks.forEach((rk) => rk.forEach((it) => { const k = gkey(it); if (k) { pos[k] = (pos[k] || 0) + (it.o + 0.5) / rk.length; cnt[k] = (cnt[k] || 0) + 1; } }));
+      const gs = Object.keys(pos).sort((a, b) => pos[a] / cnt[a] - pos[b] / cnt[b]), gi = Object.fromEntries(gs.map((k, j) => [k, j]));
+      gorder = gi;
+      const near = (ids) => { const v = ids.map((id) => s.byId[id].group).filter((k) => k in gi).map((k) => gi[k]); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+      // Outside a group, a node sits just right of the groups it links to; an edge between two groups runs between
+      // them, and one leaving a group runs just outside it.
+      const key = (it, rk) => {
+        const k = gkey(it);
+        if (k) return gi[k];
+        const ids = it.kind === 'node' ? s.edges.filter((e) => e.from === it.nd.id || e.to === it.nd.id).map((e) => (e.from === it.nd.id ? e.to : e.from)) : [it.e.from, it.e.to];
+        const v = near(ids), inside = ids.filter((id) => s.byId[id].group in gi).length;
+        if (v == null) return (it.o / Math.max(1, rk.length - 1)) * (gs.length - 1) + 0.5;
+        return it.kind === 'node' || inside < ids.length || new Set(ids.map((id) => s.byId[id].group)).size < 2 ? v + 0.5 : v;
+      };
+      ranks.forEach((rk, r) => {
+        for (const it of rk) it.gk = key(it, rk);
+        rk.sort((a, b) => a.gk - b.gk || a.o - b.o).forEach((it, j) => (it.o = j));
+      });
+    }
     // x: each item wants the mean of its neighbours' centres; pav keeps the rank order and minimum spacing.
     const sep = (a, b) => (a.w + b.w) / 2 + (a.kind === 'node' && b.kind === 'node' ? GAP : a.kind === 'v' && b.kind === 'v' ? 8 : 14);
     for (const rk of ranks) { let x = 0; rk.forEach((it, j) => { if (j) x += sep(rk[j - 1], it); it.x = x; }); }
@@ -453,16 +516,62 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     for (let k = 0; k < 24; k++) {
       const seq = k % 2 ? ranks.slice().reverse() : ranks;
       // A long edge's virtual items pull towards their chain's mean, so the edge runs straight instead of drifting.
-      for (const rk of seq) place(rk, (it) => (it.kind !== 'node' && it.e.chain.length > 1 ? mean(it, it.e.chain) : mean(it, it.up.concat(it.down))));
+      // A group's members also pull towards the group's centre, so the group stays compact enough to box.
+      const gc = {};
+      if (s.groups.length) for (const it of items) { const k = gkey(it); if (k) { (gc[k] = gc[k] || [0, 0])[0] += it.x; gc[k][1]++; } }
+      const want = (it) => {
+        const m = it.kind !== 'node' && it.e.chain.length > 1 ? mean(it, it.e.chain) : mean(it, it.up.concat(it.down)), k = gkey(it);
+        return k && gc[k] ? 0.4 * m + 0.6 * gc[k][0] / gc[k][1] : m;
+      };
+      for (const rk of seq) place(rk, want);
     }
-    const lo = Math.min(...items.map((it) => it.x - it.w / 2)), hi = Math.max(...items.map((it) => it.x + it.w / 2));
+    // Groups that share ranks get separate columns, in the rank order above: each group starts right of every
+    // earlier group it shares a rank with, then each rank is re-spaced left to right so nothing overlaps.
+    const GPAD = 12, GHEAD = 40, GFOOT = 12, GGAP = 18;
+    const blocks = () => [...s.groups.map((gr) => {
+      const mem = items.filter((it) => gkey(it) === gr.id);
+      if (!mem.length) return null;
+      let l = Math.min(...mem.map((it) => it.x - it.w / 2)) - GPAD, rr = Math.max(...mem.map((it) => it.x + it.w / 2)) + GPAD;
+      const lw = Math.ceil(gr.label.length * c) + 2 * GPAD;
+      if (rr - l < lw) { const mid = (l + rr) / 2; l = mid - lw / 2; rr = mid + lw / 2; }
+      return { gr, mem, k: gorder[gr.id], l, r: rr, r0: Math.min(...mem.map((it) => it.r)), r1: Math.max(...mem.map((it) => it.r)) };
+    }), ...items.filter((it) => it.kind === 'node' && !it.nd.group).map((it) => ({ gr: null, mem: [it], k: it.gk ?? 0, l: it.x - it.w / 2, r: it.x + it.w / 2, r0: it.r, r1: it.r }))]
+      .filter(Boolean).sort((p, q) => p.k - q.k);
+    // Pull each group's members toward its centre, as far as their rank neighbours allow, so a group stays one tight box.
+    for (let k = 0; k < 3; k++) for (const gr of s.groups) {
+      const xs = items.filter((it) => it.kind === 'node' && it.nd.group === gr.id).map((it) => it.x).sort((a, b) => a - b);
+      if (!xs.length) continue;
+      const mid = xs[xs.length >> 1];
+      for (const it of items) {
+        if (gkey(it) !== gr.id) continue;
+        const rk = ranks[it.r], j = rk.indexOf(it), L = rk[j - 1], R = rk[j + 1];
+        it.x = Math.min(R ? R.x - sep(it, R) : Infinity, Math.max(L ? L.x + sep(L, it) : -Infinity, mid));
+      }
+    }
+    const respace = () => { for (const rk of ranks) for (let j = 1; j < rk.length; j++) { const min = rk[j - 1].x + sep(rk[j - 1], rk[j]); if (rk[j].x < min) rk[j].x = min; } };
+    for (let k = 0; s.groups.length && k < 8; k++) {
+      let moved = false;
+      const bs = blocks();
+      bs.forEach((B, j) => {
+        const need = Math.max(-Infinity, ...bs.slice(0, j).filter((A) => (A.gr || B.gr) && A.k < B.k && A.r0 <= B.r1 && B.r0 <= A.r1).map((A) => A.r + GGAP));
+        if (B.l < need) { const dx = need - B.l; for (const it of B.mem) it.x += dx; B.l += dx; B.r += dx; moved = true; }
+      });
+      respace();
+      if (!moved) break;
+    }
+    const gb = blocks().filter((b) => b.gr);
+    const lo = Math.min(...items.map((it) => it.x - it.w / 2), ...gb.map((b) => b.l)), hi = Math.max(...items.map((it) => it.x + it.w / 2), ...gb.map((b) => b.r));
     for (const it of items) it.x = Math.round(it.x - lo + 2);
     // y: rank bands. Node ranks are as tall as their tallest box; label ranks are one pill tall.
     let y = 0;
-    const band = ranks.map((rk) => {
+    const heads = ranks.map((_, r) => gb.some((b) => b.r0 === r)), feet = ranks.map((_, r) => gb.some((b) => b.r1 === r));
+    const band = ranks.map((rk, r) => {
       const hh = Math.max(0, ...rk.map((it) => it.h));
-      const b = { top: y, h: hh }; y += hh + (hh ? VGAP : 0); return b;
+      if (heads[r]) y += GHEAD;
+      const b = { top: y, h: hh }; y += hh + (hh ? VGAP : 0) + (feet[r] ? GFOOT : 0); return b;
     });
+    const decor = gb.map((b) => ({ kind: 'group', id: b.gr.id, text: b.gr.label, x: Math.round(b.l - lo + 2), w: Math.round(b.r - b.l),
+      y: band[b.r0].top - GHEAD + 6, h: band[b.r1].top + band[b.r1].h - band[b.r0].top + GHEAD - 6 + GFOOT - 2 }));
     for (const it of items) { const b = band[it.r]; it.y = b.top + (b.h - it.h) / 2; it.top = b.top; it.bot = b.top + b.h; }
     // Ports: spread a node's edges along its top and bottom edges in the order of their neighbours.
     for (const it of items) {
@@ -495,7 +604,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
         right = Math.max(right, e.pill.x + w / 2 + 4);
       }
     }
-    return { w: Math.ceil(right), h: Math.ceil(y - VGAP + 4), decor: [] };
+    return { w: Math.ceil(right), h: Math.ceil(y - VGAP + 4), decor };
   }
 
   // ranked: columns the author names, left to right, with a header row. Boxes keep declaration order inside a
@@ -637,10 +746,18 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const L = LAYOUT[s.view](s), steps = s.steps, view = s.view;
     const wrapEl = h('div', { class: `vz-flow vz-v-${view}`, role: 'group', 'aria-label': s.name, tabindex: 0 });
     const stage = h('div', { class: 'vz-stage', style: `width:${L.w}px;height:${L.h}px` });
+    const groupEls = new Map();
     for (const d of L.decor) {
       if (d.kind === 'lane') stage.append(h('div', { class: 'vz-lane', style: `left:0;top:${d.y}px;width:${d.w}px;height:${d.h}px` }, h('span', {}, d.text)));
       if (d.kind === 'head') stage.append(h('div', { class: 'vz-colhead', style: `left:${d.x}px;top:${d.y}px;width:${d.w}px` }, d.text));
       if (d.kind === 'tick') stage.append(h('div', { class: 'vz-tick', style: `left:${d.x}px;top:${d.y}px` }, d.text));
+      if (d.kind === 'group') {
+        const el = h('div', { class: 'vz-group', style: `left:${d.x}px;top:${d.y}px;width:${d.w}px;height:${d.h}px`, 'data-viz-id': d.id }, h('span', { title: d.text }, d.text));
+        const head = el.firstChild;
+        head.addEventListener('mouseenter', () => hoverGroup(d.id)); head.addEventListener('mouseleave', () => hoverGroup(null));
+        head.addEventListener('click', () => pickGroup(d.id));
+        groupEls.set(d.id, el); stage.append(el);
+      }
     }
     const g = svg('svg', { width: L.w, height: L.h });
     const defs = svg('defs', {});
@@ -670,7 +787,8 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const KIND = { event: 'k-event', signal: 'k-event', message: 'k-event', topic: 'k-event' };
     const boxes = s.nodes.map((nd, i) => {
       const b = nd.box;
-      const cls = ['vz-box', nd.st && 's-' + nd.st, KIND[nd.kind], nd.end && 'e-' + nd.end, b.fixed && 'fixed'].filter(Boolean).join(' ');
+      const tk = nd.tone && s.tones.find((t) => t.id === nd.tone)?.k;
+      const cls = ['vz-box', nd.st && 's-' + nd.st, KIND[nd.kind], nd.kind === 'start' && 'k-start', tk && 't-' + tk, nd.end && 'e-' + nd.end, b.fixed && 'fixed'].filter(Boolean).join(' ');
       const el = h('div', { class: cls, style: `left:${b.x}px;top:${b.y}px;min-height:${b.h}px${b.fixed ? `;width:${b.w}px` : ''}`, role: 'button', tabindex: -1, 'aria-label': nd.label, 'data-viz-id': nd.id },
         ...b.lines.map((l, j) => h('div', { class: 'vz-bl' }, j === 0 && b.mark ? h('span', { class: 'vz-mk' }, b.mark) : null, l)),
         ...b.sub.map((x) => h('div', { class: 'vz-bs' }, x)),
@@ -695,6 +813,8 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     // Legend: only for what this graph uses.
     const outs = new Set(s.edges.map((e) => e.out)), used = [...new Set(s.nodes.map((nd) => nd.st).filter((st) => st && !(st === 'fail' && outs.has('fail'))))];
     const legend = h('div', { class: 'vz-legend' },
+      ...s.tones.map((t) => h('span', {}, h('span', { class: `vz-sw t-${t.k}` }), t.label)),
+      s.tones.length && s.nodes.some((nd) => nd.st === 'fail') ? h('span', {}, h('span', { class: 'vz-sw s-fail' }), 'breaks a rule') : null,
       numbered && s.edges.some((e) => e.pill) ? h('span', {}, h('span', { class: 'vz-num' }, '1'), 'order') : null,
       outs.has('pass') ? h('span', { class: 's-add' }, '— gets through') : null,
       outs.has('drop') ? h('span', {}, '┄ filtered out') : null,
@@ -749,6 +869,22 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     };
     const tell = (id) => document.dispatchEvent(new CustomEvent('viz:hover', { detail: { id, from: s.uid } }));
     function hoverNode(i) { tell(i == null ? null : s.nodes[i].id); if (step >= 0) return; if (i == null) restore(); else light(...around(i)); }
+    const ofGroup = (gid) => {
+      const ids = new Set(s.nodes.filter((nd) => nd.group === gid).map((nd) => nd.id));
+      const ps = s.paths.filter((p) => shown(p) && p.ids.some((id) => ids.has(id)));
+      if (ps.length) return ofPaths(ps);
+      return [new Set([...ids].map((id) => idx[id])), new Set(s.edges.filter((e) => ids.has(e.from) && ids.has(e.to))), null];
+    };
+    function hoverGroup(gid) {
+      for (const [k, el] of groupEls) el.classList.toggle('hot', k === gid);
+      if (step >= 0) return; if (gid == null) restore(); else light(...ofGroup(gid));
+    }
+    function pickGroup(gid) {
+      selNode = null; selEdge = null; selRow = null; light(...ofGroup(gid));
+      const gr = s.groups.find((x) => x.id === gid), mem = s.nodes.filter((nd) => nd.group === gid);
+      sheet([['group', h('b', {}, gr.label)], ['holds', mem.map((nd) => h('div', {}, jump(nd.id)))],
+        ['paths', s.paths.filter((p) => p.ids.some((id) => mem.some((nd) => nd.id === id))).map(pathEl)]]);
+    }
     function hoverEdge(e) { if (step >= 0) return; if (!e) restore(); else light(...alongEdge(e)); }
     function hoverRow(r) { if (step >= 0) return; if (!r) restore(); else light(...ofPaths(r.paths.filter(shown))); }
     // Linked views: hovering a node id or path name anywhere on the page (another view, or any element with data-viz-id) lights it here.
@@ -789,6 +925,8 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       sheet([
         ['node', [h('b', {}, nd.label), nd.kind ? `  [${nd.kind}]` : '', nd.st ? h('span', { class: 's-' + nd.st }, `  ${STATUS_WORD[nd.st]}`) : '']],
         ['at', nd.ref ? refEl(nd.ref) : null],
+        ['group', nd.group ? s.groups.find((x) => x.id === nd.group)?.label : null],
+        ['tone', nd.tone ? s.tones.find((t) => t.id === nd.tone)?.label : null],
         ...DETAIL.map((k) => [k, nd.info[k]]),
         ['note', nd.note || nd.info.note],
         ['refs', nd.refs.map(([r, w]) => refEl(r, w))],
