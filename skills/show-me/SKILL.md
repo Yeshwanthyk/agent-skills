@@ -26,7 +26,7 @@ Read the active host's note in [hosts](../yesh-router/references/hosts/) for its
 - Use [viz](../viz/SKILL.md) for a flow or DAG with branches or failure paths, a call tree or call diff too long to read as text, or whenever the user wants to click through it. Elsewhere it opens a temp HTML page.
 - Use focused HTML for a visual comparison or concept too dense for viz.
 
-Load [`references/visual-forms.md`](references/visual-forms.md) only when drawing a text form (tree, diff, pseudocode, Mermaid). Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch. For viz, read and follow its skill.
+Load [`references/visual-forms.md`](references/visual-forms.md) only when drawing a text form (tree, diff, pseudocode, numbered sequence). Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch. For viz, read and follow its skill.
 
 ## Present
 
