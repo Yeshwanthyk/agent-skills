@@ -1,6 +1,6 @@
 ---
 name: meat-review
-description: "Review a code change as an abridged, annotated reading: what to read, why, and the risks, drawn from the real diff and shown where you are (chat, T3 Code page, kvim). Use when asked to review a diff, commit, branch, PR or uncommitted changes, for a reading view, or to give feedback on one; also supplies the excerpts for a visual PR description."
+description: "Review a diff, commit, branch, PR, or uncommitted change as an abridged reading of what to read, why, and the risks, in chat, a T3 page, or kvim. Also supplies visual PR excerpts."
 ---
 
 # Meat review

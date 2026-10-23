@@ -1,6 +1,6 @@
 ---
 name: viz
-description: "Render an interactive flow, DAG, ranked trigger map, coverage strip, sequence, state machine, call stack, call tree, or call diff from a few lines of text: inline in T3 Code, or as a temp HTML page elsewhere. Use when asked to viz, visualize, or graph a flow, pipeline, DAG, trigger or event map, coverage, sequence, state machine, call stack, call path, call tree, or calldiff, or when show-me or interactive-explainer hands one off."
+description: "Render an interactive flow, DAG, trigger map, sequence, state machine, call tree, or call diff from a few lines of text, inline in T3 Code or as an HTML page. Use for viz, visualize, graph, or any diagram."
 ---
 
 # Viz

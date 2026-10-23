@@ -1,6 +1,7 @@
 ---
 name: plan
 description: Turn a settled approach into an implementation plan of ordered chunks, dependencies, risks, and proof. Use when the user asks for a plan, breakdown, or handoff packet before coding; an unsettled design goes to architect first.
+disable-model-invocation: true
 ---
 
 # Plan

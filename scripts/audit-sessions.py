@@ -4,7 +4,7 @@
 For each session: whether the router/mode left a trace (loaded, quoted, or a
 Method line; transcripts do not record the system prompt), Method/Used line counts, what was
 actually read (skills, playbooks, principles), what the last Used line claimed
-but never read, todo-tool use, and spawns. Prints a table and totals.
+but never read, todo-tool use, spawns, and text diagrams (box or arrow art in a fenced block). Prints a table and totals.
 
     audit-sessions.py [--days N] [--json] [--claude DIR] [--pi DIR]
 
@@ -18,6 +18,7 @@ import glob
 import importlib.util
 import json
 import os
+import re
 import sys
 import time
 
@@ -55,6 +56,38 @@ def extra_counts(path):
                     todo += n in TODO_TOOLS
                     spawns += n in SPAWN_TOOLS
     return todo, spawns, mode_on
+
+
+DIAGRAM = re.compile(r"[─│┌┐└┘├┤┬┴┼▶◀▼▲→←↓↑]|-->|<--")
+FENCE = re.compile(r"```(\w*)\n(.*?)```", re.S)
+CODE_LANGS = {"python", "py", "ts", "tsx", "js", "javascript", "bash", "sh", "zsh", "json", "sql", "diff",
+              "rust", "go", "yaml", "toml", "mermaid", "viz"}
+
+
+def text_diagrams(path):
+    """Fenced blocks in assistant replies drawn with box or arrow characters on 3+ lines.
+
+    In T3 Code these render as plain text; diagrams belong in viz through html_render.
+    """
+    n = 0
+    with open(path, "rb") as f:
+        for raw in f:
+            if b"```" not in raw:
+                continue
+            try:
+                e = json.loads(raw)
+            except ValueError:
+                continue
+            if e.get("isSidechain") or e.get("type") != "assistant":
+                continue
+            msg = e.get("message") if isinstance(e.get("message"), dict) else {}
+            for b in msg.get("content") or []:
+                if isinstance(b, dict) and b.get("type") == "text":
+                    for lang, body in FENCE.findall(b.get("text", "")):
+                        if lang.lower() not in CODE_LANGS and sum(
+                                1 for line in body.splitlines() if DIAGRAM.search(line)) >= 3:
+                            n += 1
+    return n
 
 
 NOT_USER = ("<task-notification", "This session is being continued", "<command-", "[SYSTEM NOTIFICATION",
@@ -153,6 +186,7 @@ def main(argv=None):
             "skills": state["skills"], "playbooks": state["playbooks"],
             "principles": state["principles"], "unread_claims": usage.unread_claims(state),
             "todo_calls": todo, "spawns": spawns, "old_router": old_router,
+            "text_diagrams": text_diagrams(path),
             "turns": [{k: t[k] for k in ("hook", "work", "header")} for t in ts],
         })
     rows.sort(key=lambda r: r["mtime"])
@@ -160,14 +194,14 @@ def main(argv=None):
         print(json.dumps(rows, indent=2))
         return 0
 
-    print("%-6s %-10s %-4s %4s %4s %4s %5s  %-40s %s" % (
-        "host", "session", "mode", "Meth", "Used", "todo", "spawn", "read (skills | playbooks | principles)", "claimed, unread"))
+    print("%-6s %-10s %-4s %4s %4s %4s %5s %4s  %-40s %s" % (
+        "host", "session", "mode", "Meth", "Used", "todo", "spawn", "txtd", "read (skills | playbooks | principles)", "claimed, unread"))
     for r in rows:
         read = "%s | %s | %s" % (",".join(r["skills"]) or "-", ",".join(r["playbooks"]) or "-",
                                   len(r["principles"]))
-        print("%-6s %-10s %-4s %4d %4d %4d %5d  %-40s %s" % (
+        print("%-6s %-10s %-4s %4d %4d %4d %5d %4d  %-40s %s" % (
             r["host"], r["session"][:10], "on" if r["mode_on"] else "-", r["method_lines"], r["used_lines"],
-            r["todo_calls"], r["spawns"], read[:40], ",".join(r["unread_claims"]) or ""))
+            r["todo_calls"], r["spawns"], r["text_diagrams"], read[:40], ",".join(r["unread_claims"]) or ""))
     on = [r for r in rows if r["mode_on"]]
     def share(rs, key):
         return "%d/%d" % (sum(1 for r in rs if r[key]), len(rs))
@@ -177,6 +211,8 @@ def main(argv=None):
               share(on, "method_lines"), share(on, "used_lines"), share(on, "skills"),
               share(on, "playbooks"), share(on, "principles"), share(on, "todo_calls"),
               share(on, "unread_claims")))
+    print("text diagrams (box/arrow art in a fenced block; viz belongs in T3): %d in %s sessions" % (
+        sum(r["text_diagrams"] for r in rows), share(rows, "text_diagrams")))
     work = [t for r in on if not r["old_router"] for t in r["turns"] if t["work"]]
     for label, hook in (("with reminder", True), ("without reminder", False)):
         ws = [t for t in work if t["hook"] is hook]

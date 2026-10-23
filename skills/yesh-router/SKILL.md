@@ -33,10 +33,10 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - docs / spec / API facts / research: facts from outside the repo → [research](../research/SKILL.md)
 
 **Shape and plan**
-- architecture / boundary / where should this live: an unsettled boundary → [architect](../architect/SKILL.md)
-- invariants / state machine / concurrency / recovery / property test / fuzz: authoritative state, generated-input contracts, untrusted parsers → [invariants](../invariants/SKILL.md)
+- architecture / boundary / where should this live / data model / entities: an unsettled boundary → [architect](../architect/SKILL.md)
+- invariants / state machine / concurrency / recovery / lock or pin X to Y / versions / replay / property test / fuzz: authoritative state, generated-input contracts, untrusted parsers → [invariants](../invariants/SKILL.md)
 - *On request:* sharpen / what's the real goal: shape a task before starting, then match again → [sharpen](../sharpen/SKILL.md)
-- plan / breakdown / handoff: a settled approach needs ordered chunks; a speculative one goes to architect first → [plan](../plan/SKILL.md)
+- plan / breakdown / handoff / migration plan / list the full plan: a settled approach needs ordered chunks; a speculative one goes to architect first → [plan](../plan/SKILL.md)
 - try it / sketch / prototype: a design question a throwaway run can settle → [prototype](playbooks/prototype.md)
 
 **Measure**
