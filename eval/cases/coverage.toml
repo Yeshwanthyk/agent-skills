@@ -97,3 +97,15 @@ id = "cov-motion-explainer"
 activation = "router"
 prompt = "Make a short narrated video explaining how an order moves through its states."
 expect = { methods = ["motion-explainer"] }
+
+[[case]]
+id = "cov-ship"
+activation = "router"
+prompt = "Commit this, open a PR, merge it and deploy."
+expect = { methods = ["ship"] }
+
+[[case]]
+id = "cov-second-opinion"
+activation = "router"
+prompt = "Get a second opinion from another model on this webhook dedupe design before I build it: dedupe keyed by event id at the storage layer."
+expect = { methods = ["interrogate"], no_edits = true }

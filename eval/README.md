@@ -106,6 +106,7 @@ A method is a skill or a router playbook. The expectations below apply to both.
 | `answer = [...]` | Each regex matches the final answer. Case-insensitive. |
 | `max_skill_files = N` | At most N skill files were read. This is a cost and overhead check. |
 | `no_text_diagram = true` | No assistant message drew box or arrow art in a fenced non-code block. A diagram belongs in viz; T3 Code and GitHub render text art as plain text. File trees don't count. |
+| `header = false` | Turns off the header check. It runs on every router case that finished (not cut off by the turn or time cap): some reply has a `Method:` line, and the final reply's `Used:` line names only skills, playbooks and principles the run opened; `(unread)` items are exempt. |
 
 To add a check, write one function in `skilleval/grade.py` and register it in
 `CHECKS`. To add a fixture, add `fixtures/<name>/setup.sh` that builds a repo in
