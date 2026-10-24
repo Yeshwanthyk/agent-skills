@@ -28,6 +28,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 
 **Understand and diagnose**
 - how does X work / where in code / why was it built this way: an execution path, or the path before a consequential change; "why" uses its History view → [how](../how/SKILL.md)
+- teach me / help me really understand / I'm new to this: understanding to keep, not a one-off answer; runs how for mechanics and reasons → [teach](../teach/SKILL.md)
 - bug / failing / crash / stuck job / 500 / trace / profile: reproduce, diagnose, fix when asked → [diagnose](../diagnose/SKILL.md)
 - resume / pick up / where was I: earlier work from sessions and the repo → [resume](playbooks/resume.md)
 - docs / spec / API facts / research: facts from outside the repo → [research](../research/SKILL.md)

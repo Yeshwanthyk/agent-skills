@@ -13,8 +13,6 @@
     "why": "Your call: plain English for later replies is unslop's job, so it is unslop's plain mode." },
   { "name": "automate-me", "was": "skills/automate-me/", "now": "skills/reflect/SKILL.md#personal-mode",
     "why": "Building a personal mode from working preferences is reflection on sessions; it became reflect's personal-mode branch." },
-  { "name": "teach", "was": "skills/teach/", "now": null,
-    "why": "Your call: removed, along with grilling and domain-modeling in gitgud." },
   { "name": "stateful-systems", "was": "skills/stateful-systems/", "now": "skills/invariants/SKILL.md",
     "why": "Your call to merge the three: modeling state, property tests and fuzzing all start from the same claim and oracle, then pick a technique." },
   { "name": "property-testing", "was": "skills/property-testing/", "now": "skills/invariants/SKILL.md",
