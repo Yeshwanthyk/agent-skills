@@ -17,7 +17,7 @@ export const STORIES = [
     id: 'slow', name: 'slow endpoint → perf-issue playbook',
     steps: [
       { doc: `${R}SKILL.md`, caption: 'The router matches the new task against its triggers.' },
-      { doc: `${R}SKILL.md#triggers`, caption: '"perf / slow / regression" picks the <em>perf-issue</em> playbook; its steps are copied into the todo list.' },
+      { doc: `${R}SKILL.md#triggers`, caption: '"perf / slow / regression" picks the <em>perf-issue</em> playbook; its steps go on the Plan line.' },
       { doc: `${R}playbooks/perf-issue.md`, caption: 'A playbook is a procedure inside the router. It borrows skills rather than repeating them.' },
       { doc: 'skills/benchmark-checklist/SKILL.md', caption: 'Step 1 vets every number with <em>benchmark-checklist</em>.' },
       { doc: 'skills/how/SKILL.md', from: `${R}playbooks/perf-issue.md`, caption: 'Step 2 traces the hot path with <em>how</em>.' },

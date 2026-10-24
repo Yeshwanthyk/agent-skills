@@ -5,20 +5,20 @@ description: "Yesh's working mode (powerball), normally sent by the host every t
 
 # Yesh Router
 
-This mode is on while the host sends this file, or after the user loads `/yesh-router`. It holds for the whole conversation: each task gets a method, the method's steps go in the todo list, and principles shape the decisions. When the user says "new task", or the request clearly changes, match again. A method the user names wins, in the order they imply. Asking for one skill by name (`Use skill "how"`) runs that skill; a name mentioned in prose or quoted from source is not a request.
+This mode is on while the host sends this file, or after the user loads `/yesh-router`. It holds for the whole conversation: each task gets a method, the method's steps go on the Plan line, and principles shape the decisions. When the user says "new task", or the request clearly changes, match again. A method the user names wins, in the order they imply. Asking for one skill by name (`Use skill "how"`) runs that skill; a name mentioned in prose or quoted from source is not a request.
 
 ## Run
 
-- **New task or scope change**, including a mid-thread ask for status, a recap, a new bug, a PR, research, or any other trigger word. Match it against Triggers: one main method, plus supporting methods for concrete parts. Read those files, then begin the reply with `Method: <main> [+ <supporting>…] — <why, in the user's words>` and, under it, `Plan: <step> → <step> → … · ends: <the deliverable, or the real surface that shows it done>`. Plan steps are the method file's own section headings. Settled work with no matching line, or a tiny edit, is `direct`: it drops Plan and keeps `ends:`. Name a principle in the header only after reading it. A one-line answer to a quick question needs no header. When the task changes, keep the completed work and its evidence.
+- **New task or scope change**, including a mid-thread ask for status, a recap, a new bug, a PR, research, or any other trigger word. Match it against Triggers: one main method, plus supporting methods for concrete parts. Open each method's file before writing the header, then begin the reply with `Method: <main> [+ <supporting>…] — <why, in the user's words>` and, under it, `Plan: <step> → <step> → … · ends: <the deliverable, or the real surface that shows it done>`. Plan steps are the open method file's own section headings. Settled work with no matching line, or a tiny edit, is `direct`: it drops Plan and keeps `ends:`. Name a principle in the header only after reading it. A one-line answer to a quick question needs no header. When the task changes, keep the completed work and its evidence.
 - **A skill the user invokes directly** (`/how`, `/skill:how`, "use how"): it is the main method. Still open with the `Method:` line and close with the `Used:` line. These two lines are not preamble; a skill's own formatting rules (skip the preamble, word limits) do not remove them.
 - **End of a task reply.** Close with one line: `Used: <skills> · playbook: <name or —> · principles: <notes read> · steps <done>/<total>`. Add `(skip: <step> — <reason>)` after the step count for each skipped step. Name only files you read this session; a method you named but did not open appears as `<name> (unread)`.
-- **Playbook or multi-step method** (a playbook, or a skill with numbered steps such as diagnose, plan, or reflect). Before task-specific todos, copy its steps verbatim into the host's todo list (Claude Code: TaskCreate/TaskUpdate, loaded through ToolSearch when deferred; pi: the todo tool). Where the host has no todo tool (T3 Code), the Plan line is the todo list: repeat it in each later reply with ✓ on finished steps. A step you skip stays, marked `skip: <reason>`. Track each step's proof there. Rerunning a step that already passed takes one clause saying why. The method's completion criteria end it; an explanation, plan, or review ends with that deliverable unless implementation was also requested.
+- **Playbook or multi-step method** (a playbook, or a skill with numbered steps such as diagnose, plan, or reflect). The Plan line is the tracker: repeat it in each later reply with ✓ on finished steps. A step you skip stays, marked `skip: <reason>`. Track each step's proof there. Rerunning a step that already passed takes one clause saying why. The method's completion criteria end it; an explanation, plan, or review ends with that deliverable unless implementation was also requested.
 - **A fork on reversible work** (code, notes, plans): make the reasonable call, proceed, and name it in the reply. Ask only for product direction, a missing goal or constraint, or a consequential, hard-to-reverse choice.
 - **Edits, installs, configuration, external actions.** These need the user's request or authority already given for the task; choosing a method grants none. Reading a stored credential or calling a service as the user is an external action. When a named method is unavailable, say so and use the best available path.
 - **Settled implementation.** Read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it changes the work or its proof.
 - **Before any spawn.** Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the [routing table](references/routing.md). Four or more children, any writer other than a lint fix, or a long run: show the review and end the turn.
 - **Before saying done.** Prove it on the real surface the user will use, the one `ends:` names; for UI work, show what that surface shows (screenshot or URL), not a test log.
-- **After compaction or a context gap.** Recover the method, current step, and outstanding proof from the last `Method:` and `Plan:` lines and the todo list, then reread the main method file before its next step; locate sessions under the [session-records contract](references/session-records.md).
+- **After compaction or a context gap.** Recover the method, current step, and outstanding proof from the last `Method:` and `Plan:` lines, then reread the main method file before its next step; locate sessions under the [session-records contract](references/session-records.md).
 
 ## Triggers
 
@@ -48,7 +48,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - review this diff / commit / branch / PR, reading view, feedback on one: an abridged reading drawn from git → [meat-review](../meat-review/SKILL.md)
 - review structure / ownership / maintainability → [structure-review](../structure-review/SKILL.md)
 - blast radius / what could this break: beyond the diff → [blast-radius](../blast-radius/SKILL.md)
-- interrogate / challenge / are we sure: independent reviewers → [interrogate](../interrogate/SKILL.md)
+- interrogate / challenge / are we sure / second opinion: independent reviewers, including another model's read → [interrogate](../interrogate/SKILL.md)
 - verifier / verification skill / formally verify / model-check / prove: create, audit, or repair a project-local verifier for a real surface or a high-risk property → [verification-skill](../verification-skill/SKILL.md)
 - eval / does this skill change help: agent behavior before and after → [eval](playbooks/eval.md)
 
@@ -56,6 +56,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - swarm / race / fan out / best of N: parallel coverage or grafting candidates → [swarm](../swarm/SKILL.md)
 - big bespoke task: substantial work no playbook fits → [figure-it-out](playbooks/figure-it-out.md)
 - program / own this migration: dependent units or several owners → [orchestrate](playbooks/orchestrate.md)
+- ship / commit / push / merge / deploy / clean up: take finished work to where it runs → [ship](playbooks/ship.md)
 - decision trail / going to bed / review later: alongside the main method, never instead → [decision trail](references/decision-trail.md)
 - *On request:* pause / stop safely: leave a safe resume point → [pause-safely](playbooks/pause-safely.md)
 - status / what's done / what's left / where are we / ?: progress, a worker's state, or a catch-up with the user's open decisions → [recap](../recap/SKILL.md). "Recap" of an answer or topic asks for a summary of the result, which is unslop's job.

@@ -77,6 +77,38 @@ def _max_skill_files(tr: Transcript, limit: int) -> Check:
     return Check("max_skill_files", n <= limit, f"{n} skill files read (limit {limit})")
 
 
+_METHOD_LINE = re.compile(r"^[\s*_`>]*Method:", re.M)
+_USED_LINE = re.compile(r"^[\s*_`>]*Used:\s*(.+)$", re.M)
+_NOT_A_METHOD = {"", "—", "-", "direct", "none"}
+
+
+def _header(tr: Transcript, want: bool) -> Check:
+    """The mode's Method: line opens the task and its Used: line names only what was read."""
+    if not want:
+        return Check("header", True, "not required")
+    problems = []
+    if not any(_METHOD_LINE.search(t) for t in tr.texts):
+        problems.append("no Method: line")
+    used = _USED_LINE.findall(tr.final_text)
+    if not used:
+        problems.append("no Used: line in the final reply")
+    else:
+        known = set(tr.discovered_skills) | tr.methods_used()
+        read = tr.files_read()
+        for seg in used[-1].strip("`* ").split(" · "):
+            label, _, rest = seg.partition(":") if seg.startswith(("playbook:", "principles:")) else ("skills", "", seg)
+            for item in re.split(r",|\+", re.sub(r"\([^)]*\)", lambda m: m.group(0) if "unread" in m.group(0) else "", rest)):
+                name = item.strip().strip("`")
+                if "(unread)" in name or name in _NOT_A_METHOD or name.startswith("steps"):
+                    continue
+                if label == "principles":
+                    if not any(r.endswith(f"/{name}.md") for r in read):
+                        problems.append(f"principle {name} named but not read")
+                elif name in known and name not in tr.methods_used():
+                    problems.append(f"{name} named but not opened")
+    return Check("header", not problems, "; ".join(problems) or "Method: and Used: lines match reads")
+
+
 CHECKS = {
     "methods": _methods,
     "any_method": _any_method,
@@ -88,6 +120,7 @@ CHECKS = {
     "answer": _answer,
     "max_skill_files": _max_skill_files,
     "no_text_diagram": _no_text_diagram,
+    "header": _header,
 }
 
 
@@ -101,6 +134,9 @@ def grade(tr: Transcript, expect: dict, activation: str) -> list[Check]:
     if activation == "router":
         loaded = ROUTER in tr.skills_used()
         checks.append(Check("router_loaded", loaded, "loaded" if loaded else "router not loaded"))
+        cut_off = tr.metrics.get("timed_out") or tr.metrics.get("stop") == "error_max_turns"
+        if "header" not in expect and not cut_off and not tr.error:
+            checks.append(_header(tr, True))
     for key, value in expect.items():
         checks.append(CHECKS[key](tr, value))
     return checks

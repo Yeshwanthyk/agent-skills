@@ -41,6 +41,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 .vz-dimmed .vz-box:not(.hot),.vz-dimmed .vz-pill:not(.hot){opacity:.35}
 .vz-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;color:var(--vz-dim);font-size:11px}.vz-legend .vz-hint{margin-left:auto}
 .vz-hint{color:var(--vz-dim)}.vz-payload{color:var(--vz-amber);border:1px solid var(--vz-amber);border-radius:10px;padding:0 7px;font-size:11px}
+.vz-stories{margin-top:6px}.vz-story.vz-link{padding:1px 0;text-decoration:none;border:0;cursor:pointer}.vz-story:hover b{text-decoration:underline}.vz-cap{color:var(--vz-dim);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
 .vz-hop{margin-right:14px;white-space:nowrap;display:inline-block}.vz-where{margin-top:4px;line-height:1.9}.vz-link .vz-num{text-decoration:none}
 .vz-lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:10ch;flex:0 1 auto}
 .vz-ref{color:var(--vz-dim);margin-left:auto;white-space:nowrap;font-size:11px;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1000 auto}
@@ -99,6 +100,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 @media (prefers-reduced-motion:reduce){.vz *{transition:none!important;animation:none!important}}`;
 
   const STATUS = { '+': 'add', '-': 'del', '~': 'mod', '!': 'fail', '*': 'active', '?': 'unk' };
+  const STATUS_TIP = { add: 'New in this change.', del: 'Removed by this change.', mod: 'Exists before and after, but behaves differently.', fail: 'Where it goes wrong.', active: 'Where things are right now.', unk: 'Not read in the code yet: treat as a guess.', ok: 'Already done.' };
   const STATUS_WORD = { add: 'added', del: 'removed', mod: 'changed', fail: 'fails', active: 'active', unk: 'unverified', ok: 'done' };
   const BOX = /[│├└─┬┌┐┘┼╰╭]/;
   const h = (tag, attrs, ...kids) => {
@@ -364,7 +366,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
   /* ---------- graph layouts ---------- */
   // Every layout sets nd.box {x: centre, y: top, w, h}, e.d (an SVG path), optionally e.pill {x, y}, and returns
   // {w, h, decor}: column headers, lane bands, lifelines and time ticks drawn behind the boxes.
-  const FS = 12.5, PFS = 11, LINE = 17, SUBL = 15, PX = 9, PY = 6, WRAP = 28, PILL = 20, GAP = 26, VGAP = 26;
+  const FS = 12.5, PFS = 11, LINE = 17, SUBL = 15, PX = 9, PY = 6, WRAP = 28, PILL = 20, GAP = 26, VGAP = 26, FGAP = 14;
   let charW = 0;
   function cw() {
     if (charW) return charW;
@@ -578,7 +580,9 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const band = ranks.map((rk, r) => {
       const hh = Math.max(0, ...rk.map((it) => it.h));
       if (heads[r]) y += GHEAD;
-      const b = { top: y, h: hh }; y += hh + (hh ? VGAP : 0) + (feet[r] ? GFOOT : 0); return b;
+      // A flow alternates box ranks and pill ranks, so the gap on each side of a pill can be tighter than between boxes.
+      const pills = s.view === 'flow' && (r % 2 || (ranks[r + 1] || []).some((it) => it.kind === 'pill'));
+      const b = { top: y, h: hh }; y += hh + (hh ? (pills ? FGAP : VGAP) : 0) + (feet[r] ? GFOOT : 0); return b;
     });
     const decor = gb.map((b) => ({ kind: 'group', id: b.gr.id, text: b.gr.label, x: Math.round(b.l - lo + 2), w: Math.round(b.r - b.l),
       y: band[b.r0].top - GHEAD + 6, h: band[b.r1].top + band[b.r1].h - band[b.r0].top + GHEAD - 6 + GFOOT - 2 }));
@@ -874,13 +878,13 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const legend = h('div', { class: 'vz-legend' },
       ...s.tones.map((t) => h('span', {}, h('span', { class: `vz-sw t-${t.k}` }), t.label)),
       s.tones.length && s.nodes.some((nd) => nd.st === 'fail') ? h('span', {}, h('span', { class: 'vz-sw s-fail' }), 'breaks a rule') : null,
-      numbered && s.edges.some((e) => e.pill) ? h('span', {}, h('span', { class: 'vz-num' }, '1'), 'order') : null,
-      outs.has('pass') ? h('span', { class: 's-add' }, '— gets through') : null,
-      outs.has('drop') ? h('span', {}, '┄ filtered out') : null,
-      outs.has('fail') ? h('span', { class: 's-fail' }, '! — fails') : null,
-      s.edges.some((e) => e.async) ? h('span', {}, '┄ async') : null,
-      ...used.map((st) => h('span', { class: 's-' + st }, `${MARK[st]} ${STATUS_WORD[st]}`)),
-      s.paths.length ? h('span', { class: 'vz-hint' }, 'hover anything to trace its paths') : null);
+      numbered && s.edges.some((e) => e.pill) ? h('span', { title: 'Each numbered pill is one hop, numbered in the order it happens.' }, h('span', { class: 'vz-num' }, '1'), 'order') : null,
+      outs.has('pass') ? h('span', { class: 's-add', title: 'A green line: at least one story through it reaches its end.' }, '— gets through') : null,
+      outs.has('drop') ? h('span', { title: 'A dashed line: every story through it is stopped before the end.' }, '┄ filtered out') : null,
+      outs.has('fail') ? h('span', { class: 's-fail', title: 'A coral line: a story through it ends in a failure.' }, '! — fails') : null,
+      s.edges.some((e) => e.async) ? h('span', { title: 'Fire and forget: the sender does not wait for this hop.' }, '┄ async') : null,
+      ...used.map((st) => h('span', { class: 's-' + st, title: STATUS_TIP[st] }, `${MARK[st]} ${STATUS_WORD[st]}`)),
+      null);
 
     // Before/after: when a change is drawn on one layout, a toggle hides either side instead of a second tab.
     const twoSided = [...s.edges, ...s.nodes].some((x) => x.st === 'add') && [...s.edges, ...s.nodes].some((x) => x.st === 'del');
@@ -961,7 +965,16 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     // With nothing picked, the inspector lists where each numbered edge happens: the one thing the picture omits.
     const hint = () => {
       const seen = new Set(), at = numbered ? s.edges.filter((e) => e.ref && e.num && !seen.has(e.num) && seen.add(e.num)).sort((a, b) => a.num - b.num) : [];
-      return h('div', {}, h('div', { class: 'vz-hint' }, numbered ? 'Numbers give the order. Click a box or an edge label for file:line and detail.' : 'Click a box, an edge or a chip for file:line, detail and the paths through it.'),
+      const how = [s.paths.length ? 'hover a box: lights every story through it' : 'hover a box: lights its neighbours',
+        'click: file:line and detail', steps.length ? `▶ or ← →: replay ${steps.length} step${steps.length > 1 ? 's' : ''}` : null,
+        twoSided ? 'before | after: show one side of the change' : null, 'Esc clears'].filter(Boolean);
+      const stories = s.paths.filter((p) => p.named && shown(p)).slice(0, 8);
+      const story = (p) => h('div', { class: 'vz-story vz-link', onmouseenter: () => hoverRow({ paths: [p] }), onmouseleave: () => hoverRow(null), onclick: () => pickStory(p) },
+        h('span', { class: p.out === 'pass' ? 's-add' : p.out === 'fail' ? 's-fail' : 's-unk' }, OUT_WORD[p.out]), ' ', h('b', {}, p.name), ' ',
+        p.st === 'add' || p.st === 'del' ? h('span', { class: 's-' + p.st }, p.st === 'add' ? 'after ' : 'before ') : '',
+        h('span', { class: 'vz-hint' }, p.narr || p.ids.map((id) => s.byId[id].label).join(' › ')));
+      return h('div', {}, h('div', { class: 'vz-hint' }, 'How to read it: ' + how.join(' · ') + '.'),
+        stories.length ? h('div', { class: 'vz-stories' }, h('div', { class: 'vz-cap' }, `${stories.length} stor${stories.length > 1 ? 'ies' : 'y'} in this graph`), ...stories.map(story)) : null,
         at.length ? h('div', { class: 'vz-where' }, ...at.map((e) => h('span', { class: 'vz-hop vz-link', onclick: () => pickEdge(e) }, h('span', { class: 'vz-num' }, e.num), short(e.ref)))) : null);
     };
     const copy = (ref) => { const full = (doc.base || '') + ref; navigator.clipboard?.writeText(full).catch(() => {}); };
@@ -975,6 +988,10 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       const dl = h('dl', {});
       for (const [k, v] of rows) if (!(v == null || v === '' || (Array.isArray(v) && !v.length))) dl.append(h('dt', {}, k), h('dd', {}, v));
       insp.replaceChildren(dl);
+    }
+    function pickStory(p) {
+      selRow = { paths: [p] }; selNode = null; selEdge = null; restore();
+      sheet([['story', pathEl(p)], ['why', p.narr], ['carries', p.payload], ['', h('span', { class: 'vz-hint' }, 'Esc goes back to the overview.')]]);
     }
     function pickNode(i) {
       selNode = i; selEdge = null; selRow = null; restore();
@@ -1169,12 +1186,23 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       narr = h('div', { class: 'vz-narr', 'aria-live': 'polite' });
     } else if (sideBtns.length) bar = h('div', { class: 'vz-bar' }, ...sideBtns);
     mount.append(...[bar, narr, wrapEl, legend, coverEl, insp].filter(Boolean));
-    // A graph wider than its frame shrinks to fit, down to 70%; past that it scrolls sideways.
-    let zoom = 1;
-    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => requestAnimationFrame(() => {
-      const room = wrapEl.clientWidth, k = room ? Math.min(1, Math.max(0.7, Math.floor((room / L.w) * 100) / 100)) : zoom;
+    // A graph wider than its frame, or taller than about half the screen, shrinks to fit, down to 70%; past that it
+    // scrolls. Seeing the whole flow at once beats full-size text, and the inspector then sits in view below it.
+    // The fit button switches to full size and back.
+    let zoom = 1, fit = true;
+    const tall = () => Math.max(420, Math.round((window.screen?.availHeight || 900) * 0.55));
+    const fitBtn = h('button', { class: 'vz-fit', title: 'Fit: the whole graph on one screen. Full size: larger text, more scrolling.', onclick: () => { fit = !fit; refit(); } });
+    function refit() {
+      const room = wrapEl.clientWidth;
+      if (!room) return;
+      const kw = room / L.w, kh = tall() / L.h, want = fit ? Math.min(kw, kh) : kw;
+      const k = Math.min(1, Math.max(0.7, Math.floor(want * 100) / 100));
+      fitBtn.hidden = kh >= 1 || Math.min(1, Math.max(0.7, kw)) <= Math.max(0.7, kh);
+      fitBtn.textContent = fit ? 'full size' : 'fit';
       if (k !== zoom) { zoom = k; stage.style.zoom = k; }
-    })).observe(wrapEl);
+    }
+    (bar || mount.insertBefore(bar = h('div', { class: 'vz-bar' }), wrapEl)).append(fitBtn);
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => requestAnimationFrame(refit)).observe(wrapEl);
     if (steps.length) go(-1);
     // The first time the graph scrolls into view (or its tab opens), boxes rise in reading order, then the edges.
     // A graph already on screen when it renders starts built, so a screenshot taken at load shows all of it.
