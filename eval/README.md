@@ -105,6 +105,7 @@ A method is a skill or a router playbook. The expectations below apply to both.
 | `reads = [...]` | Some skill file read contains each listed substring, for example `yesh-router/references/principles/prove-it-works.md`. |
 | `answer = [...]` | Each regex matches the final answer. Case-insensitive. |
 | `max_skill_files = N` | At most N skill files were read. This is a cost and overhead check. |
+| `no_text_diagram = true` | No assistant message drew box or arrow art in a fenced non-code block. A diagram belongs in viz; T3 Code and GitHub render text art as plain text. File trees don't count. |
 
 To add a check, write one function in `skilleval/grade.py` and register it in
 `CHECKS`. To add a fixture, add `fixtures/<name>/setup.sh` that builds a repo in

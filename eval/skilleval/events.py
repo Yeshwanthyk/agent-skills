@@ -30,6 +30,7 @@ class Event:
 class Transcript:
     events: list[Event] = field(default_factory=list)
     final_text: str = ""
+    texts: list[str] = field(default_factory=list)  # every top-level assistant text, in order
     discovered_skills: list[str] = field(default_factory=list)
     metrics: dict = field(default_factory=dict)
     error: str = ""
@@ -125,6 +126,7 @@ def parse_claude(stream: str, known: set[str]) -> Transcript:
                     tr.events += _tool_events(item.get("name", ""), item.get("input") or {}, known)
                 elif item.get("type") == "text" and not msg.get("parent_tool_use_id"):
                     tr.final_text = item.get("text", "")
+                    tr.texts.append(tr.final_text)
         elif kind == "result":
             tr.final_text = msg.get("result") or tr.final_text
             tr.metrics.update(
@@ -167,6 +169,7 @@ def parse_pi(stream: str, known: set[str]) -> Transcript:
                     texts.append(item.get("text", ""))
             if texts:
                 tr.final_text = "\n".join(texts)
+                tr.texts.append(tr.final_text)
             usage = m.get("usage") or {}
             cost = (usage.get("cost") or {}).get("total")
             if cost:

@@ -53,3 +53,11 @@ tags = ["midtask"]
 prompt = "Big-cart checkout got slow after the discount change. Figure out why."
 expect = { any_method = ["diagnose", "perf-issue"], reads = ["trace-forensics.md"], no_edits = true }
 notes = "A captured profile sits in profiles/; finding it should pull in diagnose's trace-forensics reference."
+
+[[case]]
+id = "task-draw-webhook-flow"
+tier = "task"
+activation = "router"
+prompt = "Draw how a webhook event moves through this repo, from arrival to the order's final state, including retries."
+expect = { any_method = ["how", "show-me", "viz"], no_edits = true, no_text_diagram = true }
+notes = "From session 5944b4a4: the agent drew box art in a code fence, which T3 shows as plain text. The diagram belongs in viz."

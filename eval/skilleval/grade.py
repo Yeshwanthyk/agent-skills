@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from .diagrams import text_diagrams
 from .events import Transcript
 
 ROUTER = "yesh-router"
@@ -65,6 +66,12 @@ def _answer(tr: Transcript, patterns: list[str]) -> Check:
     return Check("answer", not missing, f"no match for {missing}" if missing else "matched")
 
 
+def _no_text_diagram(tr: Transcript, want: bool) -> Check:
+    hits = [h for t in (tr.texts or [tr.final_text]) for h in text_diagrams(t)]
+    ok = not hits if want else True
+    return Check("no_text_diagram", ok, f"box art in {len(hits)} block(s): {hits[:2]}" if hits else "none")
+
+
 def _max_skill_files(tr: Transcript, limit: int) -> Check:
     n = len(tr.files_read())
     return Check("max_skill_files", n <= limit, f"{n} skill files read (limit {limit})")
@@ -80,6 +87,7 @@ CHECKS = {
     "edits_any": _edits_any,
     "answer": _answer,
     "max_skill_files": _max_skill_files,
+    "no_text_diagram": _no_text_diagram,
 }
 
 

@@ -58,12 +58,9 @@ def extra_counts(path):
     return todo, spawns, mode_on
 
 
-DIAGRAM = re.compile(r"[─│┌┐└┘├┤┬┴┼▶◀►◄▼▲→←↓↑]|-->|<--")
-# A file tree in a code block is a fine text form, so its entry lines (`│   ├── name`) don't count.
-TREE_ENTRY = re.compile(r"^\s*(?:│\s*)*[├└]──")
-FENCE = re.compile(r"```(\w*)\n(.*?)```", re.S)
-CODE_LANGS = {"python", "py", "ts", "tsx", "js", "javascript", "bash", "sh", "zsh", "json", "sql", "diff",
-              "rust", "go", "yaml", "toml", "viz"}
+_spec = importlib.util.spec_from_file_location("diagrams", os.path.join(HERE, "..", "eval", "skilleval", "diagrams.py"))
+diagrams = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(diagrams)
 
 
 def text_diagrams(path):
@@ -85,11 +82,7 @@ def text_diagrams(path):
             msg = e.get("message") if isinstance(e.get("message"), dict) else {}
             for b in msg.get("content") or []:
                 if isinstance(b, dict) and b.get("type") == "text":
-                    for lang, body in FENCE.findall(b.get("text", "")):
-                        if lang.lower() not in CODE_LANGS and sum(
-                                1 for line in body.splitlines()
-                                if DIAGRAM.search(line) and not TREE_ENTRY.match(line)) >= 3:
-                            n += 1
+                    n += len(diagrams.text_diagrams(b.get("text", "")))
     return n
 
 

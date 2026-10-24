@@ -19,6 +19,8 @@ Nothing stays running. Each case builds its own temp workspace from `eval/fixtur
 
 It checks Python, the harness CLI, the fixtures, and that `skilleval lint` reports 0 errors, then prints how many `skills/` paths are dirty. Runs test the working tree, so uncommitted skill edits are what gets graded. Stop on any `FAIL`.
 
+Two `warn` lines don't block a run. `install` warns when the gitgud lock (`GITGUD_LOCK`, default `~/.gitgud/gitgud.lock.json`) predates the last `skills/` commit: real sessions still load the old skills. A stale-workspace line counts `skilleval-*` temp dirs older than two hours, left by killed runs.
+
 ## Select
 
 ```sh
@@ -44,13 +46,23 @@ python3 -m skilleval report                      # latest run; pass a run name f
 
 To check whether a failure is caused by the change, run the same selection with `--skills <path-to-base-checkout>/skills` and use `python3 -m skilleval compare <base-run> <head-run>`.
 
+## Ship
+
+A passing run proves the working tree, not what sessions load. After the change is committed and pushed, install it from outside the repo, then rerun doctor until `install` shows `ok`:
+
+```sh
+cd ~ && gitgud update --global && gitgud apply --global && python3 <repo>/scripts/build-mode.py
+```
+
+Each machine has its own install, so every machine needs this step.
+
 ## Evidence
 
 - `eval/results/<run>/meta.json`: harness, model, git revision, `repo_dirty`, and `skills_hash`. Confirm `repo_dirty: true` when grading uncommitted edits, or the run tested something else.
 - `eval/results/<run>/<case>/result.json`: each check with pass or fail and its detail. `transcript.jsonl` shows which skill files the agent read.
 - `report` output, where account-limit or outage trials show as `INFRA` and are left out of the totals. Rerun those with the `--only` line it prints.
 
-When a case fails, read its transcript and classify the failure per `eval/README.md` → "Improvement loop" (never considered, wrong method won, loaded but not followed). A case whose expectation is wrong is a verifier defect: fix the case, then `python3 -m skilleval regrade <run>` with no model calls. A skill that routes or behaves wrongly is a product defect.
+When a case fails, read its transcript and classify the failure per `eval/README.md` → "Improvement loop" (never considered, wrong method won, loaded but not followed). A case whose expectation is wrong is a verifier defect: fix the case, then `python3 -m skilleval regrade <run>` with no model calls. A skill that routes or behaves wrongly is a product defect. Behavior rules also get checks, not only routing: `no_text_diagram = true` fails a case whose reply drew box art instead of using viz.
 
 ## Cleanup
 

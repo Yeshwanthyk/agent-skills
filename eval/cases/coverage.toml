@@ -67,3 +67,33 @@ id = "cov-personal-mode-explicit"
 activation = "router"
 prompt = "Make me a personal mode from my preferences: terse answers, tests before code, never commit without asking."
 expect = { methods = ["reflect"] }
+
+[[case]]
+id = "cov-viz"
+activation = "router"
+prompt = "viz the webhook retry flow: what happens from a delivery failure to the give-up."
+expect = { methods = ["viz"], no_edits = true }
+
+[[case]]
+id = "cov-meat-review"
+activation = "router"
+prompt = "Review my last commit."
+expect = { methods = ["meat-review"], no_edits = true }
+
+[[case]]
+id = "cov-verification-skill"
+activation = "router"
+prompt = "Make a verification skill so a fresh agent can launch this repo's webhook handler and prove a redelivered event is recorded once."
+expect = { methods = ["verification-skill"] }
+
+[[case]]
+id = "cov-writing-for-agents"
+activation = "router"
+prompt = "Write an AGENTS.md for this repo so coding agents know how to run the tests and where the order logic lives."
+expect = { methods = ["writing-for-agents"] }
+
+[[case]]
+id = "cov-motion-explainer"
+activation = "router"
+prompt = "Make a short narrated video explaining how an order moves through its states."
+expect = { methods = ["motion-explainer"] }
