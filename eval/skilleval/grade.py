@@ -104,7 +104,7 @@ def _header(tr: Transcript, want: bool) -> Check:
                 if label == "principles":
                     if not any(r.endswith(f"/{name}.md") for r in read):
                         problems.append(f"principle {name} named but not read")
-                elif name in known and name not in tr.methods_used():
+                elif name in known and name not in tr.methods_used() and not any(r.startswith(f"{name}/") for r in read):
                     problems.append(f"{name} named but not opened")
     return Check("header", not problems, "; ".join(problems) or "Method: and Used: lines match reads")
 

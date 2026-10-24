@@ -2,6 +2,8 @@
 
 Choose only the forms that reduce explanation time.
 
+A code fence holds code-shaped text: pseudocode, trees, diffs, types, and code. Keep its lines under 80 characters so it reads without wrapping or sideways scrolling. Steps in order and states with their moves are prose-shaped, so they go in a markdown list or table, which wraps to the reader's width.
+
 ## Pseudocode
 
 Use for logic or algorithms.
@@ -50,13 +52,22 @@ src/
 
 ## Sequence
 
-Use for multi-component interactions or data flow. In chat and on GitHub, write it as numbered text; where HTML or a page renders, draw it with [viz](../../viz/SKILL.md) `view: seq` instead.
+Use for multi-component interactions or data flow. In chat and on GitHub, write a markdown numbered list: one hop per item, each a plain sentence saying who acts and what moves, with code formatting only on names. Give each separate flow its own bold lead-in. Where HTML or a page renders, draw it with [viz](../../viz/SKILL.md) `view: seq` instead.
 
-```text
-1. User  -> UI      choose command
-2. UI    -> Daemon  send expanded prompt
-3. Daemon -> UI     stream result
-```
+**Running a command**
+1. The user picks a command in the UI.
+2. The UI sends the expanded prompt to the daemon with `POST /run`.
+3. The daemon streams the result back, and `<ResultPane>` renders each chunk.
+
+## Transition table
+
+Use for states and the moves between them. In chat and on GitHub, write a markdown table with one row per state; where HTML renders, use viz `view: states`.
+
+| From | Can move to |
+| --- | --- |
+| `draft` | `queued`, `cancelled` |
+| `queued` | `running` |
+| `running` | `done`, `failed` |
 
 ## Diff
 

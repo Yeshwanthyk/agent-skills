@@ -86,7 +86,11 @@ _SESSION_ENV = ("CLAUDE", "AI_AGENT", "__CF", "CODEX_", "PI_CODING_AGENT")
 
 
 def clean_env() -> dict[str, str]:
-    return {k: v for k, v in os.environ.items() if not k.startswith(_SESSION_ENV)}
+    env = {k: v for k, v in os.environ.items() if not k.startswith(_SESSION_ENV)}
+    # A case that runs `viz.py html --open` would open a tab on the user's screen; Python's
+    # webbrowser runs $BROWSER instead, and `true` does nothing. The page is still written.
+    env["BROWSER"] = "true"
+    return env
 
 
 def stage(case: Case, skills_src: Path, ws: Path) -> Path:
