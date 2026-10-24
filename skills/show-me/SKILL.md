@@ -16,7 +16,7 @@ Whenever creating a PR or updating its description, follow [`references/visual-p
 Read the active host's note in [hosts](../yesh-router/references/hosts/) for its rendering limits, such as terminal width in [pi](../yesh-router/references/hosts/pi.md). Where the host renders HTML inline in the chat, such as [T3 Code](../yesh-router/references/hosts/t3.md), lean into it: flows and DAGs, call trees, and `calldiff` output go to [viz](../viz/SKILL.md), and other comparisons take the HTML branch. Pseudocode, diffs, and copyable code stay as text. Elsewhere, choose from this list as written.
 
 - Use pseudocode for logic or an algorithm.
-- Use a call tree for runtime control flow.
+- Use a call tree for runtime control flow that is only nested calls; once it branches, retries, or exits on failure, it is a flow for viz.
 - Use a component tree for UI structure and state ownership.
 - Use a file tree for responsibility or a broad refactor.
 - Use a sequence for multi-component interaction or data flow: viz `view: seq` where HTML renders, numbered text elsewhere. A data model is a viz graph of entities and their links. Never use Mermaid.
@@ -25,6 +25,8 @@ Read the active host's note in [hosts](../yesh-router/references/hosts/) for its
 - Use `calldiff` for a changed call tree or stack.
 - Use [viz](../viz/SKILL.md) for a flow or DAG with branches or failure paths, a call tree or call diff too long to read as text, or whenever the user wants to click through it. Elsewhere it opens a temp HTML page.
 - Use focused HTML for a visual comparison or concept too dense for viz.
+
+Never draw boxes or arrows (`┌ │ ─ ▶ →`, `-->`) in a code block; they read as noise in T3 Code, GitHub, and narrow terminals. A drawing that needs them is a viz.
 
 Load [`references/visual-forms.md`](references/visual-forms.md) only when drawing a text form (tree, diff, pseudocode, numbered sequence). Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch. For viz, read and follow its skill.
 
