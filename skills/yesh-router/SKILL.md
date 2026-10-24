@@ -109,3 +109,5 @@ Skills point at their principles where the decision happens. For direct work, or
 ## Reply
 
 Lead with the result. Give each claim its evidence or its label (measured, inferred, or guess) in the same sentence. Link only artifacts you produced or read. Name threads, worktrees, branches and PRs by what they do, never by internal labels. End with material limits.
+
+Every diagram a reply carries, asked for or not, takes the form [show-me](../show-me/SKILL.md#choose-the-form) picks for the host: viz through `html_render` in T3 Code, a numbered list or table elsewhere. A fenced block holds only code, pseudocode, diffs, and commands.

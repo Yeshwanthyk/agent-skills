@@ -57,7 +57,7 @@ Lead with the answer. Include only sections that help:
 - files and symbols to open next;
 - gotchas, evidence status, and unresolved gaps.
 
-When movement across components is hard to follow, draw it in the form show-me's [Choose the form](../show-me/SKILL.md#choose-the-form) picks for the host: in T3 Code that is a viz block through `html_render`. Cite exact paths and symbols, with line numbers when available. In Critique mode, append a verdict with severity, evidence, impact, and confidence for each surviving finding.
+When movement across components is hard to follow, draw it. Before drawing, open show-me's [Choose the form](../show-me/SKILL.md#choose-the-form) and use the form it picks for the host: in T3 Code that is viz through `html_render`. An arrow flow typed into a fenced block is a diagram too, so it takes the same route. Cite exact paths and symbols, with line numbers when available. In Critique mode, append a verdict with severity, evidence, impact, and confidence for each surviving finding.
 
 For History, lead with the answer and its confidence. Include the question and code anchor, direct and supported evidence with precise citations, reasonable inferences, competing hypotheses when needed, gaps and contradictions, and the sources actually consulted. When the investigation precedes implementation, add a separate Preserve / Change / Avoid / Risk constraint set. Keep provider names as examples only.
 
