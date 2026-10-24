@@ -19,7 +19,7 @@ Read the active host's note in [hosts](../yesh-router/references/hosts/) for its
 - Use a call tree for runtime control flow that is only nested calls; once it branches, retries, or exits on failure, it is a flow for viz.
 - Use a component tree for UI structure and state ownership.
 - Use a file tree for responsibility or a broad refactor.
-- Use a sequence for multi-component interaction or data flow: viz `view: seq` where HTML renders, numbered text elsewhere. A data model is a viz graph of entities and their links. Never use Mermaid.
+- Use a sequence for multi-component interaction or data flow: viz `view: seq` where HTML renders, a numbered markdown list elsewhere. A data model is a viz graph of entities and their links. Never use Mermaid.
 - Use a diff when the surrounding shape exists and the point is what changes.
 - Use a whole code block when omitted context would hide ownership or order, or the user needs a copyable target.
 - Use `calldiff` for a changed call tree or stack.
@@ -28,7 +28,7 @@ Read the active host's note in [hosts](../yesh-router/references/hosts/) for its
 
 Never draw boxes or arrows (`┌ │ ─ ▶ →`, `-->`) in a code block; they read as noise in T3 Code, GitHub, and narrow terminals. A drawing that needs them is a viz.
 
-Load [`references/visual-forms.md`](references/visual-forms.md) only when drawing a text form (tree, diff, pseudocode, numbered sequence). Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch. For viz, read and follow its skill.
+Load [`references/visual-forms.md`](references/visual-forms.md) only when drawing a text form (tree, diff, pseudocode, numbered sequence, transition table). Load [`references/calldiff.md`](references/calldiff.md) for call-tree commands. Load [`references/html.md`](references/html.md) only for the HTML branch. For viz, read and follow its skill.
 
 ## Present
 

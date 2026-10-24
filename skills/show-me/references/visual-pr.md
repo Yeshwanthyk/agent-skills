@@ -42,7 +42,8 @@ Read [visual forms](visual-forms.md). Default to fenced diffs, text trees, pseud
 | Decision logic | Pseudocode | Changed branches, ordering, and effects |
 | Responsibility movement | Shallow directory tree | What each relevant module owns |
 | UI composition | Component tree | Important hooks, state owners, shared-package boundaries |
-| Execution | Call tree or sequence | Relevant calls, control flow, data movement, and external boundaries |
+| Execution | Call tree, or a numbered sequence | Relevant calls, control flow, data movement, and external boundaries |
+| Status or lifecycle | Transition table | Each state, the moves out of it, and which code makes each move |
 | Documentation or configuration | Structure or decision-flow sketch | Where instructions or settings live and how their behavior changes |
 
 Show old-to-new differences when most of the structure stays intact. Show the complete resulting structure when it is predominantly new or removing context would obscure ownership or sequence. For example:
@@ -69,7 +70,7 @@ Examples illustrate notation, not facts to reuse. Ground every actual node, path
 
 ### No diagram languages
 
-GitHub runs no script in a PR body, so every view is text: a tree, a numbered sequence, pseudocode, or a diff. Do not use Mermaid or any other diagram language. When a flow needs a picture, render it with [viz](../../viz/SKILL.md) as an HTML artifact or screenshot and link it from the body, beside the text view.
+GitHub runs no script in a PR body, so every view is text. Trees, pseudocode, types, and diffs go in code fences with lines under 80 characters; a sequence is a numbered markdown list and a transition table is a markdown table, per [visual forms](visual-forms.md). Do not use Mermaid or any other diagram language. When a flow needs a picture, render it with [viz](../../viz/SKILL.md) as an HTML artifact or screenshot and link it from the body, beside the text view.
 
 For complex visual UI changes, a focused HTML comparison may supplement the PR. Match the actual product, use representative labels and data, and cover desktop and mobile. The PR body still needs a readable structural outline; a local HTML path alone is insufficient.
 

@@ -61,3 +61,11 @@ activation = "router"
 prompt = "Draw how a webhook event moves through this repo, from arrival to the order's final state, including retries."
 expect = { any_method = ["how", "show-me", "viz"], no_edits = true, no_text_diagram = true }
 notes = "From session 5944b4a4: the agent drew box art in a code fence, which T3 shows as plain text. The diagram belongs in viz."
+
+[[case]]
+id = "task-draft-pr-flow"
+tier = "task"
+activation = "router"
+prompt = "Draft the PR description for the last two commits, the order state machine and the carrier webhook handler, as if they were one PR. Reviewers need to follow how a carrier event ends up changing an order. Paste the draft in your reply; don't open a PR or write files."
+expect = { reads = ["show-me/references/visual-pr.md"], no_edits = true, no_text_diagram = true }
+notes = "From a ky PR (2026-10-24): the Implementation map was an arrow chain in a text fence that wrapped mid-string on GitHub. A flow on GitHub is a numbered markdown list."
