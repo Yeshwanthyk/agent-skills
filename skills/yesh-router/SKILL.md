@@ -28,6 +28,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 
 **Understand and diagnose**
 - how does X work / where in code / why was it built this way: an execution path, or the path before a consequential change; "why" uses its History view → [how](../how/SKILL.md)
+- teach me / help me really understand / I'm new to this: understanding to keep, not a one-off answer; runs how for mechanics and reasons → [teach](../teach/SKILL.md)
 - bug / failing / crash / stuck job / 500 / trace / profile: reproduce, diagnose, fix when asked → [diagnose](../diagnose/SKILL.md)
 - resume / pick up / where was I: earlier work from sessions and the repo → [resume](playbooks/resume.md)
 - docs / spec / API facts / research: facts from outside the repo → [research](../research/SKILL.md)
@@ -108,3 +109,5 @@ Skills point at their principles where the decision happens. For direct work, or
 ## Reply
 
 Lead with the result. Give each claim its evidence or its label (measured, inferred, or guess) in the same sentence. Link only artifacts you produced or read. Name threads, worktrees, branches and PRs by what they do, never by internal labels. End with material limits.
+
+Every diagram a reply carries, asked for or not, takes the form [show-me](../show-me/SKILL.md#choose-the-form) picks for the host: viz through `html_render` in T3 Code, a numbered list or table elsewhere. A fenced block holds only code, pseudocode, diffs, and commands.

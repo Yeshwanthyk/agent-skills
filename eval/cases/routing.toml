@@ -91,4 +91,4 @@ id = "understand-retry-flow"
 tags = ["port"]
 activation = "router"
 prompt = "I'm new to this repo and about to change the retry logic. Help me really understand how retries work here and why they're built this way."
-expect = { methods = ["how"], no_edits = true }
+expect = { methods = ["teach"], no_edits = true }
