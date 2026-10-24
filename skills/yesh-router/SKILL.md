@@ -59,7 +59,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - ship / commit / push / merge / deploy / clean up: take finished work to where it runs → [ship](playbooks/ship.md)
 - decision trail / going to bed / review later: alongside the main method, never instead → [decision trail](references/decision-trail.md)
 - *On request:* pause / stop safely: leave a safe resume point → [pause-safely](playbooks/pause-safely.md)
-- status / what's done / what's left / where are we / ?: progress, a worker's state, or a catch-up with the user's open decisions → [recap](../recap/SKILL.md). "Recap" of an answer or topic asks for a summary of the result, which is unslop's job.
+- status / what's done / what's left / where are we / ? / restate the issue / in your own words / are we aligned: progress, a worker's state, a catch-up with the user's open decisions, or a playback of the problem to check alignment → [recap](../recap/SKILL.md). "Recap" of an answer or topic asks for a summary of the result, which is unslop's job.
 
 **Explain and write**
 - show me / draw / diagram / sketch: the current topic → [show-me](../show-me/SKILL.md)
