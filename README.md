@@ -16,6 +16,8 @@ Powerball mode sends `yesh-router` to the agent on every turn, so each task star
 
    It also installs the per-turn reminder: a `UserPromptSubmit` hook in `~/.claude/settings.json` that runs [`turn-reminder.py`](skills/yesh-router/scripts/turn-reminder.py) and adds one line asking the agent to re-match each new ask. The router text loses weight deep into long threads; this line sits next to the newest message. Pass `--no-hook` to skip it. T3 Code runs the same `claude` binary, so it gets the hook too.
 
+   When your login shell is not bash, it also sets `CLAUDE_CODE_SHELL` to a bash 4+ (`brew install bash` on macOS). Agents write bash; under an interactive zsh their commands fail on unmatched globs (a `?` in a URL), `echo ====`, unsplit `$VAR`, and `.zshrc` aliases like `ls=eza`. That was about 5% of Bash calls before the change. An existing `CLAUDE_CODE_SHELL` is left alone, and `--no-shell` skips this. It also warns when `timeout` is missing (`brew install coreutils`).
+
 2. Link the worker subagent, so delegated steps start with the router loaded:
 
    ```sh
