@@ -41,6 +41,13 @@ prompt = "Three things need fixing: the state transition bug, the webhook dedupe
 expect = { any_method = ["orchestrate", "swarm"] }
 
 [[case]]
+id = "pb-orchestrate-worktrees"
+activation = "router"
+prompt = "Fix the state transition bug and the webhook dedupe bug in parallel, each agent in its own worktree, and tidy everything up when you're done."
+expect = { any_method = ["orchestrate", "swarm"], reads = ["yesh-router/references/worktrees.md"] }
+notes = "Parallel writers in worktrees should reach the cowt worktree rules."
+
+[[case]]
 id = "pb-keep-going"
 activation = "router"
 prompt = "Keep working until every test passes and bench.py is under 10ms. Don't stop to check in with me."

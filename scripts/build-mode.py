@@ -11,6 +11,8 @@ an output style with Claude Code frontmatter.
 Writing the style also installs the per-turn reminder hook
 (yesh-router/scripts/turn-reminder.py) in ~/.claude/settings.json as a
 UserPromptSubmit hook; --no-hook skips that, and --check reports it.
+It also points agent Bash calls at bash >= 4 (CLAUDE_CODE_SHELL) when the
+login shell is not bash, and reports a missing `timeout`; --no-shell skips it.
 --source FILE reads the mode text from FILE (e.g. the repo copy) while links
 still resolve under <skills-dir>; use it to see whether a repo edit has
 reached the installed style. The installed skills come from GitHub main via
@@ -24,6 +26,8 @@ import difflib
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 
 MODE_DIR = "yesh-router"
@@ -87,17 +91,28 @@ def hook_command(skills_dir):
     return "python3 " + os.path.join(skills_dir, MODE_DIR, HOOK_SCRIPT)
 
 
+def load_settings():
+    path = os.path.expanduser(SETTINGS)
+    try:
+        with open(path, encoding="utf-8") as f:
+            return path, json.load(f)
+    except FileNotFoundError:
+        return path, {}
+
+
+def save_settings(path, settings):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(settings, f, indent=2)
+        f.write("\n")
+
+
 def ensure_hook(skills_dir, write):
     """Point one UserPromptSubmit hook at the reminder script; drop stale copies."""
     script = os.path.join(skills_dir, MODE_DIR, HOOK_SCRIPT)
     if not os.path.isfile(script):
         return "turn reminder: %s missing; hook left as is" % script
-    path = os.path.expanduser(SETTINGS)
-    try:
-        with open(path, encoding="utf-8") as f:
-            settings = json.load(f)
-    except FileNotFoundError:
-        settings = {}
+    path, settings = load_settings()
     groups = settings.setdefault("hooks", {}).setdefault("UserPromptSubmit", [])
     want = {"type": "command", "command": hook_command(skills_dir), "timeout": 5}
     kept = [g for g in groups
@@ -107,10 +122,54 @@ def ensure_hook(skills_dir, write):
     if not write:
         return "turn reminder: not installed; rerun build-mode.py"
     settings["hooks"]["UserPromptSubmit"] = kept + [{"hooks": [want]}]
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(settings, f, indent=2)
-        f.write("\n")
+    save_settings(path, settings)
     return "turn reminder: installed in " + path
+
+
+# Agents write bash. Under an interactive zsh their commands hit nomatch globs
+# (`?` in URLs), `=word` expansion, no word splitting, and .zshrc aliases
+# (ls=eza, rm -I) that Claude Code's shell snapshot carries into every call.
+BASH_CANDIDATES = ("/opt/homebrew/bin/bash", "/usr/local/bin/bash", "/usr/bin/bash", "/bin/bash")
+
+
+def modern_bash():
+    """First bash >= 4 on disk; macOS /bin/bash is 3.2."""
+    for path in BASH_CANDIDATES:
+        if not os.access(path, os.X_OK):
+            continue
+        try:
+            out = subprocess.run([path, "-c", "echo ${BASH_VERSINFO[0]}"],
+                                 capture_output=True, text=True, timeout=5).stdout
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if out.strip().isdigit() and int(out) >= 4:
+            return path
+    return None
+
+
+def ensure_shell(write):
+    """Run agent Bash calls in bash; flag a missing `timeout` (macOS has none)."""
+    notes = []
+    path, settings = load_settings()
+    env = settings.get("env", {})
+    if env.get("CLAUDE_CODE_SHELL"):
+        notes.append("agent shell: " + env["CLAUDE_CODE_SHELL"])
+    elif os.path.basename(os.environ.get("SHELL", "")) == "bash":
+        notes.append("agent shell: login shell is bash")
+    else:
+        bash = modern_bash()
+        if not bash:
+            notes.append("agent shell: no bash >= 4 found; run `brew install bash` and rerun")
+        elif not write:
+            notes.append("agent shell: not set; rerun build-mode.py")
+        else:
+            settings.setdefault("env", {})["CLAUDE_CODE_SHELL"] = bash
+            save_settings(path, settings)
+            notes.append("agent shell: set CLAUDE_CODE_SHELL=%s in %s" % (bash, path))
+
+    if not shutil.which("timeout"):
+        notes.append("timeout: missing; run `brew install coreutils`")
+    return "\n".join(notes)
 
 
 def main(argv=None):
@@ -123,6 +182,8 @@ def main(argv=None):
                         help="compare the build with --out instead of writing it")
     parser.add_argument("--no-hook", action="store_true",
                         help="do not install the per-turn reminder hook")
+    parser.add_argument("--no-shell", action="store_true",
+                        help="leave the agent shell setting alone")
     args = parser.parse_args(argv)
 
     # Expand ~ but keep the path as given; do not resolve symlinks.
@@ -143,6 +204,8 @@ def main(argv=None):
     if args.check:
         if not args.no_hook:
             print(ensure_hook(skills_dir, write=False), file=sys.stderr)
+        if not args.no_shell:
+            print(ensure_shell(write=False), file=sys.stderr)
         try:
             with open(out, encoding="utf-8") as f:
                 current = f.read()
@@ -165,6 +228,8 @@ def main(argv=None):
     print("wrote " + out)
     if not args.no_hook:
         print(ensure_hook(skills_dir, write=True))
+    if not args.no_shell:
+        print(ensure_shell(write=True))
     return 0
 
 

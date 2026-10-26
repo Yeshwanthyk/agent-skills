@@ -13,5 +13,5 @@ Once asked to do a task, do it end to end. Come back only to get clarification o
 - Big delegation (four or more children, a workflow, other writers, or long or costly runs): before starting, show a clean review: each task's purpose, scope (read-only or owned paths), ordering, and model and effort. Wait for my approval: comments on a preview, quoted text, and questions are not approval; a plain go is.
 
 # Worktrees
-- A new git worktree gets `node_modules` cloned from the main checkout automatically (global git hook), so do not reinstall from scratch.
-- In a worktree, reuse the docker infra already running from the main checkout instead of starting another stack, and run dev servers on a free port with `--port`.
+- In a repo set up with `cowt init`, a new git worktree already has `node_modules` cloned from the main checkout, so do not reinstall from scratch. `cowt status` shows whether a repo is set up. To make a worktree yourself, run `cowt create --name <name>`, which prints the path; `--carry` brings uncommitted work along. `cowt seed <path>` fills a worktree that was made another way.
+- In a worktree, reuse the docker infra already running from the main checkout instead of starting another stack. Run dev servers on a free port with `--port`.

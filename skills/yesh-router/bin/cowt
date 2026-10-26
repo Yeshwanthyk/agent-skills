@@ -1,0 +1,371 @@
+#!/bin/sh
+# cowt: copy-on-write git worktrees.
+# In a repo set up with `cowt init`, every `git worktree add` (plain git, T3 Code, Claude Code,
+# opencode, any agent) gets the main checkout's node_modules and configured paths as APFS clones
+# (reflinks on Linux), then runs the repo's postcreate hooks. Ideas from anomalyco/rift, kept as
+# real git worktrees.
+set -u
+
+MARK_BEGIN='# >>> cowt >>>'
+MARK_END='# <<< cowt <<<'
+NULL_RE='^0+$'
+
+log() { printf 'cowt: %s\n' "$*" >&2; }
+die() { log "$*"; exit 1; }
+
+usage() {
+  cat >&2 <<'EOF'
+usage: cowt <command> [options]
+
+  init [repo...]          seed every new worktree of these repos (default: current repo)
+  uninit [repo...]        remove the seeding trigger
+  create [options]        make a worktree, seed it, print its path
+      --name N            worktree directory and new branch name (default: wt-<time>)
+      --branch B          check out existing branch B, or create it
+      --from REF          start point (default: HEAD)
+      --into DIR          parent directory (default: ../.worktrees/<repo>)
+      --carry             bring uncommitted and untracked changes along
+      --no-hooks          skip precreate/postcreate hooks
+  seed [path] [--force]   seed an existing worktree (a no-op once seeded)
+  list                    worktrees of this repo, marked when seeded
+  remove [path] [-f] [--no-hooks]
+                          move a worktree to trash and prune it; -f allows uncommitted changes
+  gc                      delete trashed worktrees
+  status                  show trigger, config, and what a seed would clone
+  shell-init zsh|bash     function that cds after create and remove
+
+config: .cowt at the repo root (git-config format, may be committed) and .git/cowt (local only)
+  [copy]
+      name = node_modules     # directory name, cloned wherever it appears (depth 4); default
+      path = .env             # path or glob relative to the root
+  [hook]
+      precreate = pnpm run check
+      postcreate = pnpm install --frozen-lockfile --offline
+      preremove = docker compose -p "wt-$COWT_NAME" down -v
+      postremove = echo done
+hooks get COWT_SOURCE, COWT_DESTINATION, COWT_NAME, COWT_BRANCH; their output goes to stderr.
+EOF
+}
+
+# --- repository facts -------------------------------------------------------
+
+toplevel() { git -C "$1" rev-parse --show-toplevel 2>/dev/null; }
+common_dir() { git -C "$1" rev-parse --path-format=absolute --git-common-dir 2>/dev/null; }
+git_dir() { git -C "$1" rev-parse --path-format=absolute --git-dir 2>/dev/null; }
+main_root() { git -C "$1" worktree list --porcelain | sed -n '1s/^worktree //p'; }
+is_linked() { [ "$(git_dir "$1")" != "$(common_dir "$1")" ]; }
+
+cfg_all() { # cfg_all <main root> <key>: values from .cowt then .git/cowt, one per line
+  for f in "$1/.cowt" "$(common_dir "$1")/cowt"; do
+    [ -f "$f" ] && git config -f "$f" --get-all "$2"
+  done
+  return 0
+}
+
+self_path() {
+  if [ -x "$HOME/.local/bin/cowt" ]; then printf '%s\n' "$HOME/.local/bin/cowt"; return; fi
+  case $0 in /*) printf '%s\n' "$0" ;; *) printf '%s/%s\n' "$(pwd)" "$0" ;; esac
+}
+
+# --- cloning ----------------------------------------------------------------
+
+clone() { # clone <src> <dst>: copy-on-write, never a full copy
+  if [ "$(uname)" = Darwin ]; then
+    # one clonefile(2) on the directory: about 1s for 80k files, against 10s for cp -c -R per file
+    /usr/bin/python3 -I -c 'import ctypes,sys
+if ctypes.CDLL("libc.dylib").clonefile(sys.argv[1].encode(), sys.argv[2].encode(), 0): sys.exit(1)' "$1" "$2" 2>/dev/null ||
+      { [ ! -e "$2" ] && /bin/cp -c -R "$1" "$2"; }
+  else
+    cp -R -P --reflink=always "$1" "$2"
+  fi
+}
+
+seed_list() { # seed_list <main>: relative paths to clone, one per line
+  main=$1
+  names=$(cfg_all "$main" copy.name)
+  paths=$(cfg_all "$main" copy.path)
+  [ -z "$names$paths" ] && names=node_modules
+  printf '%s\n' "$names" | while IFS= read -r n; do
+    [ -n "$n" ] || continue
+    find "$main" -maxdepth 4 \( -name .git -o -name .worktrees -o -name .cowt-trash \) -prune \
+      -o -type d -name "$n" -prune -print 2>/dev/null | sed "s|^$main/||"
+  done
+  printf '%s\n' "$paths" | while IFS= read -r p; do
+    [ -n "$p" ] || continue
+    (cd "$main" && for f in $p; do [ -e "$f" ] && printf '%s\n' "$f"; done)
+  done
+}
+
+hook_env() { # hook_env <main> <worktree>
+  export COWT_SOURCE="$1" COWT_DESTINATION="$2" COWT_NAME="${2##*/}"
+  COWT_BRANCH=$(git -C "$2" branch --show-current 2>/dev/null || true)
+  export COWT_BRANCH
+}
+
+run_hooks() { # run_hooks <phase> <main> <cwd>: stops at the first failing command
+  [ "${COWT_NO_HOOKS:-0}" = 1 ] && return 0
+  cfg_all "$2" "hook.$1" | while IFS= read -r cmd; do
+    [ -n "$cmd" ] || continue
+    log "$1: $cmd"
+    (cd "$3" && "${SHELL:-/bin/sh}" -lc "$cmd" </dev/null 1>&2) || { log "$1 failed: $cmd"; exit 1; }
+  done
+}
+
+seed() { # seed <worktree> [force]
+  wt=$(toplevel "$1") || die "$1: not a git worktree"
+  is_linked "$wt" || die "$wt is the main checkout, not a linked worktree"
+  main=$(main_root "$wt")
+  stamp="$(git_dir "$wt")/cowt-seeded"
+  if [ -e "$stamp" ] && [ "${2:-}" != force ]; then log "already seeded: $wt"; return 0; fi
+  n=0
+  list=$(seed_list "$main")
+  while IFS= read -r rel; do
+    [ -n "$rel" ] || continue
+    dst="$wt/$rel"
+    if [ -e "$dst" ]; then log "keep $rel: already present"; continue; fi
+    parent=$(dirname "$dst")
+    case $rel in */*) [ -d "$parent" ] || continue ;; esac
+    mkdir -p "$parent"
+    clone "$main/$rel" "$dst" || die "clone failed for $rel (needs APFS or a reflink filesystem)"
+    n=$((n + 1))
+  done <<LIST
+$list
+LIST
+  : >"$stamp"
+  log "seeded $wt ($n cloned)"
+  hook_env "$main" "$wt"
+  run_hooks postcreate "$main" "$wt"
+}
+
+# --- trigger ----------------------------------------------------------------
+
+trigger_file() { # trigger_file <root>: the post-checkout this repo's git actually runs
+  hp=$(git -C "$1" rev-parse --path-format=absolute --git-path hooks)
+  # husky and vite-hooks: hooksPath is <dir>/_ holding stubs that run <dir>/<hook>
+  if [ "${hp##*/}" = _ ] && [ -f "$hp/h" ]; then hp=${hp%/_}; fi
+  printf '%s/post-checkout\n' "$hp"
+}
+
+strip_block() { # strip_block <file>
+  awk -v b="$MARK_BEGIN" -v e="$MARK_END" '$0==b{s=1;next} $0==e{s=0;next} !s' "$1" >"$1.cowt-tmp" &&
+    cat "$1.cowt-tmp" >"$1" && rm -f "$1.cowt-tmp"
+}
+
+exclude_if_untracked() { # exclude_if_untracked <root> <file> add|remove
+  case $2 in "$1"/*) ;; *) return 0 ;; esac
+  rel=${2#"$1"/}
+  ex="$(common_dir "$1")/info/exclude"
+  if [ "$3" = add ]; then
+    git -C "$1" ls-files --error-unmatch "$rel" >/dev/null 2>&1 && return 0
+    mkdir -p "$(dirname "$ex")"
+    grep -qxF "/$rel" "$ex" 2>/dev/null || printf '/%s\n' "$rel" >>"$ex"
+  elif [ -f "$ex" ]; then
+    grep -vxF "/$rel" "$ex" >"$ex.cowt-tmp"; cat "$ex.cowt-tmp" >"$ex"; rm -f "$ex.cowt-tmp"
+  fi
+}
+
+init_one() {
+  root=$(toplevel "$1") || { log "skip $1: not a git repo"; return 0; }
+  root=$(main_root "$root")
+  f=$(trigger_file "$root")
+  bin=$(self_path)
+  block="$MARK_BEGIN
+# Seeds new linked worktrees with copy-on-write deps. Remove with: cowt uninit
+if [ -x \"$bin\" ]; then \"$bin\" hook post-checkout \"\$@\" || true; fi
+$MARK_END"
+  mkdir -p "$(dirname "$f")"
+  if [ ! -f "$f" ]; then
+    printf '#!/bin/sh\n%s\n' "$block" >"$f"
+  else
+    grep -qxF "$MARK_BEGIN" "$f" && strip_block "$f"
+    # after the shebang, so an exec later in the hook cannot skip it
+    if head -n 1 "$f" | grep -q '^#!'; then
+      { head -n 1 "$f"; printf '%s\n' "$block"; tail -n +2 "$f"; } >"$f.cowt-tmp"
+    else
+      { printf '%s\n' "$block"; cat "$f"; } >"$f.cowt-tmp"
+    fi
+    cat "$f.cowt-tmp" >"$f" && rm -f "$f.cowt-tmp"
+  fi
+  chmod +x "$f"
+  exclude_if_untracked "$root" "$f" add
+  log "init $root -> $f"
+}
+
+uninit_one() {
+  root=$(toplevel "$1") || { log "skip $1: not a git repo"; return 0; }
+  root=$(main_root "$root")
+  f=$(trigger_file "$root")
+  [ -f "$f" ] && grep -qxF "$MARK_BEGIN" "$f" || { log "not initialized: $root"; return 0; }
+  strip_block "$f"
+  if ! grep -Eqv '^#!|^[[:space:]]*$' "$f"; then
+    rm -f "$f"
+    exclude_if_untracked "$root" "$f" remove
+  fi
+  log "uninit $root"
+}
+
+on_post_checkout() { # git passes <prev> <new> <branch-flag>; a new worktree has a null prev
+  [ "${COWT_SKIP_HOOK:-0}" = 1 ] && return 0
+  [ "${3:-}" = 1 ] || return 0
+  printf '%s' "${1:-}" | grep -Eq "$NULL_RE" || return 0
+  wt=$(toplevel .) || return 0
+  is_linked "$wt" || return 0
+  seed "$wt" || log "seed failed for $wt; rerun: cowt seed $wt"
+  return 0
+}
+
+# --- commands ---------------------------------------------------------------
+
+cmd_create() {
+  name='' branch='' from=HEAD into='' carry=0
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --name) name=${2:?--name needs a value}; shift ;;
+      --branch) branch=${2:?--branch needs a value}; shift ;;
+      --from) from=${2:?--from needs a value}; shift ;;
+      --into) into=${2:?--into needs a value}; shift ;;
+      --carry) carry=1 ;;
+      --no-hooks) export COWT_NO_HOOKS=1 ;;
+      *) die "create: unknown option $1" ;;
+    esac
+    shift
+  done
+  src=$(toplevel .) || die "not in a git repo"
+  main=$(main_root "$src")
+  [ -n "$name" ] || name=${branch:-wt-$(date +%m%d-%H%M%S)}
+  name=$(printf '%s' "$name" | tr '/' '-')
+  printf '%s' "$name" | grep -Eq '^[A-Za-z0-9._-]+$' || die "bad name: $name"
+  [ -n "$branch" ] || branch=$name
+  [ -n "$into" ] || into="$(dirname "$main")/.worktrees/${main##*/}"
+  dest="$into/$name"
+  [ -e "$dest" ] && die "exists: $dest"
+
+  hook_env "$main" "$dest"
+  run_hooks precreate "$main" "$src" || die "precreate failed; nothing created"
+  stash=''
+  [ "$carry" = 1 ] && stash=$(git -C "$src" stash create)
+  mkdir -p "$into"
+  if git -C "$src" show-ref --verify --quiet "refs/heads/$branch"; then
+    COWT_SKIP_HOOK=1 git -C "$src" worktree add "$dest" "$branch" >&2 || die "git worktree add failed"
+  else
+    COWT_SKIP_HOOK=1 git -C "$src" worktree add -b "$branch" "$dest" "$from" >&2 || die "git worktree add failed"
+  fi
+  if [ "$carry" = 1 ]; then
+    if [ -n "$stash" ]; then
+      git -C "$dest" stash apply --index "$stash" >&2 || git -C "$dest" stash apply "$stash" >&2 ||
+        log "could not apply uncommitted changes; they are still in $src"
+    fi
+    git -C "$src" ls-files --others --exclude-standard | while IFS= read -r f; do
+      mkdir -p "$dest/$(dirname "$f")" && clone "$src/$f" "$dest/$f"
+    done
+  fi
+  seed "$dest" || { log "postcreate failed; worktree kept at $dest"; printf '%s\n' "$dest"; exit 1; }
+  printf '%s\n' "$dest"
+}
+
+cmd_list() {
+  root=$(toplevel .) || die "not in a git repo"
+  git -C "$root" worktree list --porcelain | awk '/^worktree /{p=substr($0,10)} /^branch /{b=substr($0,19)} /^detached/{b="(detached)"} /^$/{print p "\t" b; p=""; b=""} END{if(p!="")print p "\t" b}' |
+    while IFS="$(printf '\t')" read -r p b; do
+      mark=''
+      [ -e "$(git_dir "$p" 2>/dev/null)/cowt-seeded" ] && mark=' seeded'
+      printf '%s\t%s%s\n' "$p" "$b" "$mark"
+    done
+}
+
+cmd_remove() {
+  target='' force=0
+  while [ $# -gt 0 ]; do
+    case $1 in
+      -f | --force) force=1 ;;
+      --no-hooks) export COWT_NO_HOOKS=1 ;;
+      -*) die "remove: unknown option $1" ;;
+      *) target=$1 ;;
+    esac
+    shift
+  done
+  wt=$(toplevel "${target:-.}") || die "${target:-.}: not a git worktree"
+  is_linked "$wt" || die "$wt is the main checkout; cowt only removes linked worktrees"
+  main=$(main_root "$wt")
+  git -C "$main" worktree list --porcelain | awk -v p="$wt" '/^worktree /{w=substr($0,10)} /^locked/ && w==p {f=1} END{exit !f}' &&
+    die "$wt is locked (git worktree unlock first)"
+  if [ "$force" != 1 ] && [ -n "$(git -C "$wt" status --porcelain)" ]; then
+    die "$wt has uncommitted changes; commit them or pass -f (they stay in trash until gc)"
+  fi
+  hook_env "$main" "$wt"
+  run_hooks preremove "$main" "$wt" || die "preremove failed; nothing removed"
+  trash="$(dirname "$wt")/.cowt-trash/${wt##*/}-$(date +%Y%m%d%H%M%S)"
+  mkdir -p "$(dirname "$trash")"
+  mv "$wt" "$trash" || die "could not move $wt to trash"
+  printf '%s\n' "$trash" >>"$(common_dir "$main")/cowt-trash"
+  git -C "$main" worktree prune
+  log "trashed $wt -> $trash (cowt gc deletes it)"
+  run_hooks postremove "$main" "$trash" || log "postremove failed; removal is complete"
+  printf '%s\n' "$main"
+}
+
+cmd_gc() {
+  root=$(toplevel .) || die "not in a git repo"
+  reg="$(common_dir "$root")/cowt-trash"
+  [ -f "$reg" ] || { log "trash is empty"; return 0; }
+  while IFS= read -r t; do
+    case $t in */.cowt-trash/*) ;; *) log "skip unexpected trash entry: $t"; continue ;; esac
+    [ -e "$t" ] && rm -rf "$t" && printf '%s\n' "$t"
+  done <"$reg"
+  : >"$reg"
+  git -C "$root" worktree prune
+}
+
+cmd_status() {
+  root=$(toplevel .) || die "not in a git repo"
+  main=$(main_root "$root")
+  f=$(trigger_file "$main")
+  if [ -f "$f" ] && grep -qxF "$MARK_BEGIN" "$f"; then echo "trigger:  $f"; else echo "trigger:  none (run: cowt init)"; fi
+  for c in "$main/.cowt" "$(common_dir "$main")/cowt"; do [ -f "$c" ] && echo "config:   $c"; done
+  echo "clones:"
+  seed_list "$main" | sed 's/^/  /'
+  for ph in precreate postcreate preremove postremove; do
+    cfg_all "$main" "hook.$ph" | sed "s/^/$ph: /"
+  done
+}
+
+cmd_shell_init() {
+  case ${1:-} in
+    zsh | bash) ;;
+    *) die "shell-init: zsh or bash" ;;
+  esac
+  cat <<'EOF'
+cowt() {
+  case "${1:-}" in
+    create|remove)
+      local out
+      out=$(command cowt "$@") || { [ -n "$out" ] && printf '%s\n' "$out"; return 1; }
+      printf '%s\n' "$out"
+      [ -d "$out" ] && cd "$out"
+      ;;
+    *) command cowt "$@" ;;
+  esac
+}
+EOF
+}
+
+cmd=${1:-}
+[ $# -gt 0 ] && shift
+case $cmd in
+  init) [ $# -eq 0 ] && set -- .; for r; do init_one "$r"; done ;;
+  uninit) [ $# -eq 0 ] && set -- .; for r; do uninit_one "$r"; done ;;
+  create) cmd_create "$@" ;;
+  seed)
+    p=. f=''
+    for a; do case $a in --force) f=force ;; *) p=$a ;; esac; done
+    seed "$p" "$f"
+    ;;
+  list) cmd_list ;;
+  remove | rm) cmd_remove "$@" ;;
+  gc) cmd_gc ;;
+  status) cmd_status ;;
+  shell-init) cmd_shell_init "$@" ;;
+  hook) [ "${1:-}" = post-checkout ] && shift && on_post_checkout "$@"; exit 0 ;;
+  -h | --help | help | '') usage ;;
+  *) usage; exit 2 ;;
+esac
