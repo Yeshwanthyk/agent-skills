@@ -9,6 +9,6 @@ Use to take finished work to where it runs: commit, PR, merge, deploy, install, 
 5. **Merge.** Wait for required checks, merge with the repository's method, then update the local default branch so it has the merged commit.
 6. **Deploy or install.** Run the documented command once per named target, from the merged commit. Record what each target now runs (version, commit, or lock entry).
 7. **Verify.** Read [prove-it-works](../references/principles/prove-it-works.md). On each target's real surface, show it runs the merged commit: a health or version endpoint, the live URL, or the installed lock matching `HEAD`. A green deploy log is not this proof.
-8. **Clean up.** Remove the worktrees, branches, sessions, and temporary state this task created ([state-ownership](../references/principles/state-ownership.md)); name each one removed and leave everything else.
+8. **Clean up.** Remove the worktrees, branches, sessions, and temporary state this task created ([state-ownership](../references/principles/state-ownership.md), [worktrees](../references/worktrees.md)); name each one removed and leave everything else.
 
 Done when every stop in scope is verified on its target. Report one line per stop: what shipped, where, and the evidence; name any stop skipped and why.

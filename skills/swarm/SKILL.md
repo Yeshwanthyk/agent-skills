@@ -17,7 +17,7 @@ Fan out independent workers for one bounded question, then return one judged res
    - **mixed** partitions the work and races only uncertain slices.
 3. For a race, declare `first-pass`, `rank-all`, or `best-of` before launch. `best-of` compares complete candidates and synthesizes one result; follow [Best-of](#best-of) for it. Use it for a requested bakeoff or a consequential choice between viable designs; a settled mechanical task needs one implementation.
 4. Set the worker count from the independent slices, the useful design alternatives, or the user's request. Each worker must add distinct evidence or judgment. When worker output could overflow your context, read [guard-the-context-window](../yesh-router/references/principles/guard-the-context-window.md), so worker output reaches the lead as compact results and the bulk stays with the workers.
-5. Give every writer a separate owned path, worktree, or branch. When partitioning puts mutable files or state in more than one slice, read [state-ownership](../yesh-router/references/principles/state-ownership.md) and assign exactly one writer per mutable path.
+5. Give every writer a separate owned path, worktree, or branch; for worktrees, read [worktrees](../yesh-router/references/worktrees.md). When partitioning puts mutable files or state in more than one slice, read [state-ownership](../yesh-router/references/principles/state-ownership.md) and assign exactly one writer per mutable path.
 
 ## Route
 
