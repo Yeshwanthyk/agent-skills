@@ -13,6 +13,8 @@ Writing the style also installs the per-turn reminder hook
 UserPromptSubmit hook; --no-hook skips that, and --check reports it.
 It also points agent Bash calls at bash >= 4 (CLAUDE_CODE_SHELL) when the
 login shell is not bash, and reports a missing `timeout`; --no-shell skips it.
+It turns off Claude's Co-Authored-By and PR attribution lines (attribution
+setting); --no-attribution skips it.
 --source FILE reads the mode text from FILE (e.g. the repo copy) while links
 still resolve under <skills-dir>; use it to see whether a repo edit has
 reached the installed style. The installed skills come from GitHub main via
@@ -172,6 +174,23 @@ def ensure_shell(write):
     return "\n".join(notes)
 
 
+# Empty strings tell Claude Code to add no Co-Authored-By trailer to commits
+# and no "Generated with" line to PR bodies.
+NO_ATTRIBUTION = {"commit": "", "pr": ""}
+
+
+def ensure_attribution(write):
+    """Keep agent commits and PRs free of Claude attribution lines."""
+    path, settings = load_settings()
+    if settings.get("attribution") == NO_ATTRIBUTION:
+        return "attribution: off"
+    if not write:
+        return "attribution: on; rerun build-mode.py"
+    settings["attribution"] = dict(NO_ATTRIBUTION)
+    save_settings(path, settings)
+    return "attribution: turned off in " + path
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--skills-dir", default="~/.claude/skills")
@@ -184,6 +203,8 @@ def main(argv=None):
                         help="do not install the per-turn reminder hook")
     parser.add_argument("--no-shell", action="store_true",
                         help="leave the agent shell setting alone")
+    parser.add_argument("--no-attribution", action="store_true",
+                        help="leave the commit and PR attribution setting alone")
     args = parser.parse_args(argv)
 
     # Expand ~ but keep the path as given; do not resolve symlinks.
@@ -206,6 +227,8 @@ def main(argv=None):
             print(ensure_hook(skills_dir, write=False), file=sys.stderr)
         if not args.no_shell:
             print(ensure_shell(write=False), file=sys.stderr)
+        if not args.no_attribution:
+            print(ensure_attribution(write=False), file=sys.stderr)
         try:
             with open(out, encoding="utf-8") as f:
                 current = f.read()
@@ -230,6 +253,8 @@ def main(argv=None):
         print(ensure_hook(skills_dir, write=True))
     if not args.no_shell:
         print(ensure_shell(write=True))
+    if not args.no_attribution:
+        print(ensure_attribution(write=True))
     return 0
 
 
