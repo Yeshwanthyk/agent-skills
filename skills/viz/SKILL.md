@@ -35,7 +35,7 @@ Ground every node in the code: give each node an `@path:line`, mark anything you
 **T3 Code** (the tool list has `html_render`): write the page straight into `html_preview`, read its console for `viz:` parse errors, then pass the same page to `html_render`. Do not paste viz.js.
 
 ```html
-<!doctype html><script src="https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@fdf62a41da96f237387b1e53a8ea1eef5425281b/skills/viz/assets/viz.js"></script>
+<!doctype html><script src="https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@d3a5f3050a2c90cc472be6fb9ab26f34cea59ebd/skills/viz/assets/viz.js"></script>
 <script type="text/viz">
 …
 </script>
