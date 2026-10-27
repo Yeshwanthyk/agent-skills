@@ -1,0 +1,54 @@
+theme drawing
+title What happens when a ticket is scanned at the gate
+sub example/gate-scan @1a2b3c4 · invented example of the drawing theme
+base gate/
+
+== graph Scanning a ticket
+ranks: Scan | Lookup | Check | Result
+meter: risk | 0 admit | 0.4 hand check | 0.8 refuse | 1
+-- Scan
+qr: QR scanned [event] @scanner/read.ts:22
+  does: the handheld reads the code and posts it with the gate id
+nfc: Phone tapped [event] @scanner/nfc.ts:40
+-- Lookup
+find: Find the ticket [gate] @tickets/find.ts:12
+  does: looks the code up; an unknown code stops here
++wallet: Wallet pass lookup [new] @tickets/wallet.ts:8
+  does: maps a phone pass to its ticket
+-paper: Paper stub check [removed]
+  note: dropped once every ticket carried a code
+-- Check
+used: Already used? [gate] @tickets/used.ts:30
+  reads: Scan rows for this ticket
+risk: Risk score [service] @risk/score.ts:51
+  does: scores resale and device history; 0 is safe, 1 is certain fraud
+  fails: times out after 800 ms
+-- Result
+admit: Admit
+hand: Hand check by staff
+refuse: Refuse entry
+unknown: Unknown code
+err: Scanner shows an error
+
+-find -> paper
+
+ok: qr > find > used > risk => admit | ticket 4471 | A fresh ticket scores low and the gate opens.
+  shows: find = seat 12F
+  shows: used = first scan
+  shows: risk = 0.06
+  meter: 0.06
+resale: qr > find > used > risk => hand | ticket 9310 | The ticket changed hands twice this week, so staff check the buyer's ID.
+  shows: find = seat 3A
+  shows: used = first scan
+  shows: risk = resold twice
+  meter: 0.55 resold twice
+phone: nfc > wallet > find > used > risk => admit | wallet pass | A phone pass resolves to its ticket first, then runs the same checks.
+  shows: wallet = pass → ticket 5120
+  shows: risk = 0.11
+  meter: 0.11
+twice: qr > find > used =| refuse | ticket 4471 again | The same code a second time: it was used at 19:02, so the gate refuses it.
+  shows: used = used at 19:02
+fake: qr > find =| unknown | unknown code | No ticket has this code. Nothing else is read.
+  shows: find = no such code
+!slow: qr > find > used > risk > err | ticket 7788 | The risk service times out; the handheld shows an error and the queue stalls.
+  shows: risk = timed out, 800 ms

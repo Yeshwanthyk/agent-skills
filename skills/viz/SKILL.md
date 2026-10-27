@@ -19,6 +19,7 @@ Model the code as nodes, paths and a view in one `== graph` section, not as hand
 - A call stack at one moment, with the values that went wrong → `view: stack` and `locals:`.
 - A change, on one layout → `+` and `-` on nodes and paths; the reader gets a before | both | after toggle.
 - When the why of each step matters → give paths a `| payload | narration` tail. Each one becomes a replay step.
+- A design doc that walks a reader through scenarios → add `theme drawing`, `shows: id = text` under steps for what each box finds, and a `meter:` when one number decides the outcome ([grammar](references/grammar.md#drawing-theme-and-story-detail)).
 - Who calls whom → `== tree`.
 - What a change did to a call tree → `== diff`. Run calldiff through the converter rather than hand-writing it:
 
@@ -34,7 +35,7 @@ Ground every node in the code: give each node an `@path:line`, mark anything you
 **T3 Code** (the tool list has `html_render`): write the page straight into `html_preview`, read its console for `viz:` parse errors, then pass the same page to `html_render`. Do not paste viz.js.
 
 ```html
-<!doctype html><script src="https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@fdf62a41da96f237387b1e53a8ea1eef5425281b/skills/viz/assets/viz.js"></script>
+<!doctype html><script src="https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@d3a5f3050a2c90cc472be6fb9ab26f34cea59ebd/skills/viz/assets/viz.js"></script>
 <script type="text/viz">
 …
 </script>

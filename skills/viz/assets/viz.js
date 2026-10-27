@@ -97,6 +97,65 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 .vz-cover.vz-dimmed .vz-chip:not(.hot){opacity:.4}.vz-chip.hot{box-shadow:0 0 0 1px var(--vz-amber)}
 .vz-linked{outline:1px solid var(--vz-amber);outline-offset:2px;border-radius:3px}
 @media (max-width:480px){.vz-node .vz-ref{display:none}}
+.vz-box .vz-bx{color:var(--vz-amber);font-size:11px;line-height:15px;min-height:15px;overflow:hidden;text-overflow:ellipsis}
+.vz-meter{display:flex;align-items:center;gap:10px;margin:8px 0 18px;font-size:11px;color:var(--vz-dim)}
+.vz-mtrack{position:relative;flex:1 1 auto;height:22px;display:flex;border:1px solid var(--vz-line);border-radius:var(--vz-r)}
+.vz-mband{height:100%;border-right:1px solid var(--vz-line);display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;font-size:10.5px;transition:background-color 220ms var(--vz-out),color 220ms var(--vz-out)}
+.vz-mband:last-of-type{border-right:0}.vz-mband.on{background:color-mix(in srgb,var(--vz-amber) 18%,transparent);color:var(--vz-fg)}
+.vz-mtick{position:absolute;top:100%;margin-top:2px;transform:translateX(-50%);font-size:10px}
+.vz-mmark{position:absolute;top:-6px;bottom:-6px;width:2px;margin-left:-1px;background:var(--vz-amber);opacity:0;transition:left 800ms var(--vz-out),opacity 300ms}
+.vz-mnote{flex:0 0 22ch;color:var(--vz-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vz.vz-drawing{--vz-fg:#e7e3d7;--vz-dim:#8e8a7f;--vz-line:rgba(231,227,215,.18);--vz-wire:rgba(231,227,215,.34);--vz-amber:#e6b04f;--vz-coral:#e0736a;--vz-green:#9cc48a;--vz-blue:#c9c3b3;
+--vz-card:transparent;--vz-bg:#0c0c0b;--vz-r:0px;--vz-letter:"Routed Gothic Narrow","Routed Gothic","Avenir Next Condensed","Arial Narrow","Helvetica Neue",sans-serif;
+--vz-type:"Letter Gothic","Courier Prime","IBM Plex Mono",ui-monospace,monospace;background:#0c0c0b;color:var(--vz-fg);padding:16px;border-radius:6px;font:12.5px/1.45 var(--vz-type)}
+.vz-drawing .vz-head{justify-content:space-between;border-bottom:1px solid var(--vz-fg);padding-bottom:6px}
+.vz-drawing .vz-title{font:400 14px var(--vz-letter);letter-spacing:.16em;text-transform:uppercase}.vz-drawing .vz-sub{font-size:11px}
+.vz-drawing .vz-panel{border:0;background:none;padding:8px 0 0}
+.vz-drawing button{border-radius:0;background:none;border-color:var(--vz-line);color:var(--vz-fg)}
+.vz-drawing button[aria-pressed=true],.vz-drawing button[aria-selected=true]{background:var(--vz-fg);border-color:var(--vz-fg);color:var(--vz-bg)}
+.vz-drawing .vz-tabs button,.vz-drawing .vz-schip{font:10.5px var(--vz-letter);letter-spacing:.12em;text-transform:uppercase;padding:3px 7px}
+.vz-drawing button:focus-visible,.vz-drawing [tabindex]:focus-visible{outline-color:var(--vz-fg)}
+.vz-schips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:2px 0 10px}.vz-cg{display:contents}
+.vz-cg>i{font:normal 10px var(--vz-letter);letter-spacing:.18em;text-transform:uppercase;color:var(--vz-dim);margin:0 2px 0 10px}.vz-cg:first-child>i{margin-left:0}
+.vz .vz-schip{color:var(--vz-dim)}.vz .vz-schip.on{background:var(--vz-fg);border-color:var(--vz-fg);color:var(--vz-bg)}
+.vz-o{margin-right:5px}.vz-o.err{color:var(--vz-coral)}.vz-o.filt{color:var(--vz-amber)}.vz-schip.on .vz-o{color:inherit}
+.vz-drawing .vz-colhead{font:11px var(--vz-letter);letter-spacing:.22em;color:var(--vz-dim)}
+.vz-drawing .vz-lane,.vz-drawing .vz-group{border-radius:0;background:none;border-color:var(--vz-line)}
+.vz-drawing .vz-box{border:.9px solid var(--vz-fg);border-radius:0;background:var(--vz-bg);
+transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),color 220ms var(--vz-out),box-shadow 220ms var(--vz-out),scale 200ms var(--vz-out)}
+.vz-drawing .vz-box .vz-bl{font:13px/17px var(--vz-letter);letter-spacing:.05em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis}
+.vz-drawing .vz-box .vz-bs,.vz-drawing .vz-box .vz-bn{font:10px/15px var(--vz-type);letter-spacing:.04em;text-transform:uppercase;color:var(--vz-dim)}
+.vz-drawing .vz-box .vz-bx{font:11px/15px var(--vz-type);color:var(--vz-fg)}
+.vz-drawing .vz-box.hot,.vz-drawing .vz-box.done{box-shadow:inset 0 0 0 .9px var(--vz-fg)}
+.vz-drawing .vz-box.now{background:var(--vz-fg);color:var(--vz-bg);box-shadow:none}
+.vz-drawing .vz-box.now .vz-bs,.vz-drawing .vz-box.now .vz-bn,.vz-drawing .vz-box.now .vz-bx,.vz-drawing .vz-box.now .vz-mk,.vz-drawing .vz-box.nowfail *{color:var(--vz-bg)!important}
+.vz-drawing .vz-box.nowfail{background:var(--vz-coral);border-color:var(--vz-coral);color:var(--vz-bg);box-shadow:none}
+.vz-drawing .vz-box.e-reach{border-color:var(--vz-fg)}
+.vz-drawing .vz-box.e-dropped{border:.9px dashed var(--vz-amber);color:var(--vz-fg)}.vz-drawing .vz-box.e-dropped.now{background:var(--vz-amber);border-style:solid}
+.vz-drawing .vz-box.s-add{box-shadow:inset 3px 0 0 var(--vz-green)}.vz-drawing .vz-box.s-add.hot,.vz-drawing .vz-box.s-add.done{box-shadow:inset 3px 0 0 var(--vz-green),inset 0 0 0 .9px var(--vz-fg)}
+.vz-drawing .vz-box.s-del{border:.9px dashed var(--vz-coral);color:var(--vz-coral);opacity:.6}.vz-drawing .vz-box.s-del .vz-bs{color:var(--vz-coral)}
+.vz-drawing .vz-box.s-fail{background:var(--vz-bg);border:.9px solid var(--vz-coral)}.vz-drawing .vz-box.s-mod{border-color:var(--vz-amber)}
+.vz-drawing .vz-box.s-active{border:.9px dashed var(--vz-fg)}.vz-drawing .vz-box.s-active .vz-mk{color:var(--vz-fg)}
+.vz-drawing.vz-dimmed .vz-box:not(.hot),.vz-drawing .vz-dimmed .vz-box:not(.hot),.vz-drawing .vz-dimmed .vz-pill:not(.hot){opacity:.2}
+.vz-drawing .vz-building.vz-dimmed .vz-box:not(.hot):not(.ghost){opacity:.5}
+.vz-drawing .vz-pill{border-radius:0;font-family:var(--vz-type);background:var(--vz-bg)}.vz-drawing .vz-pill.hot{border-color:var(--vz-fg)}
+.vz-drawing .vz-num{border-radius:50%;background:var(--vz-bg);color:var(--vz-fg);box-shadow:inset 0 0 0 .9px var(--vz-fg);font-weight:400}
+.vz-hopm circle{fill:var(--vz-bg);stroke:var(--vz-fg);stroke-width:.9}.vz-hopm text{font:9px var(--vz-type);fill:var(--vz-fg);text-anchor:middle;dominant-baseline:central}
+.vz-pkl{font:10px var(--vz-type);fill:var(--vz-fg);paint-order:stroke;stroke:var(--vz-bg);stroke-width:3px}
+.vz-drawing .vz-narr{font:13px/1.55 var(--vz-type);min-height:4.7em;margin:6px 0;border-top:1px solid var(--vz-line);padding-top:8px}
+.vz-drawing .vz-st{width:auto}.vz-drawing .vz-st:empty{display:none}
+.vz-verdict{display:inline-block;background:var(--vz-fg);color:var(--vz-bg);font:400 12px var(--vz-letter);letter-spacing:.14em;text-transform:uppercase;padding:2px 8px;white-space:nowrap}
+.vz-verdict.filt{background:none;color:var(--vz-amber);border:1px dashed var(--vz-amber)}.vz-verdict.err{background:var(--vz-coral)}
+.vz-drawing .vz-payload{color:var(--vz-fg);border:1px solid var(--vz-line);border-radius:0;font-size:11px}
+.vz-drawing .vz-spin{border-color:var(--vz-fg);border-right-color:transparent}
+.vz-drawing .vz-bar input[type=range]{accent-color:var(--vz-fg)}.vz-drawing .vz-bar input[type=search]{border-radius:0}
+.vz-drawing .vz-legend{font:10.5px var(--vz-letter);letter-spacing:.12em;text-transform:uppercase}
+.vz-drawing .vz-insp{border:1px solid var(--vz-fg);padding:8px 10px}.vz-drawing .vz-insp dt{color:var(--vz-dim);font:10.5px/1.8 var(--vz-letter);letter-spacing:.14em;text-transform:uppercase}
+.vz-drawing .vz-insp .s-add{color:var(--vz-fg)}.vz-drawing .vz-insp .s-unk{color:var(--vz-amber)}
+.vz-drawing .vz-cap{font-family:var(--vz-letter);letter-spacing:.14em}
+.vz-drawing .vz-mtrack{border-color:var(--vz-fg)}.vz-drawing .vz-mband{border-color:var(--vz-line);font:10px var(--vz-letter);letter-spacing:.14em;text-transform:uppercase}
+.vz-drawing .vz-mband.on{background:var(--vz-fg);color:var(--vz-bg)}.vz-drawing .vz-mmark{background:var(--vz-fg);box-shadow:0 0 0 2px var(--vz-bg)}
+.vz-drawing .vz-mt{font:10.5px var(--vz-letter);letter-spacing:.16em;text-transform:uppercase}
 @media (prefers-reduced-motion:reduce){.vz *{transition:none!important;animation:none!important}}`;
 
   const STATUS = { '+': 'add', '-': 'del', '~': 'mod', '!': 'fail', '*': 'active', '?': 'unk' };
@@ -130,11 +189,11 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     return { rest: s.trim(), ref, note };
   }
 
-  const VIEWS = ['flow', 'ranked', 'seq', 'states', 'stack'];
+  const VIEWS = ['flow', 'ranked', 'seq', 'states', 'stack'], THEMES = ['default', 'drawing'];
   const ID = /^[\w.$-]+$/;
   function parse(text) {
-    const doc = { title: '', sub: '', base: '', sections: [], errors: [] };
-    let sec = null, node = null, lastGraph = null, lastEdges = null;
+    const doc = { title: '', sub: '', base: '', theme: '', sections: [], errors: [] };
+    let sec = null, node = null, lastGraph = null, lastEdges = null, lastStep = null;
     const lines = text.replace(/\t/g, '  ').split('\n');
     lines.forEach((raw, i) => {
       const n = i + 1;
@@ -142,6 +201,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       const head = raw.match(/^==\s*(graph|flow|tree|diff|steps|cover)\b\s*(.*)$/);
       if (head) {
         const [, kind, name] = head;
+        lastStep = null;
         if (kind === 'steps' || kind === 'cover') {
           const target = kind === 'steps' && name ? doc.sections.find((s) => s.kind === 'graph' && s.name === name.trim()) : lastGraph;
           if (!target) { doc.errors.push(`line ${n}: ${kind} has no graph before it`); sec = null; return; }
@@ -153,17 +213,31 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
           : { kind: 'tree', diff: kind === 'diff', name: name.trim() || kind, lines: [] };
         doc.sections.push(sec); if (sec.kind === 'graph') lastGraph = sec; node = null; lastEdges = null; return;
       }
-      const meta = sec?.kind !== 'tree' && sec?.kind !== 'cover' && raw.match(/^(title|sub|base)\s+(.*)$/);
-      if (meta) { doc[meta[1]] = meta[2].trim(); return; }
+      const meta = sec?.kind !== 'tree' && sec?.kind !== 'cover' && raw.match(/^(title|sub|base|theme)\s+(.*)$/);
+      if (meta) {
+        doc[meta[1]] = meta[2].trim();
+        if (meta[1] === 'theme' && !THEMES.includes(doc.theme)) { doc.errors.push(`line ${n}: theme must be one of ${THEMES.join(', ')}`); doc.theme = ''; }
+        return;
+      }
       if (!sec) { doc.errors.push(`line ${n}: expected title/sub/base or a == section`); return; }
       if (sec.kind === 'tree') { sec.lines.push({ raw, n }); return; }
-      if (sec.kind === 'steps') { if (!parsePath(sec.graph, raw.trim(), n, true)) doc.errors.push(`line ${n}: not a step (a > b | payload | narration): ${raw.trim()}`); return; }
+      if (sec.kind === 'steps') {
+        const sd = raw.match(STEP_DETAIL);
+        if (sd) { stepDetail(lastStep, sd[1], sd[2], n, doc.errors); return; }
+        lastStep = parsePath(sec.graph, raw.trim(), n, true);
+        if (!lastStep) doc.errors.push(`line ${n}: not a step (a > b | payload | narration): ${raw.trim()}`);
+        return;
+      }
       if (sec.kind === 'cover') { parseCover(sec.graph.cover, raw.trim(), n, doc.errors); return; }
       // graph body
       const g = sec, t = raw.trim();
-      const facet = /^\S/.test(raw) && t.match(/^(ranks|view):\s*(.*)$/);
+      const sdt = raw.match(STEP_DETAIL);
+      if (sdt) { stepDetail(lastStep, sdt[1], sdt[2], n, doc.errors); return; }
+      lastStep = null;
+      const facet = /^\S/.test(raw) && t.match(/^(ranks|view|meter):\s*(.*)$/);
       if (facet) {
         if (facet[1] === 'ranks') g.ranks = facet[2].split('|').map((x) => x.trim()).filter(Boolean);
+        else if (facet[1] === 'meter') g.meter = parseMeter(facet[2], n, doc.errors);
         else if (VIEWS.includes(facet[2].trim())) g.view = facet[2].trim();
         else doc.errors.push(`line ${n}: view must be one of ${VIEWS.join(', ')}`);
         return;
@@ -217,7 +291,8 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
         }
         node = null; return;
       }
-      if (parsePath(g, t, n, false)) { node = null; lastEdges = null; return; }
+      const pp = parsePath(g, t, n, false);
+      if (pp) { node = null; lastEdges = null; lastStep = g.steps.includes(pp) ? pp : null; return; }
       const nd = t.match(/^([+\-~!*?]?)([\w.$-]+):\s*(.*)$/);
       if (nd) {
         const [, st, id, body] = nd;
@@ -261,7 +336,32 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const p = { name: name || `#${n}`, named: !!name, st, ids, out: st === 'fail' ? 'fail' : last === '=>' ? 'pass' : last === '=|' ? 'drop' : 'plain', payload, narr, fail: st === 'fail', n, edges: [] };
     if (ids.length > 1) g.paths.push(p);
     if (bar >= 0 || stepOnly) g.steps.push(p);
-    return true;
+    return p;
+  }
+
+  // Lines under a step: `shows: id = text` puts text in that box while the step plays; `meter: 0.93 note` moves the
+  // graph's meter. `meter: title | 0 band | 0.2 band | 1` on the graph declares the scale: ticks, each naming the band after it.
+  const STEP_DETAIL = /^\s+(shows|meter):\s*(.*)$/;
+  function stepDetail(p, key, val, n, errors) {
+    if (!p) { errors.push(`line ${n}: ${key}: belongs under a step (a path line with a | tail)`); return; }
+    if (key === 'shows') {
+      const m = val.match(/^([\w.$-]+)\s*=\s*(.*)$/);
+      if (!m) { errors.push(`line ${n}: shows: wants id = text: ${val}`); return; }
+      (p.shows ||= {})[m[1]] = m[2].trim();
+    } else {
+      const m = val.match(/^(-?\d*\.?\d+)\s*(.*)$/);
+      if (!m) { errors.push(`line ${n}: meter: wants a number, then an optional note: ${val}`); return; }
+      p.meter = { v: +m[1], text: m[1], note: m[2].trim() };
+    }
+    p.showsLine = p.showsLine || n;
+  }
+  function parseMeter(val, n, errors) {
+    const [title, ...rest] = val.split('|').map((x) => x.trim());
+    const ticks = rest.map((x) => x.match(/^(-?\d*\.?\d+)\s*(.*)$/));
+    if (ticks.length < 2 || ticks.some((m) => !m)) { errors.push(`line ${n}: meter: wants title | number band | … | number`); return null; }
+    const out = ticks.map((m) => ({ v: +m[1], label: m[2].trim() }));
+    if (out.some((t, j) => j && t.v <= out[j - 1].v)) { errors.push(`line ${n}: meter: ticks must increase`); return null; }
+    return { title, ticks: out };
   }
 
   // Cover row: `[+!?]name: note <- path-or-node, …`. Status comes from the paths it binds unless a prefix sets it.
@@ -305,6 +405,13 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     }
     s.paths = s.paths.filter((p) => p.ids.length);
     s.steps = s.steps.filter((p) => p.ids.length);
+    for (const p of s.steps) {
+      for (const [id, txt] of Object.entries(p.shows || {})) {
+        if (!s.byId[id]) { errors.push(`line ${p.showsLine}: shows: names undeclared node "${id}"`); delete p.shows[id]; continue; }
+        s.byId[id].showLen = Math.max(s.byId[id].showLen || 0, txt.length);
+      }
+      if (p.meter && !s.meter) errors.push(`line ${p.showsLine}: meter: on a step, but the graph has no meter: line`);
+    }
     for (const e of s.edges) {
       if (!e.paths.length) continue;
       e.out = e.paths.reduce((a, p) => (OUT_RANK[p.out] > OUT_RANK[a] ? p.out : a), 'drop');
@@ -400,8 +507,10 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const notes = nd.note ? wrap(nd.note, Math.round(Math.max(lw, max) * FS / PFS)) : [];
     const locals = (nd.info.locals || '').split('\n').filter(Boolean);
     const small = [...sub, ...notes, ...locals];
-    const wch = Math.max(lw, ...small.map((x) => x.length * PFS / FS));
-    return { kind: 'node', nd, lines, mark, sub, notes, locals, w: Math.ceil(wch * c) + 2 * PX + 2, h: lines.length * LINE + small.length * SUBL + 2 * PY + 2 };
+    // A box some step writes into (shows:) keeps one line for that text, sized to the longest, up to 34 characters.
+    const bx = Math.min(nd.showLen || 0, 34);
+    const wch = Math.max(lw, ...small.map((x) => x.length * PFS / FS), bx * PFS / FS);
+    return { kind: 'node', nd, lines, mark, sub, notes, locals, bx: bx > 0, w: Math.ceil(wch * c) + 2 * PX + 2, h: lines.length * LINE + (small.length + (bx ? 1 : 0)) * SUBL + 2 * PY + 2 };
   }
 
   // Isotonic regression (pool adjacent violators): the nondecreasing sequence closest to t under weights w.
@@ -698,6 +807,9 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
         col.forEach((b, j) => (b.y = Math.round(y[j] + shift + off[j])));
       };
       for (let k = 0; k < 12; k++) (k % 2 ? cols.slice().reverse() : cols).forEach(place);
+      // Centring on neighbours only ever pushes a column down; lift the lane back so its highest box meets the top.
+      const lift = Math.min(Infinity, ...cols.flat().map((b) => b.y)) - top;
+      if (lift > 0 && lift < Infinity) for (const b of cols.flat()) b.y -= lift;
       const bottom = Math.max(top, ...cols.flat().map((b) => b.y + b.h));
       if (banded) decor.push({ kind: 'lane', y: top - LANEHEAD, h: bottom - top + LANEHEAD + 8, text: lane });
       cursor = bottom + LANEGAP + (banded ? 8 : 0);
@@ -806,7 +918,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
 
   function renderGraph(s, doc, mount) {
     const idx = Object.fromEntries(s.nodes.map((nd, i) => [nd.id, i]));
-    const L = LAYOUT[s.view](s), steps = s.steps, view = s.view;
+    const L = LAYOUT[s.view](s), steps = s.steps, view = s.view, drawing = doc.theme === 'drawing';
     const wrapEl = h('div', { class: `vz-flow vz-v-${view}`, role: 'group', 'aria-label': s.name, tabindex: 0 });
     const stage = h('div', { class: 'vz-stage', style: `width:${L.w}px;height:${L.h}px` });
     const groupEls = new Map();
@@ -824,18 +936,25 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     }
     const g = svg('svg', { width: L.w, height: L.h });
     const defs = svg('defs', {});
-    for (const [id, col] of [['a', 'var(--vz-dim)'], ['h', 'var(--vz-amber)'], ['g', 'var(--vz-green)'], ['r', 'var(--vz-coral)']]) {
-      const m = svg('marker', { id: `vz-${id}-${s.uid}`, viewBox: '0 0 6 6', refX: 5, refY: 3, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' });
+    // An edge's colour says how its paths end: green when any gets through, coral when they fail, dashed when all are filtered.
+    // The drawing theme keeps colour for meaning only: ink for the plain way through, green added, coral removed or
+    // failing, amber filtered; how many stories use an edge sets its weight.
+    const COL = drawing ? { a: 'var(--vz-wire)', h: 'var(--vz-fg)', g: 'var(--vz-green)', r: 'var(--vz-coral)', y: 'var(--vz-amber)' }
+      : { a: 'var(--vz-dim)', h: 'var(--vz-amber)', g: 'var(--vz-green)', r: 'var(--vz-coral)' };
+    for (const [id, col] of Object.entries(COL)) {
+      const m = svg('marker', { id: `vz-${id}-${s.uid}`, viewBox: '0 0 6 6', refX: 5, refY: 3, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse', ...(drawing ? { markerUnits: 'userSpaceOnUse' } : {}) });
       m.append(svg('path', { d: 'M0,0 L6,3 L0,6 z', fill: col })); defs.append(m);
     }
     g.append(defs);
     for (const d of L.decor) if (d.kind === 'life') g.append(svg('line', { x1: d.x, x2: d.x, y1: d.y1, y2: d.y2, stroke: 'var(--vz-line)', 'stroke-dasharray': '3 4' }));
-    // An edge's colour says how its paths end: green when any gets through, coral when they fail, dashed when all are filtered.
-    const base = (e) => (e.st === 'add' ? 'g' : e.st === 'del' ? 'r' : e.out === 'pass' ? 'g' : e.out === 'fail' ? 'r' : 'a');
-    const COL = { a: 'var(--vz-dim)', h: 'var(--vz-amber)', g: 'var(--vz-green)', r: 'var(--vz-coral)' };
+    const base = drawing ? (e) => (e.st === 'add' ? 'g' : e.st === 'del' || e.out === 'fail' ? 'r' : e.out === 'drop' ? 'y' : 'a')
+      : (e) => (e.st === 'add' ? 'g' : e.st === 'del' ? 'r' : e.out === 'pass' ? 'g' : e.out === 'fail' ? 'r' : 'a');
+    let lit = null;
+    const weight = (e) => (drawing ? 0.8 + 0.55 * Math.min(e.paths.length, 6) : 1.3);
     const paint = (e, on) => {
-      const k = on ? 'h' : base(e);
-      e.path.setAttribute('stroke', COL[k]); e.path.setAttribute('stroke-width', on ? 2 : 1.3);
+      const k = on ? 'h' : base(e), quiet = drawing && !on && !!lit;
+      e.path.setAttribute('stroke', COL[k]); e.path.setAttribute('stroke-width', on ? (drawing ? 1.6 : 2) : quiet ? 0.8 : weight(e));
+      if (drawing) e.path.style.opacity = quiet ? 0.35 : '';
       e.path.setAttribute(e.rev ? 'marker-start' : 'marker-end', `url(#vz-${k}-${s.uid})`);
     };
     for (const e of s.edges) {
@@ -845,7 +964,10 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       e.hit.addEventListener('mouseenter', () => hoverEdge(e)); e.hit.addEventListener('mouseleave', () => hoverEdge(null));
       g.append(e.path, e.hit); paint(e, false);
     }
-    const pkt = svg('circle', { r: 4, fill: 'var(--vz-amber)', opacity: 0 }); g.append(pkt);
+    const pkt = svg('circle', { r: drawing ? 3.5 : 4, fill: drawing ? 'var(--vz-fg)' : 'var(--vz-amber)', opacity: 0 });
+    // The drawing theme numbers each hop as the packet passes it, and the packet carries its payload as a label.
+    const hopG = svg('g', {}), pktL = drawing ? svg('text', { class: 'vz-pkl', opacity: 0 }) : null;
+    g.append(hopG, pkt); if (pktL) g.append(pktL);
     stage.append(g);
     const KIND = { event: 'k-event', signal: 'k-event', message: 'k-event', topic: 'k-event' };
     const boxes = s.nodes.map((nd, i) => {
@@ -856,7 +978,8 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
         ...b.lines.map((l, j) => h('div', { class: 'vz-bl' }, j === 0 && b.mark ? h('span', { class: 'vz-mk' }, b.mark) : null, l)),
         ...b.sub.map((x) => h('div', { class: 'vz-bs' }, x)),
         ...b.notes.map((x) => h('div', { class: 'vz-bn' }, x)),
-        ...b.locals.map((x) => h('div', { class: 'vz-bv' }, x)));
+        ...b.locals.map((x) => h('div', { class: 'vz-bv' }, x)),
+        b.bx ? h('div', { class: 'vz-bx' }) : null);
       el.addEventListener('click', () => pickNode(i));
       el.addEventListener('mouseenter', () => hoverNode(i)); el.addEventListener('mouseleave', () => hoverNode(null));
       stage.append(el); return el;
@@ -879,8 +1002,9 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       ...s.tones.map((t) => h('span', {}, h('span', { class: `vz-sw t-${t.k}` }), t.label)),
       s.tones.length && s.nodes.some((nd) => nd.st === 'fail') ? h('span', {}, h('span', { class: 'vz-sw s-fail' }), 'breaks a rule') : null,
       numbered && s.edges.some((e) => e.pill) ? h('span', { title: 'Each numbered pill is one hop, numbered in the order it happens.' }, h('span', { class: 'vz-num' }, '1'), 'order') : null,
-      outs.has('pass') ? h('span', { class: 's-add', title: 'A green line: at least one story through it reaches its end.' }, '— gets through') : null,
-      outs.has('drop') ? h('span', { title: 'A dashed line: every story through it is stopped before the end.' }, '┄ filtered out') : null,
+      outs.has('pass') ? (drawing ? h('span', { title: 'A heavier line carries more of the stories.' }, '━ weight: stories through it')
+        : h('span', { class: 's-add', title: 'A green line: at least one story through it reaches its end.' }, '— gets through')) : null,
+      outs.has('drop') ? h('span', { class: drawing ? 's-mod' : null, title: 'A dashed line: every story through it is stopped before the end.' }, '┄ filtered out') : null,
       outs.has('fail') ? h('span', { class: 's-fail', title: 'A coral line: a story through it ends in a failure.' }, '! — fails') : null,
       s.edges.some((e) => e.async) ? h('span', { title: 'Fire and forget: the sender does not wait for this hop.' }, '┄ async') : null,
       ...used.map((st) => h('span', { class: 's-' + st, title: STATUS_TIP[st] }, `${MARK[st]} ${STATUS_WORD[st]}`)),
@@ -903,8 +1027,24 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     const shown = (p) => !(side === 'before' && p.st === 'add') && !(side === 'after' && p.st === 'del');
 
     // Highlight: a node lights every path through it (or, off any path, its edges and neighbours); a chip lights its paths.
-    let selNode = null, selEdge = null, selRow = null, step = -1, timer = null, lit = null;
-    const chips = [];
+    let selNode = null, selEdge = null, selRow = null, step = -1, timer = null;
+    const chips = [], storyChips = [];
+    let chipsEl = null, auto = true, autoT = null;
+    const halt = () => { if (!auto) return; auto = false; clearTimeout(autoT); };
+    // Meter: a scale under the graph, banded by the graph's meter: line; a step's meter: slides the marker to its value.
+    let meterEl = null, meterTo = () => {};
+    if (s.meter) {
+      const { title, ticks } = s.meter, lo = ticks[0].v, span = ticks[ticks.length - 1].v - lo, pct = (v) => `${(100 * (Math.min(Math.max(v, lo), lo + span) - lo)) / span}%`;
+      const bands = ticks.slice(0, -1).map((t, j) => h('div', { class: 'vz-mband', style: `width:${(100 * (ticks[j + 1].v - t.v)) / span}%` }, t.label));
+      const mark = h('div', { class: 'vz-mmark' }), note = h('span', { class: 'vz-mnote' });
+      meterEl = h('div', { class: 'vz-meter' }, h('span', { class: 'vz-mt' }, title),
+        h('div', { class: 'vz-mtrack' }, ...bands, ...ticks.map((t) => h('span', { class: 'vz-mtick', style: `left:${pct(t.v)}` }, String(t.v))), mark), note);
+      meterTo = (m) => {
+        mark.style.opacity = m ? 1 : 0; note.textContent = m ? `${m.text}${m.note ? ' ' + m.note : ''}` : '';
+        if (m) mark.style.left = pct(m.v);
+        bands.forEach((b, j) => b.classList.toggle('on', !!m && m.v >= ticks[j].v && (m.v < ticks[j + 1].v || j === bands.length - 1)));
+      };
+    }
     function light(nodes, edges, paths) {
       const any = nodes || edges; lit = edges;
       wrapEl.classList.toggle('vz-dimmed', !!any);
@@ -968,13 +1108,13 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       const how = [s.paths.length ? 'hover a box: lights every story through it' : 'hover a box: lights its neighbours',
         'click: file:line and detail', steps.length ? `▶ or ← →: replay ${steps.length} step${steps.length > 1 ? 's' : ''}` : null,
         twoSided ? 'before | after: show one side of the change' : null, 'Esc clears'].filter(Boolean);
-      const stories = s.paths.filter((p) => p.named && shown(p)).slice(0, 8);
+      const named = s.paths.filter((p) => p.named && shown(p)), stories = named.slice(0, 8);
       const story = (p) => h('div', { class: 'vz-story vz-link', onmouseenter: () => hoverRow({ paths: [p] }), onmouseleave: () => hoverRow(null), onclick: () => pickStory(p) },
         h('span', { class: p.out === 'pass' ? 's-add' : p.out === 'fail' ? 's-fail' : 's-unk' }, OUT_WORD[p.out]), ' ', h('b', {}, p.name), ' ',
         p.st === 'add' || p.st === 'del' ? h('span', { class: 's-' + p.st }, p.st === 'add' ? 'after ' : 'before ') : '',
         h('span', { class: 'vz-hint' }, p.narr || p.ids.map((id) => s.byId[id].label).join(' › ')));
       return h('div', {}, h('div', { class: 'vz-hint' }, 'How to read it: ' + how.join(' · ') + '.'),
-        stories.length ? h('div', { class: 'vz-stories' }, h('div', { class: 'vz-cap' }, `${stories.length} stor${stories.length > 1 ? 'ies' : 'y'} in this graph`), ...stories.map(story)) : null,
+        stories.length ? h('div', { class: 'vz-stories' }, h('div', { class: 'vz-cap' }, `${named.length} stor${named.length > 1 ? 'ies' : 'y'} in this graph${named.length > stories.length ? `, first ${stories.length} shown` : ''}`), ...stories.map(story)) : null,
         at.length ? h('div', { class: 'vz-where' }, ...at.map((e) => h('span', { class: 'vz-hop vz-link', onclick: () => pickEdge(e) }, h('span', { class: 'vz-num' }, e.num), short(e.ref)))) : null);
     };
     const copy = (ref) => { const full = (doc.base || '') + ref; navigator.clipboard?.writeText(full).catch(() => {}); };
@@ -1097,7 +1237,9 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (!reduced()) line.animate([{ opacity: 0, translate: '0 5px', filter: 'blur(2px)' }, { opacity: 1, translate: '0 0', filter: 'blur(0)' }], { duration: 260, easing: EASE });
       if (!st) return;
       const land = () => {
-        glyph.replaceChildren(st.fail ? h('span', { class: 's-fail' }, '✕') : st.out === 'drop' ? h('span', { class: 's-unk' }, '⊘') : h('span', { class: 's-ok' }, '✓'));
+        // The drawing theme stamps where the story ends, inverted; filtered is a dashed amber stamp, a failure coral.
+        if (drawing) glyph.replaceChildren(h('span', { class: `vz-verdict${st.fail ? ' err' : st.out === 'drop' ? ' filt' : ''}` }, s.byId[st.ids[st.ids.length - 1]].label));
+        else glyph.replaceChildren(st.fail ? h('span', { class: 's-fail' }, '✕') : st.out === 'drop' ? h('span', { class: 's-unk' }, '⊘') : h('span', { class: 's-ok' }, '✓'));
         words.classList.remove('vz-shim');
       };
       if (flight) { glyph.append(h('span', { class: 'vz-spin' })); words.classList.add('vz-shim'); later(flight, land); } else land();
@@ -1110,17 +1252,43 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       count.textContent = `${k + 1}/${steps.length}`;
       boxes.forEach((b, i) => { b.classList.remove('done', 'now', 'nowfail'); b.classList.toggle('ghost', k >= 0 && bornN(i) > k); });
       for (const e of s.edges) for (const el of [e.path, e.hit, e.pillEl]) el?.classList.toggle('ghost', k >= 0 && bornE(e) > k);
-      pkt.setAttribute('opacity', 0);
-      if (k < 0) { say(null, `Press ▶ or → to build it ${view === 'seq' ? 'message by message' : 'path by path'}.`); restore(); return; }
+      pkt.setAttribute('opacity', 0); pktL?.setAttribute('opacity', 0); hopG.replaceChildren();
+      for (const c of storyChips) c.el.classList.toggle('on', k >= 0 && c.p === steps[k]);
+      boxes.forEach((b) => { const x = b.querySelector('.vz-bx'); if (x) x.textContent = ''; });
+      meterTo(k >= 0 ? steps[k].meter : null);
+      if (k < 0) { say(null, drawing && s.paths.length ? overview() : `Press ▶ or → to build it ${view === 'seq' ? 'message by message' : 'path by path'}.`); restore(); return; }
       for (let j = 0; j < k; j++) for (const id of steps[j].ids) boxes[idx[id]].classList.add('done');
       const st = steps[k], last = st.ids[st.ids.length - 1], hops = st.edges, flight = reduced() ? 0 : PER * hops.length;
       pickNode(idx[last]); light(new Set(st.ids.map((id) => idx[id])), new Set(hops), s.paths.includes(st) ? new Set([st]) : null);
       say(st, st.narr || st.ids.map((id) => s.byId[id].label).join(' → '), flight);
       // `now` lands on each box as the packet reaches it.
-      st.ids.forEach((id, p) => later(fwd ? p * PER : 0, () => boxes[idx[id]].classList.add(st.fail ? 'nowfail' : 'now')));
+      // The drawing theme fills only the box a failing story ends in coral; the rest of its way invert as usual.
+      st.ids.forEach((id, p) => later(fwd ? p * PER : 0, () => boxes[idx[id]].classList.add(st.fail && (!drawing || p === st.ids.length - 1) ? 'nowfail' : 'now')));
+      // A box the step writes into types its text as the packet reaches it.
+      for (const [id, txt] of Object.entries(st.shows || {})) {
+        const x = boxes[idx[id]].querySelector('.vz-bx'), at = Math.max(0, st.ids.indexOf(id)) * PER;
+        if (fwd) later(at, () => typeIn(x, txt)); else x.textContent = txt;
+      }
+      if (drawing && view !== 'flow' && view !== 'seq') hops.forEach((e, j) => later(fwd ? j * PER + PER / 2 : 0, () => hopMark(e, j + 1)));
       if (fwd) born(k, st, flight);
-      animate(hops);
+      animate(hops, st.payload);
       if (fwd && k === lastStep) later(flight + 260, () => finale(st));
+    }
+    function typeIn(el, txt) {
+      if (reduced()) { el.textContent = txt; return; }
+      for (let j = 0; j <= txt.length; j++) later(j * 16, () => (el.textContent = txt.slice(0, j)));
+    }
+    function hopMark(e, n) {
+      const len = e.path.getTotalLength(), pt = e.path.getPointAtLength(len / 2), m = svg('g', { class: 'vz-hopm', transform: `translate(${pt.x},${pt.y})` });
+      const t = svg('text', {}); t.textContent = n;
+      m.append(svg('circle', { r: 7 }), t); hopG.append(m);
+      if (!reduced()) m.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
+    }
+    // The overview, before any story plays: how the stories end, counted.
+    function overview() {
+      const n = s.paths.length, c = (o) => s.paths.filter((p) => p.out === o).length;
+      const bits = [[c('pass'), 'get through'], [c('drop'), 'filtered out'], [c('fail'), 'fail']].filter(([x]) => x).map(([x, w]) => `${x} ${w}`);
+      return `${n} stor${n > 1 ? 'ies' : 'y'}: ${bits.join(' · ')}. A heavier line carries more of them. ${steps.length ? 'Pick a story or press ▶.' : 'Hover a box to light its stories.'}`;
     }
     function born(k, st, flight) {
       const when = new Map();
@@ -1152,18 +1320,21 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (st.fail || st.out === 'drop') { pulse(end, st.fail ? '--vz-coral' : '--vz-dim', 0); return; }
       const seen = boxes.map((_, i) => i).filter((i) => nBirth.has(i))
         .sort((a, b) => s.nodes[a].box.y - s.nodes[b].box.y || s.nodes[a].box.x - s.nodes[b].box.x);
-      seen.forEach((i, j) => { later(j * 40, () => boxes[i].classList.add('done')); pulse(boxes[i], '--vz-green', j * 40); });
-      pulse(end, '--vz-green', seen.length * 40 + 120);
+      const ok = drawing ? '--vz-fg' : '--vz-green';
+      seen.forEach((i, j) => { later(j * 40, () => boxes[i].classList.add('done')); pulse(boxes[i], ok, j * 40); });
+      pulse(end, ok, seen.length * 40 + 120);
     }
-    function animate(es) {
+    function animate(es, payload) {
       if (!es.length || reduced()) return;
+      if (pktL) pktL.textContent = payload || '';
       const t0 = performance.now(), per = PER, total = per * es.length, mine = step;
       const tick = (t) => {
         if (step !== mine) return;
         const f = Math.min(Math.max(t - t0, 0) / total, 0.999), e = es[Math.floor(f * es.length)], p = e.path, local = (f * es.length) % 1, len = p.getTotalLength();
         const pt = p.getPointAtLength(len * (e.rev ? 1 - local : local));
         pkt.setAttribute('cx', pt.x); pkt.setAttribute('cy', pt.y); pkt.setAttribute('opacity', 1);
-        if (f < 0.999) requestAnimationFrame(tick); else pkt.setAttribute('opacity', 0);
+        if (pktL) { pktL.setAttribute('x', pt.x + 7); pktL.setAttribute('y', pt.y - 7); pktL.setAttribute('opacity', payload ? 1 : 0); }
+        if (f < 0.999) requestAnimationFrame(tick); else { pkt.setAttribute('opacity', 0); pktL?.setAttribute('opacity', 0); }
       };
       requestAnimationFrame(tick);
     }
@@ -1173,7 +1344,11 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
       if (step >= lastStep) go(-1);
       playBtn.textContent = '❚❚'; playBtn.setAttribute('aria-pressed', true);
       // The next step waits for this one's packet, so a long path is never cut off mid-flight.
-      const next = () => { go(step + 1); if (step >= lastStep) stop(); else timer = setTimeout(next, Math.max(1900, PER * steps[step].edges.length + 1100)); };
+      const next = () => {
+        go(step + 1);
+        if (step < lastStep) timer = setTimeout(next, Math.max(drawing ? 2600 : 1900, PER * steps[step].edges.length + 1100));
+        else { stop(); if (auto) autoT = setTimeout(() => auto && go(-1), 4500); }
+      };
       next();
     }
     if (steps.length) {
@@ -1185,7 +1360,20 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
         h('button', { 'aria-label': 'next step', onclick: () => go(step + 1) }, '▶▏'), range, count, ...sideBtns);
       narr = h('div', { class: 'vz-narr', 'aria-live': 'polite' });
     } else if (sideBtns.length) bar = h('div', { class: 'vz-bar' }, ...sideBtns);
-    mount.append(...[bar, narr, wrapEl, legend, coverEl, insp].filter(Boolean));
+    if (drawing) {
+      // Story chips, grouped by where each story starts; a chip that is a step plays it.
+      const named = s.paths.filter((p) => p.named), by = new Map();
+      for (const p of named) { const k = p.ids[0]; if (!by.has(k)) by.set(k, []); by.get(k).push(p); }
+      const chip = (p) => {
+        const k = steps.indexOf(p), el = h('button', { class: 'vz-schip', title: p.narr || p.ids.map((id) => s.byId[id].label).join(' › '),
+          onclick: () => { halt(); if (k >= 0) go(k); else pickStory(p); },
+          onmouseenter: () => hoverRow({ paths: [p] }), onmouseleave: () => hoverRow(null) },
+        h('span', { class: `vz-o${p.out === 'fail' ? ' err' : p.out === 'drop' ? ' filt' : ''}` }, { pass: '→', drop: '⊘', fail: '✕', plain: '·' }[p.out]), p.name);
+        storyChips.push({ el, p }); return el;
+      };
+      if (named.length) chipsEl = h('div', { class: 'vz-schips' }, ...[...by].map(([id, ps]) => h('span', { class: 'vz-cg' }, h('i', {}, s.byId[id].label), ...ps.map(chip))));
+    }
+    mount.append(...(drawing ? [chipsEl, wrapEl, meterEl, narr, bar, legend, coverEl, insp] : [bar, narr, wrapEl, meterEl, legend, coverEl, insp]).filter(Boolean));
     // A graph wider than its frame, or taller than about half the screen, shrinks to fit, down to 70%; past that it
     // scrolls. Seeing the whole flow at once beats full-size text, and the inspector then sits in view below it.
     // The fit button switches to full size and back.
@@ -1204,6 +1392,16 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
     (bar || mount.insertBefore(bar = h('div', { class: 'vz-bar' }), wrapEl)).append(fitBtn);
     if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => requestAnimationFrame(refit)).observe(wrapEl);
     if (steps.length) go(-1);
+    // The drawing theme plays its stories once, a moment after it first shows, then returns to the overview.
+    // Touching any control ends that.
+    mount.addEventListener('pointerdown', halt, true); mount.addEventListener('keydown', halt, true);
+    if (drawing && steps.length && !reduced()) {
+      if (typeof IntersectionObserver === 'undefined') autoT = setTimeout(() => auto && play(), 2500);
+      else {
+        const io2 = new IntersectionObserver((xs) => { if (xs.some((x) => x.isIntersecting)) { io2.disconnect(); autoT = setTimeout(() => auto && play(), 2500); } });
+        io2.observe(wrapEl);
+      }
+    } else auto = false;
     // The first time the graph scrolls into view (or its tab opens), boxes rise in reading order, then the edges.
     // A graph already on screen when it renders starts built, so a screenshot taken at load shows all of it.
     if (typeof IntersectionObserver !== 'undefined' && !reduced()) {
@@ -1310,7 +1508,7 @@ border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(va
   function render(el, text) {
     if (!document.getElementById('vz-css')) document.head.append(h('style', { id: 'vz-css' }, CSS));
     const doc = parse(text);
-    const root = h('div', { class: 'vz' });
+    const root = h('div', { class: doc.theme === 'drawing' ? 'vz vz-drawing' : 'vz' });
     if (doc.title || doc.sub) root.append(h('div', { class: 'vz-head' }, h('span', { class: 'vz-title' }, doc.title), h('span', { class: 'vz-sub' }, [doc.sub, doc.base && `paths under ${doc.base}`].filter(Boolean).join(' · '))));
     for (const e of doc.errors) console.error('viz: ' + e);
     if (doc.errors.length) root.append(h('div', { class: 'vz-err' }, doc.errors.join('\n')));

@@ -83,10 +83,13 @@ def _git(*args: str) -> str:
 # skill descriptions and redirects subagent models, so results stop reflecting
 # normal use. Strip them so a run behaves like a fresh terminal session.
 _SESSION_ENV = ("CLAUDE", "AI_AGENT", "__CF", "CODEX_", "PI_CODING_AGENT")
+# Provider switches are auth, not session state: without them a Bedrock or Vertex
+# login looks logged out to the child.
+_KEEP_ENV = ("CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY")
 
 
 def clean_env() -> dict[str, str]:
-    env = {k: v for k, v in os.environ.items() if not k.startswith(_SESSION_ENV)}
+    env = {k: v for k, v in os.environ.items() if k in _KEEP_ENV or not k.startswith(_SESSION_ENV)}
     # A case that runs `viz.py html --open` would open a tab on the user's screen; Python's
     # webbrowser runs $BROWSER instead, and `true` does nothing. The page is still written.
     env["BROWSER"] = "true"
