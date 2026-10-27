@@ -77,3 +77,11 @@ activation = "router"
 prompt = "How does a webhook event get from arrival to the order's final state here, including retries?"
 expect = { methods = ["how"], no_edits = true, no_text_diagram = true }
 notes = "From session 4f430cbd: a how answer with no 'draw' in the ask put an arrow flow in a ```text fence. The diagram the agent adds on its own must go through viz too."
+
+[[case]]
+id = "task-viz-drawing-walkthrough"
+tier = "task"
+activation = "router"
+prompt = "For the design doc, viz the carrier webhook scenarios as a technical drawing a reader steps through: one story per kind of event, with what each box finds along the way and where each story ends. Write the .viz file to docs/webhook-scenarios.viz."
+expect = { methods = ["viz"], reads = ["viz/references/grammar.md"], edits_any = ["webhook-scenarios.viz"], no_text_diagram = true }
+notes = "The drawing theme (theme drawing, shows:, meter:) is opt-in; a scenario walkthrough for a design doc is the case it was built for. Grade the file by hand for theme drawing and shows: lines."

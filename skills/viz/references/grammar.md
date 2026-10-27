@@ -6,6 +6,7 @@ Every visual is a `text/viz` block that [`assets/viz.js`](../assets/viz.js) rend
 - [`shapes.viz`](../assets/examples/shapes.viz): call stack, sequence, state machine, before/after, lanes, and a coverage grid.
 - [`order-flow.viz`](../assets/examples/order-flow.viz): a layered flow with numbered edges and replay.
 - [`submit-diff.viz`](../assets/examples/submit-diff.viz): a call diff and two trees.
+- [`gate-scan.viz`](../assets/examples/gate-scan.viz): the drawing theme, with box text per story and a meter.
 
 ## Core: nodes, edges, paths
 
@@ -13,6 +14,7 @@ Every visual is a `text/viz` block that [`assets/viz.js`](../assets/viz.js) rend
 title Which edits re-run the archive check   # optional header lines, anywhere outside a tree or cover
 sub   example/docs @1a2b3c4
 base  src/                                   # prefix for every @ref; shown once, copied with the path
+theme drawing                                # optional: the drawing theme (see below); default otherwise
 
 == graph Archive triggers                    # each == section is a tab (== flow is the same thing)
 check: Archive check [result] @archive/run.ts:7 # new ArchiveRun
@@ -79,6 +81,24 @@ group end
 - A `!` node is drawn red, and the legend adds "breaks a rule" when tones are present.
 
 **Before and after on one layout:** mark nodes and paths `+` and `-` (`-before: api > direct > db => user`, `+hit: api > cache => user`). The graph gets a before | both | after toggle.
+
+## Drawing theme and story detail
+
+`theme drawing` draws the page as a dark technical drawing: lettered caps, thin ink lines, square boxes that invert while a story passes through them. It is opt-in; without it nothing changes. Colour is kept for meaning only: green bar `+` added, dashed coral `-` removed, coral `!` failing, dashed amber `=|` filtered out. Plain ways through stay ink, and a line's weight is how many paths use it.
+
+On top of the default replay it adds: story chips grouped by where each story starts (click one to play it), an overview caption that counts how the stories end, the packet carrying its payload as a label, numbered hops in `ranked` and `states`, and a stamp in the caption naming the box the story ends in. It plays every story once when it first shows, then returns to the overview; touching any control stops that. Under reduced motion it shows still frames.
+
+Two detail lines under a step work in either theme:
+
+```text
+meter: risk | 0 admit | 0.4 hand check | 0.8 refuse | 1   # graph line: ticks, each naming the band after it
+resale: qr > find > risk => hand | ticket 9310 | Staff check the buyer's ID.
+  shows: risk = resold twice                  # box text while this step plays, typed as the packet arrives
+  meter: 0.55 resold twice                    # slide the meter to a value, with an optional note
+```
+
+- A box any step writes into keeps one line for that text, sized to the longest (34 characters at most).
+- `shows:` names a node id; `meter:` on a step needs the graph's `meter:` line.
 
 ## Coverage
 
