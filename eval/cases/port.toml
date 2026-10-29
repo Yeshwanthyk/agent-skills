@@ -55,3 +55,20 @@ id = "port-model-only-stays-invariants"
 tags = ["port"]
 prompt = "Model the order state machine and tell me which transitions can race. Don't write any code yet."
 expect = { methods = ["invariants"], no_edits = true }
+
+# pstack 0.15.36 port: drift upkeep for a formal verify skill, and the chart-versus-model check.
+[[case]]
+id = "port-formal-drift"
+activation = "router"
+tags = ["port"]
+prompt = "Three refactors to the payment retry code merged since anyone last ran its formal check. Is the model still true to the code? Don't change product code."
+expect = { methods = ["verification-skill"], reads = ["verification-skill/references/formal.md"] }
+notes = "Audit of a formal verify skill: the drift loop (sync commit, classify each change, stale pass) lives in formal.md."
+
+[[case]]
+id = "formal-chart-disagreement"
+activation = "router"
+tier = "task"
+prompt = "Draw the order lifecycle in orders/state.py as a statechart from what a customer should see, model-check it against the code with TLA+, and tell me every step the code can take that the chart doesn't show. No product code changes."
+expect = { methods = ["invariants"], reads = ["invariants/references/formal-modeling.md", "invariants/references/model-checkers.md"] }
+notes = "The arrow comparison (undrawn steps, arrows never taken) is in model-checkers.md, one hop past formal-modeling.md."
