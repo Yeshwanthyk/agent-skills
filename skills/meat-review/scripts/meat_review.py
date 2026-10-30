@@ -29,6 +29,7 @@ import re
 import shutil
 import subprocess
 import sys
+import urllib.request
 import webbrowser
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -1237,7 +1238,7 @@ def cmd_publish_kvim(change, reading, args):
 
 
 def cmd_pin(commit):
-    """Rewrite PAGE_PIN to COMMIT's page.js, after checking GitHub has the commit (the CDN serves only pushed ones)."""
+    """Rewrite PAGE_PIN to COMMIT's page.js, after checking the CDN serves that exact file (it serves only pushed commits of a public repo)."""
     if not commit:
         sys.exit("pin needs COMMIT")
     repo = os.path.dirname(os.path.abspath(__file__))
@@ -1248,6 +1249,14 @@ def cmd_pin(commit):
     top = run("rev-parse", "--show-toplevel").decode().strip()
     rel = os.path.relpath(os.path.abspath(PAGE_JS), top)
     digest = hashlib.sha256(run("show", f"{full}:{rel}")).hexdigest()
+    url = PAGE_CDN.format(commit=full)
+    try:
+        with urllib.request.urlopen(url, timeout=30) as r:
+            served = hashlib.sha256(r.read()).hexdigest()
+    except OSError as e:
+        sys.exit(f"the CDN does not serve {url} ({e}); jsdelivr needs a public repo, so --t3 keeps inlining page.js")
+    if served != digest:
+        sys.exit(f"the CDN serves a different page.js for {full[:9]}; not pinning")
     me = os.path.abspath(__file__)
     with open(me) as fh:
         src = fh.read()
