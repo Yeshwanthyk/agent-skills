@@ -733,7 +733,7 @@ if (!T3) {
 // Pierre upgrades each shown segment once it is on screen: syntax highlighting and word-level diffs over the same rows
 // from git. If the import fails (offline, blocked), the plain rows stay and the page works the same.
 let P;
-try { P = await import(PIERRE); } catch (err) { console.warn('meat-review: diff renderer unavailable, showing plain rows', err?.message || err); }
+try { P = window.MR_PIERRE || await import(PIERRE); } catch (err) { console.warn('meat-review: diff renderer unavailable, showing plain rows', err?.message || err); }
 if (P) {
   const dark = () => document.documentElement.dataset.mode === 'dark';
   const SIDE = {old: 'deletions', new: 'additions'};
@@ -749,6 +749,7 @@ if (P) {
     if (!sg || live.has(el.id)) return;
     try {
       const fileDiff = P.parsePatchFiles(patch(sg))[0].files[0];
+      if (P.langOf) fileDiff.lang = P.langOf(sg.file.path);
       const box = el.querySelector('.pz');
       const view = new P.FileDiff({
         theme: {dark: 'pierre-dark', light: 'pierre-light'}, themeType: dark() ? 'dark' : 'light',

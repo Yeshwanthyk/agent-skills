@@ -61,7 +61,7 @@ python3 <mr>/scripts/meat_review.py render /tmp/meat-review/reading.json [scope]
 python3 <mr>/scripts/meat_review.py render /tmp/meat-review/reading.json [scope] --md
 ```
 
-Your reply is that output, pasted as printed, after at most two sentences of your own: summary and the line-count manifest, outline cards, findings, tests, call changes, reading order, then the kept ranges as `diff` blocks with `⋯ N lines` folds. Code in the reply comes only from this output. Ranges past the code budget are listed by id at the end; show one on request with `--only f2.1`. In chat a `viz` card prints as its source; turn it into a text tree when the source does not read on its own. Offer the full page with `--html --open`, which adds a file rail, search, filters and a light/dark switch (in pi, open it in glimpse when installed).
+Your reply is that output, pasted as printed, after at most two sentences of your own: summary and the line-count manifest, outline cards, findings, tests, call changes, reading order, then the kept ranges as `diff` blocks with `⋯ N lines` folds. Code in the reply comes only from this output. Ranges past the code budget are listed by id at the end; show one on request with `--only f2.1`. In chat a `viz` card prints as its source; turn it into a text tree when the source does not read on its own. Offer the full page with `--html --open`, which adds a file rail, search, filters and a light/dark switch, and works offline: it inlines viz and the diff renderer with the grammars for the reading's languages, and files in other languages show without syntax colors (in pi, open it in glimpse when installed).
 
 **kvim** (when `~/.config/nvim/bin/review` exists), in addition to the branch above:
 

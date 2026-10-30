@@ -102,7 +102,8 @@ None of these are required. A few skills call them when they are installed.
 3. When you retire a skill, playbook, or principle, add it to `scripts/retired-names.json`.
 4. Push, then run `gitgud update --global` and `gitgud apply --global`. A repo edit does not reach installed copies until you do.
 5. If you changed `skills/meat-review/assets/page.js`, push it, run `python3 skills/meat-review/scripts/meat_review.py pin <commit>`, then commit and push the pin. `pin` checks that jsdelivr serves the file, which needs the repo to be public. Until the pin matches, `--t3` pages inline page.js, which costs about 60 KB more.
-6. If you changed `yesh-router`, run `python3 scripts/build-mode.py` and restart Claude Code. pi picks up the change on its own.
+6. To change the offline diff renderer that `--html` inlines (its version or languages), edit `skills/meat-review/scripts/build_pierre.mjs` and run it with `node`; it rewrites `skills/meat-review/assets/pierre/`.
+7. If you changed `yesh-router`, run `python3 scripts/build-mode.py` and restart Claude Code. pi picks up the change on its own.
 
 [`config/AGENTS.md`](./config/AGENTS.md) is the host instructions template. `python3 scripts/audit-sessions.py` reports how recent Claude Code and pi sessions used powerball.
 

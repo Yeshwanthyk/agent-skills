@@ -1051,6 +1051,34 @@ class Lookup:
 
 PAGE = os.path.join(HERE, "..", "assets", "page.html")
 PAGE_JS = os.path.join(HERE, "..", "assets", "page.js")
+PIERRE_DIR = os.path.join(HERE, "..", "assets", "pierre")  # offline @pierre/diffs from build_pierre.mjs
+VIZ_JS = os.path.join(HERE, "..", "..", "viz", "assets", "viz.js")  # the sibling viz skill, same file as VIZ_CDN
+
+
+def viz_script(host):
+    """viz.js from the CDN for T3, inline for the standalone page so it draws offline."""
+    if host == "t3" or not os.path.exists(VIZ_JS):
+        return f'<script src="{VIZ_CDN}"></script>'
+    with open(VIZ_JS) as fh:
+        return "<script>\n" + fh.read().replace("</script", "<\\/script") + "</script>"
+
+
+def pierre_scripts(paths):
+    """The offline diff renderer for the standalone page: Pierre's core plus the grammar for each language
+    the reading's files use, matched by name the way Pierre's getFiletypeFromFileName does. A file in a
+    language not shipped renders as plain text."""
+    with open(os.path.join(PIERRE_DIR, "langs.json")) as fh:
+        names = json.load(fh)
+    def lang(path):
+        base = os.path.basename(path)
+        two = re.search(r"\.([^.]+\.[^.]+)$", base)
+        one = re.search(r"\.([^.]+)$", base)
+        return names.get(base) or (two and names.get(two[1])) or (one and names.get(one[1]))
+    parts = []
+    for name in ["core", *sorted({l for l in map(lang, paths) if l})]:
+        with open(os.path.join(PIERRE_DIR, name + ".js")) as fh:
+            parts.append("<script>\n" + fh.read().replace("</script", "<\\/script") + "</script>")
+    return "\n".join(parts)
 # A T3 page loads page.js from the CDN rather than carrying 60 KB of it through html_render. The pin is the commit
 # that holds the current page.js, and the hash proves the local copy matches it; when they differ (page.js edited
 # since the last pin), the page inlines page.js instead. Re-pin with `meat_review.py pin <commit>` after merging.
@@ -1198,7 +1226,7 @@ def cmd_render_html(change, reading, args, host="page"):
             print(f"page.js {'differs from the CDN pin' if PAGE_PIN[0] else 'has no CDN pin'}, so it is inlined (+{len(js) // 1024} KB)", file=sys.stderr)
         script = "<script>\n" + js.decode().replace("</script", "<\\/script") + "\n</script>"
     with open(PAGE) as fh:
-        page = fh.read().replace("/*DATA*/", blob, 1).replace("/*PAGE_JS*/", script, 1).replace("/*VIZ_CDN*/", VIZ_CDN, 1)
+        page = fh.read().replace("/*DATA*/", blob, 1).replace("/*PIERRE*/", "" if host == "t3" else pierre_scripts(f["path"] for f in data["files"]), 1).replace("/*PAGE_JS*/", script, 1).replace("/*VIZ*/", viz_script(host), 1)
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     with open(out, "w") as fh:
         fh.write(page)
