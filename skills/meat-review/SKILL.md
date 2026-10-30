@@ -50,10 +50,10 @@ Pick the host from the tool list ([T3 Code](../yesh-router/references/hosts/t3.m
 **T3 Code** (`html_render` is available): build the page, preview it, then publish it above your reply.
 
 ```bash
-python3 <mr>/scripts/meat_review.py render /tmp/meat-review/reading.json [scope] --html -o /tmp/meat-review/reading.html
+python3 <mr>/scripts/meat_review.py render /tmp/meat-review/reading.json [scope] --t3 -o /tmp/meat-review/reading.t3.html
 ```
 
-Pass the file's contents to `html_preview`, read the console for `viz:` or script errors and fix the reading if any appear, then pass the same page to `html_render`; after editing the reading, render and preview again before publishing. The preview screenshots at the page's load event, so a diagram missing from it is a real fault, not a slow CDN. The published frame is sandboxed without same-origin access (storage throws) while the preview is not, so page code must not depend on `localStorage`. The page holds the findings, the outline (`viz` and `tree` cards drawn interactive by [viz](../viz/SKILL.md)), the calldiff call changes as an interactive viz diff, the reading order, and every kept range with folds that open. Your reply below it is the summary in two sentences, the findings as one line each, and the one file to read first.
+`--t3` builds the embed: it takes T3's theme variables, sets no page background or padding, keeps feedback in memory, and loads the page script from the pinned CDN copy (inlining it, with a stderr note, when the local script differs from the pin). Pass the file's contents to `html_preview`, read the console for `viz:` or script errors and fix the reading if any appear, then pass the same page to `html_render`; after editing the reading, render and preview again before publishing. The preview screenshots at the page's load event, so a diagram missing from it is a real fault, not a slow CDN. The published frame is sandboxed without same-origin access (storage throws) while the preview is not, so page code must not depend on `localStorage`. Diffs use `@pierre/diffs` from esm.sh for syntax and word-level highlighting where the frame can reach it; otherwise the plain rows from git stay, and the console shows a `meat-review: kept plain rows` warning, which is not an error. The page holds the findings, the outline (`viz` and `tree` cards drawn interactive by [viz](../viz/SKILL.md)), the calldiff call changes as an interactive viz diff, the reading order, and every kept range with folds that open. Your reply below it is the summary in two sentences, the findings as one line each, and the one file to read first.
 
 **Chat** (Claude Code, Codex, pi):
 
@@ -61,7 +61,7 @@ Pass the file's contents to `html_preview`, read the console for `viz:` or scrip
 python3 <mr>/scripts/meat_review.py render /tmp/meat-review/reading.json [scope] --md
 ```
 
-Your reply is that output, pasted as printed, after at most two sentences of your own: summary and the line-count manifest, outline cards, findings, tests, call changes, reading order, then the kept ranges as `diff` blocks with `⋯ N lines` folds. Code in the reply comes only from this output. Ranges past the code budget are listed by id at the end; show one on request with `--only f2.1`. In chat a `viz` card prints as its source; turn it into a text tree when the source does not read on its own. Offer the full page with `--html --open` (in pi, open it in glimpse when installed).
+Your reply is that output, pasted as printed, after at most two sentences of your own: summary and the line-count manifest, outline cards, findings, tests, call changes, reading order, then the kept ranges as `diff` blocks with `⋯ N lines` folds. Code in the reply comes only from this output. Ranges past the code budget are listed by id at the end; show one on request with `--only f2.1`. In chat a `viz` card prints as its source; turn it into a text tree when the source does not read on its own. Offer the full page with `--html --open`, which adds a file rail, search, filters and a light/dark switch (in pi, open it in glimpse when installed).
 
 **kvim** (when `~/.config/nvim/bin/review` exists), in addition to the branch above:
 
