@@ -1195,7 +1195,7 @@ def cmd_render_html(change, reading, args, host="page"):
         script = f'<script src="{PAGE_CDN.format(commit=PAGE_PIN[0])}"></script>'
     else:
         if host == "t3":
-            print(f"page.js differs from the CDN pin, so it is inlined (+{len(js) // 1024} KB)", file=sys.stderr)
+            print(f"page.js {'differs from the CDN pin' if PAGE_PIN[0] else 'has no CDN pin'}, so it is inlined (+{len(js) // 1024} KB)", file=sys.stderr)
         script = "<script>\n" + js.decode().replace("</script", "<\\/script") + "\n</script>"
     with open(PAGE) as fh:
         page = fh.read().replace("/*DATA*/", blob, 1).replace("/*PAGE_JS*/", script, 1).replace("/*VIZ_CDN*/", VIZ_CDN, 1)
