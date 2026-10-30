@@ -29,7 +29,11 @@ Answer(t) == /\ ui[t] = "checking"
                         /\ UNCHANGED <<card, credits>>
              /\ UNCHANGED seen
 
-Next == \E t \in Tabs : Press(t) \/ Answer(t)
+\* Every tab has its answer. Without this step TLC reports the end as a deadlock.
+Done == /\ \A t \in Tabs : ui[t] \in {"credited", "rejected"}
+        /\ UNCHANGED vars
+
+Next == (\E t \in Tabs : Press(t) \/ Answer(t)) \/ Done
 
 \* Harm: the card pays out twice.
 NoDoubleCredit == credits <= 1

@@ -21,6 +21,7 @@ Keep the model at the smallest boundary that contains the invariant.
 - **Able to fail.** Show each property going red on a broken variant of what it guards (a removed guard, a reordered write, a dropped retry check), then restore. A check never seen red proves nothing.
 - **Findings stay findings.** When the current design or code breaks the property, report the counterexample. Keep the property and the model as stated; fix product code only when asked.
 - **Scoped.** Every result names its reach: sampled traces, every trace up to a bound, every input up to a bound, or every input. List the assumptions (bounds, fairness, axioms, trusted code) it rests on.
+- **Every rule judged.** A checker that stops at the first violation leaves the other rules unchecked, not passing. Give each rule its own verdict: holds, broken with its counterexample, or not checked with the reason.
 - **Plain.** State the property and the harm in one sentence each. Tell a counterexample as a numbered sequence of steps in the user's nouns when the flow has a statechart ("you walk away, then open it on your phone"), each step citing the code symbol it runs; otherwise in the code's nouns.
 
 ## Choose the tool
@@ -38,6 +39,8 @@ Pick the cheapest tool that answers the question. When the repo already uses one
 
 Two tools have no row. **Bend** ([bend-lang.com](https://bend-lang.com/), 2.0.38, Oct 2026) checks hand-written proofs of `LAWS.bend` against code written in Bend. It has "no tactics or proof search", returns no trace, and its values are affine (no shared state), so it cannot model a race. Use it only when the code under change is Bend. **Kani on concurrent code** compiles threads and async "as if it was sequential code" ([Kani feature support](https://model-checking.github.io/kani/rust-feature-support.html)). Model the interleavings in TLA+, and use Kani on each atomic step.
 
+When no verifier runs on the code's language, say so, and test the real code with generated inputs (the Property branch) rather than a hand model of the function.
+
 For a state machine, find counterexamples with a model checker first. A model checker returns a trace; a failed proof returns none. Move to Lean when the model checks clean and a guarantee beyond the bound is worth the proof effort.
 
 ## Feed generated tests
@@ -52,14 +55,16 @@ A model and its proofs establish facts about the model. Property and fuzz tests 
 
 ## Report on the statechart
 
-When step 1 drew a statechart, report the results on that same chart, re-rendered, rather than in a separate list. Each story path ends one of four ways:
+When step 1 drew a statechart, report the results on that same chart, re-rendered, rather than in a separate list. The chart was drawn from intent and the model from the code, so the check compares them. Each story path ends one of four ways:
 
 - **Works**: it checked clean and stays plain.
 - **Bug found**: a counterexample adds its path with a `!` prefix, ending at a `!` node that names what the user wrongly sees. The path gets a `| | narration` tail with the counterexample in one sentence, so replay walks it.
 - **Fixed**: a story the fix made reachable takes a `+` on the path and its leaf, naming what the user sees now.
-- **Unreached**: a story the model could not reach marks its leaf `?`. That is a modeling gap, or the outcome the bug prevents.
+- **Unreached**: a story the model could not reach marks its leaf `?` and ends `=|`, so the chart does not show it getting through. That is a modeling gap, or the outcome the bug prevents.
 
-For TLA+, [`tlc_chart.py`](../scripts/tlc_chart.py) writes all four marks from the chart and the spec; [model-checkers](model-checkers.md#statechart-conventions) gives the conventions it reads. [`assets/tla/giftcard`](../assets/tla/giftcard) is a worked example. With another tool, write the marks by hand from its trace. The reader sees which flows work, which broke, and which the fix changed, without reading the spec.
+Beyond the stories, the comparison reports where chart and model disagree. A step the model takes that the chart has no arrow for is something the code allows that the reader never agreed to. An arrow the model never takes is a story the code cannot produce, or code the model leaves out. Each is a finding, and goes in the hand-off with the story marks.
+
+For TLA+, [`tlc_chart.py`](../scripts/tlc_chart.py) writes all four marks and the disagreements from the chart and the spec's full state graph; [model-checkers](model-checkers.md#statechart-conventions) gives the conventions it reads. [`assets/tla/giftcard`](../assets/tla/giftcard) is a worked example. With another tool, write the marks by hand from its trace. The reader sees which flows work, which broke, and which the fix changed, without reading the spec.
 
 ## Structured Machine Spec
 
@@ -79,4 +84,4 @@ boundary test matrix
 
 ## Completion
 
-The model parses and typechecks, each property has been seen red on a broken variant, and the report states each result's reach and assumptions. Each counterexample has replayed on the code or is named as a modeling gap, and connects to a design correction and a regression case. Each verified property names its linked property or fuzz test, or says why none applies. When a statechart exists, it is re-rendered with every story marked as clean, failing, fixed, or unreached.
+The model parses and typechecks, each property has been seen red on a broken variant, and the report states each result's reach and assumptions. Each counterexample has replayed on the code or is named as a modeling gap, and connects to a design correction and a regression case. Each verified property names its linked property or fuzz test, or says why none applies. Every rule has a verdict. When a statechart exists, it is re-rendered with every story marked as clean, failing, fixed, or unreached, and each step or arrow where chart and model disagree is resolved or reported.

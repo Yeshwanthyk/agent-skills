@@ -12,10 +12,10 @@ A strong target is a promise the code makes, where a break harms users and tests
 
 Write the skill in the repository's configured skill location, with a `verify-formal-<area>` name matching its directory and a description naming the area and the paths whose changes should trigger it. Use this repo's commands, paths, and nouns, with no placeholders. Include these sections:
 
-- **Scope**: the verified paths and symbols, as the drift trigger. A change touching them means the verification needs another look.
+- **Scope**: the coverage record. For each check, the files and symbols it models, and the sync commit: the last commit at which you confirmed that the verification describes that code. A change touching them, or new code writing the state a check guards, means the verification needs another look. Move the sync commit forward only after confirming the verification describes the code at the new commit.
 - **Property**: each property and its harm, one plain sentence each, and the reach and assumptions of a pass.
-- **Run**: one command with pinned tool versions (`lean-toolchain`, a pinned jar or CLI version), its expected runtime, and how to install the tool. Ship the command as a script inside the skill; read [build-the-lever](../../yesh-router/references/principles/build-the-lever.md). For TLA+, copy [`tlc_chart.py`](../../invariants/scripts/tlc_chart.py) into the skill, which pins `tla2tools.jar` 1.7.4 by sha256, and make the run script one line: `tlc_chart.py run <Area>.tla --viz chart.viz [--fix <Area>Fixed.cfg]`.
-- **Chart**: when the flow has a statechart, keep `chart.viz` (the intended stories, drawn before modeling) in the skill, and say where the run writes `chart.checked.viz`. That file is the result: each story marked works, `!` bug found, `+` fixed, or `?` unreached, per formal-modeling's "Report on the statechart".
+- **Run**: one command with pinned tool versions (`lean-toolchain`, a pinned jar or CLI version), its expected runtime, and how to install the tool. Ship the command as a script inside the skill; read [build-the-lever](../../yesh-router/references/principles/build-the-lever.md). For TLA+, copy [`tlc_chart.py`](../../invariants/scripts/tlc_chart.py) into the skill, which pins `tla2tools.jar` 1.7.4 by sha256, record the copy's `tlc_chart.py --version`, and make the run script one line: `tlc_chart.py run <Area>.tla --viz chart.viz [--fix <Area>Fixed.cfg]`. Its traces are the same on every run, and it gives every rule a verdict.
+- **Chart**: when the flow has a statechart, keep `chart.viz` (the intended stories, drawn before modeling) in the skill, and say where the run writes `chart.checked.viz`. That file is the result: each story marked works, `!` bug found, `+` fixed, or `?` unreached, plus each step or arrow where model and chart disagree, per formal-modeling's "Report on the statechart".
 - **Read the result**: what a pass covers, how to turn a counterexample into code steps (each trace step names the action, which cites a code symbol) and replay it, and how to tell a product defect (the replay fails on the code) from a modeling error (it does not).
 - **Linked tests**: the property or fuzz tests wired from each property per formal-modeling's "Feed generated tests", with their commands.
 - **Update**: when an intended change alters verified behavior, update the model or proof in the same change, show each property red on a broken variant again, and rerun the linked tests.
@@ -33,12 +33,20 @@ When the skill misses the break or a step does not run, fix the skill or the ver
 
 ## Audit and repair
 
-These follow the main Audit and repair steps, with these substitutions:
+A check that keeps passing after the code changed can describe code that no longer exists. That pass looks like a proof, so it is the dangerous case. These steps replace the main Audit and repair steps 2-7 for a formal skill; Audit stops before editing.
 
-- **Index**: reconcile Scope with the code. List commits touching the scoped paths since the model last changed; read [evidence-lifecycle](../../yesh-router/references/principles/evidence-lifecycle.md).
-- **Source review**: confirm each cited symbol still exists and keeps the atomicity the model assumes.
-- **Live pass**: run the command, then the scratch-break proof above.
-- **Triage**: a stale model or harness is a verifier defect; a replayed counterexample is a product defect.
+1. **Collect.** For each check, read the property, the code it covers, the bounds and assumptions, the command, and the sync commit. When the skill records no sync commit, use the last commit that changed the verification files, and say so.
+2. **Run it as it is.** Run each check once before changing anything, and record the result. A pass says only that the old description still holds; a failure can be drift or a bug, so do not judge it yet.
+3. **Read every change to covered code.** Diff the covered files from the sync commit to `HEAD` and read each commit message; read [evidence-lifecycle](../../yesh-router/references/principles/evidence-lifecycle.md). Follow covered symbols that moved, were renamed, or split, and look for new code that writes the guarded state. Classify each change against the model, not the commit message:
+   - **No effect**: nothing the verification describes changed.
+   - **Shape changed**: an atomic step is now two, a branch or check moved, a new path reaches the guarded state, or a value's range changed. The model or harness must change.
+   - **Promise changed on purpose**: a doc comment, test, changelog, or commit message says the new behavior is intended. The property changes, and the report cites that evidence with the old and new wording.
+   - **Promise may be broken**: the code changed and nothing says the promise did. A failure that follows is a bug candidate.
+4. **Update from the code, not the result (Repair).** Rewrite each changed part from the code before rerunning, so each step again cites code a reviewer can open and stays as atomic as the code. Keep the bounds unless the change makes them wrong, and report any bound you lower.
+5. **Rerun and judge.** On a pass, break the new code the way the property guards against (the scratch-break proof in "Prove the skill") and confirm the check catches it. On a failure, replay the counterexample on the real code step by step: a step the code cannot take means the verification is wrong, so fix it and say what was wrong; a full replay is a product defect, so name the commit that introduced it and give the steps in the code's words.
+6. **Record (Repair).** Update the coverage record, commands, bounds, and assumptions, and move the sync commit to the commit you checked. A blocked check keeps its old sync commit. Then follow the skill once as the next agent would.
+
+Each check ends **in sync** (no relevant change, passes), **updated** (now describes the new code, passes, seen red on a break), **bug** (describes the code, and the code breaks the property), or **blocked** (could not be brought in line or run, with the reason). A check can be both updated and bug. These roll up into the main outcome: all in sync is `clean`, any bug or unrepaired drift in an audit is `findings`, any update is `changed`. A check that passed before the update and fails after it was passing on a stale description; say so. Keep verification updates in a change of their own, apart from any product fix.
 
 ## Hand off
 

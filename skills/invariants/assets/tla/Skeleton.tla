@@ -29,7 +29,13 @@ Write(a) == /\ ui[a] = "<middle node>"
                              /\ UNCHANGED store
             /\ UNCHANGED local
 
-Next == \E a \in Actors : Read(a) \/ Write(a)
+\* The flow is over for every actor. A state with no step out is a deadlock, which
+\* TLC reports: a stuck user is a bug, a finished one is not. List the end nodes.
+Done == /\ \A a \in Actors : ui[a] \in {"<success node>", "<refusal node>"}
+        /\ UNCHANGED vars
+
+\* A disjunction of named actions, so each trace step names the edge it took.
+Next == (\E a \in Actors : Read(a) \/ Write(a)) \/ Done
 
 \* One invariant per harm, named after what must stay true. The chart's harm
 \* node carries `fails: <InvariantName>`.
