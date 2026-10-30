@@ -36,7 +36,10 @@ alone, and every kept line must earn its place.
   answer is "context" or "for completeness", drop or fold it.
 - A note says why it matters or what could go wrong, never what the code
   says. "Rounds half up now, so .5-cent amounts move" beats "Calls
-  amount_as_cents with currency".
+  amount_as_cents with currency". Write it as one plain sentence read once:
+  no arrows, symbol lists or internal ids. The page shows notes as the
+  explanation for each call in the call tree, so a vague note leaves the
+  reader with only a symbol name.
 - `check` reports how many changed lines stay visible. Above about 45% on a
   change of 40+ lines it reports high pressure: make one more pass over
   repeated edits, setup and tables, keeping every distinct contract,
@@ -233,6 +236,14 @@ Reply with only one JSON object, no prose:
   section after this rubric) land as `quality`/`structure` findings. State the
   trigger and the consequence; leave findings out rather than restate what the
   code does.
+  Give each finding a `title`: one plain sentence a reviewer can act on
+  without reading the text ("A retry sends the welcome email twice").
+- `invariants` (optional): what must stay true for the change to be safe,
+  one entry per rule: `rule` (a plain sentence, "Each order is charged at
+  most once"), `held_by` (the code that enforces it, `file:line` or a named
+  lock or constraint), `evidence` (the test, model check or reading that
+  shows it) and `status` (`holds`, `broken` or `unproven`). A `broken` or
+  `unproven` rule that matters also gets a finding.
 - `tests`: one entry per test case the change adds or changes, in file order:
   `file`, `line` of the test's definition (new side), `name`, `proves` (what
   it establishes, under ten words), `verdict` (`real`, `weak` or `fake`, as
