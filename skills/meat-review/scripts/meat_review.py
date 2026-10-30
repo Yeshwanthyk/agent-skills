@@ -1054,7 +1054,7 @@ PAGE_JS = os.path.join(HERE, "..", "assets", "page.js")
 # that holds the current page.js, and the hash proves the local copy matches it; when they differ (page.js edited
 # since the last pin), the page inlines page.js instead. Re-pin with `meat_review.py pin <commit>` after merging.
 PAGE_CDN = "https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@{commit}/skills/meat-review/assets/page.js"
-PAGE_PIN = ("", "")  # (commit, sha256 of page.js at that commit)
+PAGE_PIN = ("b880be60cd912b3da92a0fbeec5430d224d35672", "0138404f611cfa39c5ae7e1723a1c7be4b7fc06a5181fa2f012329f31b709811")  # (commit, sha256 of page.js at that commit)
 
 
 def pack_callmap(callmap):
