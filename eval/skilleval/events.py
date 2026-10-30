@@ -88,6 +88,18 @@ def _cd_refs(cmd: str, known: set[str]) -> list[Event]:
     return out
 
 
+_ASSIGN = re.compile(r"(?:^|[\s;&|(])([A-Za-z_]\w*)=([\"']?)([^\s;&|\"'`$]+)\2(?=[\s;&|)]|$)")
+_VAR = re.compile(r"\$\{([A-Za-z_]\w*)\}|\$([A-Za-z_]\w*)")
+
+
+def _expand(cmd: str) -> str:
+    """`S=.claude/skills/x; cat $S/SKILL.md`: substitute plain shell variables set in the same command."""
+    values = {m.group(1): m.group(3) for m in _ASSIGN.finditer(cmd)}
+    if not values:
+        return cmd
+    return _VAR.sub(lambda m: values.get(m.group(1) or m.group(2), m.group(0)), cmd)
+
+
 def _tool_events(tool: str, inp: dict, known: set[str]) -> list[Event]:
     t = tool.lower()
     if t == "skill":
@@ -100,7 +112,8 @@ def _tool_events(tool: str, inp: dict, known: set[str]) -> list[Event]:
         return [Event("edit", str(inp.get("file_path") or inp.get("path") or ""))]
     if t == "bash":
         cmd = str(inp.get("command") or "")
-        return [Event("shell", "bash", detail=cmd[:300])] + _skill_refs(cmd, known, "shell") + _cd_refs(cmd, known)
+        seen = _expand(cmd)
+        return [Event("shell", "bash", detail=cmd[:300])] + _skill_refs(seen, known, "shell") + _cd_refs(seen, known)
     if t in ("agent", "task", "subagent"):
         brief = str(inp.get("prompt") or inp.get("task") or "")
         refs = [Event(e.kind, e.name, "brief") for e in _skill_refs(brief, known, "brief")]
