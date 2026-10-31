@@ -17,7 +17,8 @@ chart with each story marked: plain = works, `!` path = counterexample or undraw
 after the fix, `?` on the leaf = never reached along the drawn path.
 
 TLC runs with one worker and a fixed fingerprint seed, so a counterexample is the same on every run.
-Exit 0 when every rule of the final model holds, 1 when one breaks, 2 on an error or a rule left unchecked.
+Exit 0 when every rule of the final model holds, 1 when one breaks, 2 on an error or a rule left unchecked,
+3 when Java 11+ or the TLC jar is missing: it prints SETUP NEEDED with the install command for this OS.
 Conventions (chart variable, `state:` and `fails:` lines): ../references/model-checkers.md.
 """
 import argparse
@@ -32,7 +33,7 @@ import tempfile
 import time
 import urllib.request
 
-VERSION = "2"  # bump on a behavior change; a verify skill that copies this file records it
+VERSION = "3"  # bump on a behavior change; a verify skill that copies this file records it
 TLA_VERSION = "1.7.4"
 TLA_SHA256 = "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88"
 TLA_URL = f"https://github.com/tlaplus/tlaplus/releases/download/v{TLA_VERSION}/tla2tools.jar"
@@ -51,6 +52,38 @@ RULE_KEYS = ("INVARIANT", "INVARIANTS", "PROPERTY", "PROPERTIES", "CHECK_DEADLOC
 DEADLOCK = "deadlock"
 
 
+# ---------- setup ----------
+
+SETUP_EXIT = 3
+JAVA_FIX = {"darwin": "brew install --cask temurin   (or the installer from https://adoptium.net)",
+            "win32": "winget install EclipseAdoptium.Temurin.21.JRE"}.get(
+    sys.platform, "sudo apt-get install -y default-jre-headless   (Fedora: sudo dnf install -y java-21-openjdk-headless)")
+
+
+def setup_needed(what, fix):
+    print(f"SETUP NEEDED: {what}\n  fix: {fix}\n  agent: tell the user what is missing and ask whether to set it up"
+          " for them; run the fix only after they say yes, then rerun this command.", file=sys.stderr)
+    sys.exit(SETUP_EXIT)
+
+
+def require_java():
+    """Exit 3 unless a Java 11+ runtime answers. macOS ships a /usr/bin/java stub that answers with an error."""
+    java = shutil.which("java")
+    if not java:
+        setup_needed("Java 11+ is not installed; TLC runs on Java.", JAVA_FIX)
+    try:
+        p = subprocess.run([java, "-version"], capture_output=True, text=True, timeout=60)
+        out = p.stdout + p.stderr
+    except (OSError, subprocess.TimeoutExpired) as e:
+        p, out = None, str(e)
+    m = re.search(r'version "(\d+)(?:\.(\d+))?', out)
+    if not p or p.returncode or not m:
+        setup_needed(f"`{java}` is on PATH but no Java runtime answers ({tail(out, 1) or 'no output'}).", JAVA_FIX)
+    major = int(m.group(1)) if m.group(1) != "1" else int(m.group(2) or 0)  # "1.8.0" is Java 8
+    if major < 11:
+        setup_needed(f"Java {major} found; TLC {TLA_VERSION} needs Java 11+.", JAVA_FIX)
+
+
 # ---------- jar ----------
 
 def jar_path(override=None):
@@ -61,8 +94,13 @@ def jar_path(override=None):
     if not os.path.exists(path):
         os.makedirs(cache, exist_ok=True)
         print(f"downloading tla2tools {TLA_VERSION} -> {path}", file=sys.stderr)
-        with urllib.request.urlopen(TLA_URL) as r:
-            data = r.read()
+        try:
+            with urllib.request.urlopen(TLA_URL, timeout=120) as r:
+                data = r.read()
+        except OSError as e:
+            setup_needed(f"cannot download tla2tools.jar ({e}); offline, or GitHub is blocked.",
+                         f"download {TLA_URL} where there is network and save it as {path}, "
+                         "or set TLA2TOOLS=/path/to/tla2tools.jar")
         if hashlib.sha256(data).hexdigest() != TLA_SHA256:
             sys.exit(f"tla2tools.jar sha256 mismatch for {TLA_URL}")
         with open(path + ".part", "wb") as f:
@@ -734,6 +772,7 @@ def witness_stories(jar, spec, cfg, nodes, stories, a):
 # ---------- commands ----------
 
 def cmd_run(a):
+    require_java()
     jar = jar_path(a.jar)
     spec = os.path.abspath(a.spec)
     cfg = os.path.abspath(a.config or os.path.splitext(spec)[0] + ".cfg")

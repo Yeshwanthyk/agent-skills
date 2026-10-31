@@ -101,6 +101,22 @@ AllCredited == <>(\\A t \\in Tabs : ui[t] = "credited")
     _, out = run(d, "--viz", "chart.viz", "--fix", "GiftCardFixed.cfg", "--graph-limit", "3")
     expect("fallback", out, r"state graph skipped", r"^  twotabs: fixed", absent=[r"never takes this arrow"])
 
+    # 7. Missing Java, the macOS stub, and no network each exit 3 with the fix and the ask-first line.
+    bare = tempfile.mkdtemp(prefix="tlc-nojava-")
+    stub = tempfile.mkdtemp(prefix="tlc-stubjava-")
+    with open(os.path.join(stub, "java"), "w") as f:
+        f.write("#!/bin/sh\necho 'The operation couldn\'t be completed. Unable to locate a Java Runtime.' >&2\nexit 1\n")
+    os.chmod(os.path.join(stub, "java"), 0o755)
+    for label, env in (("no java", {"PATH": bare}), ("stub java", {"PATH": stub + os.pathsep + bare}),
+                       ("offline", {"XDG_CACHE_HOME": tempfile.mkdtemp(prefix="tlc-cache-"), "TLA2TOOLS": "",
+                                    "https_proxy": "http://127.0.0.1:9", "HTTPS_PROXY": "http://127.0.0.1:9"})):
+        e = {k: v for k, v in os.environ.items() if k != "TLA2TOOLS"}
+        e.update({k: v for k, v in env.items() if v})
+        p = subprocess.run([sys.executable, SCRIPT, "run", "GiftCard.tla"], cwd=EXAMPLE, capture_output=True, text=True, env=e)
+        if p.returncode != 3:
+            FAILS.append(f"{label}: exit {p.returncode}, want 3")
+        expect(label, p.stderr, r"^SETUP NEEDED: ", r"^  fix: ", r"ask whether to set it up", absent=[r"Traceback"])
+
     for f in FAILS:
         print("FAIL", f)
     print("ok" if not FAILS else f"{len(FAILS)} failed")
