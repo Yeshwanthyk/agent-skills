@@ -19,7 +19,7 @@ import webbrowser
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 VIZ_JS = os.path.join(HERE, "..", "assets", "viz.js")
-CDN = "https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@d3a5f3050a2c90cc472be6fb9ab26f34cea59ebd/skills/viz/assets/viz.js"
+CDN = "https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@791648f405bf2c6d64110adb0e61031a4bf2d580/skills/viz/assets/viz.js"
 MARK = {"added": "+", "removed": "-", "changed": "~", "modified": "~"}
 
 
