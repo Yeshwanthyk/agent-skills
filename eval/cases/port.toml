@@ -40,8 +40,8 @@ id = "port-formal-verify-skill"
 activation = "router"
 tags = ["port"]
 prompt = "Formally verify that two concurrent retries of the payment job can never charge the same order twice, and leave something the next agent can rerun on every change."
-expect = { methods = ["verification-skill"], reads = ["verification-skill/references/formal.md"] }
-notes = "verification-skill is user-invoked, so the case needs the router."
+expect = { methods = ["formal-verification-skill"] }
+notes = "formal-verification-skill is user-invoked, so the case needs the router."
 
 [[case]]
 id = "formal-statechart-check"
@@ -62,8 +62,8 @@ id = "port-formal-drift"
 activation = "router"
 tags = ["port"]
 prompt = "Three refactors to the payment retry code merged since anyone last ran its formal check. Is the model still true to the code? Don't change product code."
-expect = { methods = ["verification-skill"], reads = ["verification-skill/references/formal.md"] }
-notes = "Audit of a formal verify skill: the drift loop (sync commit, classify each change, stale pass) lives in formal.md."
+expect = { methods = ["formal-verification-skill"] }
+notes = "Audit of a formal verify skill: the drift loop (sync commit, classify each change, stale pass) lives in formal-verification-skill."
 
 [[case]]
 id = "formal-chart-disagreement"
@@ -72,3 +72,12 @@ tier = "task"
 prompt = "Draw the order lifecycle in orders/state.py as a statechart from what a customer should see, model-check it against the code with TLA+, and tell me every step the code can take that the chart doesn't show. No product code changes."
 expect = { methods = ["invariants"], reads = ["invariants/references/formal-modeling.md", "invariants/references/model-checkers.md"] }
 notes = "The arrow comparison (undrawn steps, arrows never taken) is in model-checkers.md, one hop past formal-modeling.md."
+
+# Session audit 2026-11-03: the formal branch was reached twice and ran no check.
+[[case]]
+id = "formal-ends-red-on-break"
+activation = "router"
+tier = "task"
+prompt = "Model-check this retry race in the payment job and leave a verify skill for it."
+expect = { methods = ["formal-verification-skill"], answer = ["scratch|broken variant|mutant", "red|fail|counterexample"] }
+notes = "Done means the check was seen red on a scratch break and back at baseline, not a planned model or a statechart."

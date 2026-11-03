@@ -1,6 +1,6 @@
 ---
 name: verification-skill
-description: Create, audit, or repair a project-local verify-* skill that launches, drives, and proves a real application surface, or formally verifies a high-risk property of the code.
+description: Create, audit, or repair a project-local verify-* skill that launches, drives, and proves a real application surface.
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 A verification skill is a project-local `verify-<app>/` skill that lets a cold agent launch, inspect, drive, and prove one application surface. This skill owns its lifecycle: create one, audit one, or repair one.
 
-**Formal.** When the request is to model-check, prove, or formally verify a property (a race, retry, state machine, parser, or unsafe code), the skill is a `verify-formal-<area>/` instead. Read [formal](references/formal.md): it replaces Create's discovery, generation, and proof, and adjusts Audit and repair. When users see the flow, its deliverable is the flow's statechart with each story marked works, bug found, fixed, or unreached. The branches, outcomes, and defect split below still apply.
+**Formal.** To model-check, prove, or formally verify a property of the code, use [formal-verification-skill](../formal-verification-skill/SKILL.md) instead.
 
 ## Branches
 
@@ -34,9 +34,10 @@ A `verified-unreachable` feature carries the attempted route and the concrete un
 
 These hold in every branch.
 
-- **Drive the real surface.** Use the launched application through its own controls, commands, or endpoints, and capture the initiating action, the observable result, and material side effects.
-- **Clean up what the run owns.** Tear down the processes, ports, browser profiles, accounts, and scratch state the run created, after successful and failed attempts alike. Leave everything else in place. Preserve evidence through cleanup and confirm it remains afterwards. When deciding which of these the run owns and how concurrent runs stay apart, read [state-ownership](../yesh-router/references/principles/state-ownership.md).
-- **Recover from surprises.** After a surprising or failed drive, restore a known state and run doctor again before the next drive.
+- **Drive the real surface.** Use the launched application through its own controls, commands, or endpoints, and capture the initiating action, the observable result, and material side effects. A drive that feeds stand-in inputs instead of calling the real code path is a verifier defect, not a pass.
+- **Doctor is not proof.** Doctor says an instance is safe to drive, not that features work. When doctor passes and a drive fails, explain the gap before reporting either.
+- **Clean up what the run owns.** Tear down the processes, ports, browser profiles, accounts, and scratch state the run created, after successful and failed attempts alike. Kill the processes the run started by PID, never by process name. Leave everything else in place. Preserve evidence through cleanup and confirm it remains afterwards. When deciding which of these the run owns and how concurrent runs stay apart, read [state-ownership](../yesh-router/references/principles/state-ownership.md).
+- **Recover from surprises.** After a surprising or failed drive, restore a known state and run doctor again before the next drive. When doctor passes but the surface is stuck (a wedged UI on a healthy process), reset or relaunch.
 
 ## Create
 
@@ -48,10 +49,10 @@ Inspect the repository before asking the user:
 2. **Launch.** Find the authoritative start command, prerequisites, readiness signal, and teardown path. Launch reaches a usable state from an empty data directory, including migrations and seed data. Ready means usable, not that a process answers: a database health check can pass while its init scripts still run. For a short-lived CLI or TUI, launch builds once and each drive starts in its own isolated PTY or tmux session.
 3. **Doctor.** Define one read-only check that confirms the intended build, process, endpoint, authentication, and isolated state are safe to drive.
 4. **Drive.** Prefer an existing harness. Otherwise use stable semantic controls through the harness's browser or UI tools, exact CLI prompts through a PTY-capable harness, or HTTP requests for a service.
-5. **Evidence.** Identify observable proof: actions and resulting UI state, terminal output and exit status, response bodies, logs, or persisted side effects. When the safe path is a dry-run or test mode, observe what it actually skips (files, network, git refs) rather than trusting its name. When choosing what each check asserts, read [test-behavior](../yesh-router/references/principles/test-behavior.md).
+5. **Evidence.** Identify observable proof: actions and resulting UI state, terminal output and exit status, response bodies, logs, or persisted side effects. When the safe path is a dry-run or test mode, observe what it actually skips (files, network, git refs) rather than trusting its name. When choosing what each check asserts, read [test-behavior](../yesh-router/references/principles/test-behavior.md). Mock only where a production boundary already isolates the external system.
 6. **Isolation.** Determine how runs separate ports, profiles, data directories, and accounts. State when concurrent driving is unsafe.
 
-When launch or doctor cannot complete, return `blocked`.
+When launch or doctor cannot complete, return `blocked`. A missing asset the surface never uses (a static dir, a sample config) may be created as marked verification scaffolding and removed in cleanup.
 
 ### Generate
 
@@ -64,13 +65,13 @@ Write the skill in the repository's configured skill location, with a `verify-<a
 - **Cleanup**: the owned runtime state to remove and the evidence path to keep.
 - **Features**: a pointer to `features/README.md` and its feature recipes, written per [feature-map](references/feature-map.md).
 
-When a launch, doctor, or drive step is repeated or fragile, ship it as a rerunnable script inside the skill and document its invocation; read [build-the-lever](../yesh-router/references/principles/build-the-lever.md) before choosing between script and prose.
+When a launch, doctor, or drive step is repeated or fragile, ship it as a rerunnable script inside the skill and document its invocation; read [build-the-lever](../yesh-router/references/principles/build-the-lever.md) before choosing between script and prose. Every shipped script passes the repository's own lint, type check, and hooks before Prove; a verifier that breaks a stop hook is a verifier defect.
 
 ### Prove the skill
 
 When proving the generated skill works, read [prove-it-works](../yesh-router/references/principles/prove-it-works.md).
 
-1. Validate frontmatter and every relative reference.
+1. Validate frontmatter and every relative reference, and run the repository's lint and type checks on the shipped scripts.
 2. Follow the generated launch and doctor instructions.
 3. Drive one mapped feature through its real user path.
 4. Capture the named evidence and verify material side effects.
@@ -85,11 +86,11 @@ When the seed data lacks a precondition a journey needs, the journey reports a f
 
 Audit skips step 7 and reports `findings` or `clean`. Repair runs every step.
 
-1. **Locate.** Find the project-local skill with launch, doctor, drive, cleanup, and feature-map instructions. Ask the user to choose when several qualify. Switch to Create when none exists and the user wants one.
-2. **Index.** Reconcile `features/README.md` with its feature files. Mark dead entries, and propose only features backed by a concrete registered surface, per [feature-map](references/feature-map.md). When prior run summaries or session records must be reconciled against live behavior, read [evidence-lifecycle](../yesh-router/references/principles/evidence-lifecycle.md).
+1. **Locate.** Find the project-local skill by what it does: launches and drives a surface, with launch, doctor, drive, cleanup, and feature-map instructions. A skill that runs a model checker, prover, or code-level verifier against named code belongs to [formal-verification-skill](../formal-verification-skill/SKILL.md). Ask the user to choose when several qualify. Switch to Create when none exists and the user wants one.
+2. **Index.** Reconcile `features/README.md` with its feature files. Mark dead entries, and propose only features backed by a concrete registered surface, per [feature-map](references/feature-map.md). Sweep commits since the last audit for user-facing surfaces the map lacks, naming a concrete source path for each. When prior run summaries or session records must be reconciled against live behavior, read [evidence-lifecycle](../yesh-router/references/principles/evidence-lifecycle.md).
 3. **Source review.** Account for each feature recipe in scope against current entry points and implementation, with concise source evidence and a proposed live recipe per feature. Use the [shared delegation contract](../yesh-router/references/delegation.md) when delegation earns its overhead.
 4. **Reconcile.** Verify suspected drift and combine overlapping live recipes into the fewest safe application states.
-5. **Live pass.** Run doctor, then drive the mapped features in scope. A doctor failure caused by skill drift is drift: in Repair, fix it and retry once before returning `blocked`. Record `verified-unreachable` only with its route and prerequisite; any other gap in coverage is `blocked`.
+5. **Live pass.** Run doctor, then drive the mapped features in scope. Required in Audit too: an audit with no live drive returns `blocked`, never `clean` or `findings`. A doctor failure caused by skill drift is drift: in Repair, fix it and retry once before returning `blocked`. Record `verified-unreachable` only with its route and prerequisite; any other gap in coverage is `blocked`.
 6. **Triage.** Classify each failure as a verifier defect or a product defect, and list both.
 7. **Correct (Repair).** Fix documentation drift and harness gaps inside the selected skill, including the dead and missing index entries. Re-drive every harness correction on the real surface.
 8. **Close.** Clean up owned runtime state and confirm evidence remains. Open a PR only when the user requests it.
