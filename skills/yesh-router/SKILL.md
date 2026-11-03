@@ -59,6 +59,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - program / own this migration: dependent units or several owners → [orchestrate](playbooks/orchestrate.md)
 - ship / commit / push / merge / deploy / clean up: take finished work to where it runs → [ship](playbooks/ship.md)
 - decision trail / going to bed / review later: alongside the main method, never instead → [decision trail](references/decision-trail.md)
+- rex / open a tab / split a pane / read a terminal: drive Rex sessions, tabs, and panes from the agent → [rex](../rex/SKILL.md)
 - *On request:* pause / stop safely: leave a safe resume point → [pause-safely](playbooks/pause-safely.md)
 - status / what's done / what's left / where are we / ? / restate the issue / in your own words / are we aligned: progress, a worker's state, a catch-up with the user's open decisions, or a playback of the problem to check alignment → [recap](../recap/SKILL.md). "Recap" of an answer or topic asks for a summary of the result, which is unslop's job.
 

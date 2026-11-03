@@ -70,6 +70,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`recap`](./skills/recap) | Catch up on a chat: what's done, what's left, and what needs your call. |
 | [`reflect`](./skills/reflect) | Pull reusable lessons out of a session. |
 | [`research`](./skills/research) | Send a question to a background agent that saves a cited note in the repo. |
+| [`rex`](./skills/rex) | Drive Rex sessions, tabs, and panes. A stub that loads the guide from the installed `rex` CLI. |
 | [`sharpen`](./skills/sharpen) | Tighten a task before starting it, then do it. |
 | [`show-me`](./skills/show-me) | Explain a topic with diagrams and focused HTML. Also writes visual PR descriptions. |
 | [`structure-review`](./skills/structure-review) | Audit code structure and propose fixes backed by evidence. |
