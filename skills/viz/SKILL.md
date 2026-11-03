@@ -45,7 +45,7 @@ If the preview console shows the script failed to load, save the data to `/tmp/v
 
 **Anywhere else**: save the data to `/tmp/viz/<name>.viz`, then run `python3 <viz>/scripts/viz.py html /tmp/viz/<name>.viz --open`. It reports parse errors, writes `/tmp/viz/<name>.html` with the renderer inlined, and opens it in the browser. In pi with glimpse installed, open that file there instead ([pi](../yesh-router/references/hosts/pi.md)). Report the path.
 
-**Inside a saved page that must stay self-contained** (an interactive-explainer page): write `text/viz` blocks where the views belong, end the body with `<script data-viz></script>`, and run `viz.py inline page.html`. Rerun it after updating viz.js. Give a story caption, table row or glossary term `data-viz-id="<node id or path name>"` and hovering it lights that part of every graph on the page, with no page script.
+**Inside a saved page that must stay self-contained** (a page the user keeps or shares): write `text/viz` blocks where the views belong, end the body with `<script data-viz></script>`, and run `viz.py inline page.html`. Rerun it after updating viz.js. Give a story caption, table row or glossary term `data-viz-id="<node id or path name>"` and hovering it lights that part of every graph on the page, with no page script.
 
 ## Reply
 

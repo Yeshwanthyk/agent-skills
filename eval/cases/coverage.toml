@@ -33,16 +33,18 @@ prompt = "Fix the paid to pending transition bug in state.py, and keep an eviden
 expect = { methods = ["diagnose"], reads = ["decision-trail.md"] }
 
 [[case]]
-id = "cov-interactive-explainer"
+id = "cov-viz-states-page"
 activation = "router"
 prompt = "Build me an interactive HTML page where I can step an order through its states and see which transitions state.py allows."
-expect = { methods = ["interactive-explainer"] }
+expect = { methods = ["viz"] }
+notes = "interactive-explainer retired 2026-11-03; viz states view covers this."
 
 [[case]]
-id = "cov-deep-dive"
+id = "cov-long-read"
 activation = "router"
 prompt = "Write a long-form explainer article on idempotent webhook handling, as a standalone HTML page I can read later."
-expect = { methods = ["deep-dive-explainer"] }
+expect = { any_method = ["show-me", "research"] }
+notes = "deep-dive-explainer retired 2026-11-03; show-me HTML branch or research note."
 
 [[case]]
 id = "cov-fuzz"
@@ -97,12 +99,6 @@ id = "cov-writing-for-agents"
 activation = "router"
 prompt = "Write an AGENTS.md for this repo so coding agents know how to run the tests and where the order logic lives."
 expect = { methods = ["writing-for-agents"] }
-
-[[case]]
-id = "cov-motion-explainer"
-activation = "router"
-prompt = "Make a short narrated video explaining how an order moves through its states."
-expect = { methods = ["motion-explainer"] }
 
 [[case]]
 id = "cov-ship"
