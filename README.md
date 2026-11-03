@@ -58,15 +58,12 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`benchmark-checklist`](./skills/benchmark-checklist) | Check a performance number before you report it or act on it. |
 | [`blast-radius`](./skills/blast-radius) | Find what a change could break beyond what grep shows. |
 | [`correct`](./skills/correct) | Stop a mistake agents keep repeating in a repo, with types, checks, or tests. |
-| [`deep-dive-explainer`](./skills/deep-dive-explainer) | Research a topic and write it up as a long offline article. |
 | [`diagnose`](./skills/diagnose) | Reproduce a bug, find the cause, and prove the smallest fix. |
 | [`formal-verification-skill`](./skills/formal-verification-skill) | Build or fix a project skill that formally verifies one high-risk property and reruns on every change. |
 | [`how`](./skills/how) | Explain how code works and why it was built that way. |
-| [`interactive-explainer`](./skills/interactive-explainer) | Build an interactive HTML model of behavior or state. |
 | [`interrogate`](./skills/interrogate) | Run independent adversarial reviews and merge them into one judgment. |
 | [`invariants`](./skills/invariants) | Model state in Quint, TLA+, or Lean, then break the invariants with property tests or fuzzing. |
 | [`meat-review`](./skills/meat-review) | Review a diff, branch, or PR as a short annotated reading. |
-| [`motion-explainer`](./skills/motion-explainer) | Build a narrated, timeline-driven explainer, optionally rendered to MP4. |
 | [`plan`](./skills/plan) | Turn a settled approach into ordered chunks with risks and proof. |
 | [`recap`](./skills/recap) | Catch up on a chat: what's done, what's left, and what needs your call. |
 | [`reflect`](./skills/reflect) | Pull reusable lessons out of a session. |

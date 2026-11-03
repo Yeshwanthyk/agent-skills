@@ -46,5 +46,11 @@
   { "name": "autonomous-run", "was": "skills/yesh-router/playbooks/autonomous-run.md", "now": null,
     "why": "Your call: removed. Metric targets go to hillclimb; other long runs to figure-it-out." },
   { "name": "recap.md", "was": "skills/yesh-router/playbooks/recap.md", "now": "skills/recap/SKILL.md",
-    "why": "Your call: a catch-up should work as /recap without the router, like upstream ketchup, and pair text with visuals." }
+    "why": "Your call: a catch-up should work as /recap without the router, like upstream ketchup, and pair text with visuals." },
+  { "name": "interactive-explainer", "was": "skills/interactive-explainer/", "now": "skills/viz/SKILL.md",
+    "why": "29 sessions in 30 days fell to 0 in the last 7; viz now carries the clickable states, sequences and flows. Retired for now to see what viz is missing." },
+  { "name": "deep-dive-explainer", "was": "skills/deep-dive-explainer/", "now": "skills/show-me/references/html.md",
+    "why": "3 sessions in 30 days. Its source rules moved to research/references/sources.md; long reads go to show-me's HTML branch." },
+  { "name": "motion-explainer", "was": "skills/motion-explainer/", "now": null,
+    "why": "5 sessions in 30 days, 0 in 14. Narrated MP4 output has no replacement; bring it back if a video ask shows up." }
 ]

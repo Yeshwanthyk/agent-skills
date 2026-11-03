@@ -35,11 +35,9 @@ Open the code, the diff, or a running example when that lands faster than words.
 | --- | --- |
 | One point, a definition, a short reason | Plain prose |
 | A flow, call path, structure, or before/after | [`show-me`](../show-me/SKILL.md), in the form its [Choose the form](../show-me/SKILL.md#choose-the-form) picks for the host |
-| Behavior or state they should poke at (toggles, scenarios, transitions) | [`interactive-explainer`](../interactive-explainer/SKILL.md) |
-| A process that unfolds over time (a request through components, a protocol exchange) | [`motion-explainer`](../motion-explainer/SKILL.md) |
-| A whole topic worth a durable long read | [`deep-dive-explainer`](../deep-dive-explainer/SKILL.md) |
+| States they should click through, or a process that unfolds over time (a request through components, a protocol exchange) | [`viz`](../viz/SKILL.md): `view: states` or `view: seq` |
 
-Offer a heavier artifact (interactive, motion, deep dive) before building it unless they asked for one, and keep teaching in conversation while it builds. Hand the artifact the points from the first step, so it teaches those rather than everything how found.
+Offer a heavier artifact (a saved viz page) before building it unless they asked for one, and keep teaching in conversation while it builds. Hand the artifact the points from the first step, so it teaches those rather than everything how found.
 
 ## Voice
 
