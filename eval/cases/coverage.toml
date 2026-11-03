@@ -87,6 +87,12 @@ prompt = "Make a verification skill so a fresh agent can launch this repo's webh
 expect = { methods = ["verification-skill"] }
 
 [[case]]
+id = "cov-formal-verification-skill"
+activation = "router"
+prompt = "Model-check the payment retry job so two concurrent retries can never charge an order twice, and leave a check the next agent reruns on every change."
+expect = { methods = ["formal-verification-skill"], not_methods = ["verification-skill"] }
+
+[[case]]
 id = "cov-writing-for-agents"
 activation = "router"
 prompt = "Write an AGENTS.md for this repo so coding agents know how to run the tests and where the order logic lives."

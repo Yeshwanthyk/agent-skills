@@ -60,6 +60,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`correct`](./skills/correct) | Stop a mistake agents keep repeating in a repo, with types, checks, or tests. |
 | [`deep-dive-explainer`](./skills/deep-dive-explainer) | Research a topic and write it up as a long offline article. |
 | [`diagnose`](./skills/diagnose) | Reproduce a bug, find the cause, and prove the smallest fix. |
+| [`formal-verification-skill`](./skills/formal-verification-skill) | Build or fix a project skill that formally verifies one high-risk property and reruns on every change. |
 | [`how`](./skills/how) | Explain how code works and why it was built that way. |
 | [`interactive-explainer`](./skills/interactive-explainer) | Build an interactive HTML model of behavior or state. |
 | [`interrogate`](./skills/interrogate) | Run independent adversarial reviews and merge them into one judgment. |
@@ -77,7 +78,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`teach`](./skills/teach) | Teach a subsystem or change in plain layers, built on `how`, with diagrams that build up. |
 | [`swarm`](./skills/swarm) | Run parallel agents for coverage, a solution race, or a best-of pick. |
 | [`unslop`](./skills/unslop) | Clean up prose, docs, PR bodies, and commits. |
-| [`verification-skill`](./skills/verification-skill) | Build or fix a project skill that drives one real app surface, or formally verifies one high-risk property. |
+| [`verification-skill`](./skills/verification-skill) | Build or fix a project skill that drives one real app surface. |
 | [`viz`](./skills/viz) | Render a flow, DAG, call tree, or call diff from a few lines of text. |
 | [`writing-for-agents`](./skills/writing-for-agents) | Write or review docs agents read: skills, `AGENTS.md`, `CLAUDE.md`. |
 | [`yesh-router`](./skills/yesh-router) | Pick the method for each task and apply the principles. |
@@ -92,9 +93,9 @@ None of these are required. A few skills call them when they are installed.
 | --- | --- |
 | [`gh`](https://cli.github.com/) | `show-me` PR workflow |
 | [`calldiff`](https://github.com/tanishqkancharla/calldiff) (Node 22+) | `show-me`, `viz`, `meat-review` |
-| [Quint](https://quint-lang.org/) (JDK 17+ for `quint verify`) or [TLA+](https://lamport.azurewebsites.net/tla/tla.html) | `invariants`, `verification-skill` |
-| [Lean 4](https://lean-lang.org/) | `invariants`, `verification-skill` |
-| [Kani](https://model-checking.github.io/kani/), [Verus](https://github.com/verus-lang/verus), [CBMC](https://www.cprover.org/cbmc/), or [Dafny](https://dafny.org/) | `invariants`, `verification-skill` |
+| [Quint](https://quint-lang.org/) (JDK 17+ for `quint verify`) or [TLA+](https://lamport.azurewebsites.net/tla/tla.html) | `invariants`, `formal-verification-skill` |
+| [Lean 4](https://lean-lang.org/) | `invariants`, `formal-verification-skill` |
+| [Kani](https://model-checking.github.io/kani/), [Verus](https://github.com/verus-lang/verus), [CBMC](https://www.cprover.org/cbmc/), or [Dafny](https://dafny.org/) | `invariants`, `formal-verification-skill` |
 
 ## Changing a skill
 
@@ -110,4 +111,4 @@ None of these are required. A few skills call them when they are installed.
 
 ## Credits
 
-`research` and `writing-for-agents` are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT). The `show-me` PR sections draw on its `pr` skill and on Dex Horthy's [humanlayer/skills](https://github.com/humanlayer/skills). The router and its playbooks draw on the [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack) (MIT), the formal branch of `verification-skill` on its `create-formal-verification-skill` (0.15.27) and `maintain-formal-verification-skill` (0.15.36), and `tlc_chart.py`'s rule loop and state-graph check on its `statechart` (0.15.36). The [forward implementation first](skills/yesh-router/references/principles/forward-implementation-first.md) principle draws on [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first).
+`research` and `writing-for-agents` are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT). The `show-me` PR sections draw on its `pr` skill and on Dex Horthy's [humanlayer/skills](https://github.com/humanlayer/skills). The router and its playbooks draw on the [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack) (MIT), `formal-verification-skill` on its `create-formal-verification-skill` (0.15.27) and `maintain-formal-verification-skill` (0.15.36), and `tlc_chart.py`'s rule loop and state-graph check on its `statechart` (0.15.36). The [forward implementation first](skills/yesh-router/references/principles/forward-implementation-first.md) principle draws on [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first).
