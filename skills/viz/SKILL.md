@@ -23,7 +23,7 @@ Write data, not HTML: a `== graph` section (nodes, paths and a `view:`) or one o
 - Where a request's latency goes and which chain bounds it (critical path, slack) → `== gantt`, chaining bars with `after`; `budget:` draws the limit. For a regression, draw the slow case and set `budget:` to the old number.
 
 **How much?**
-- How volume splits: a traffic split, a funnel, where requests drop off → `view: sankey`, with `weight:` under each path and `=| left` ending traffic that drops off. Use sankey over `ranks:` when the volume matters.
+- How volume splits: a traffic split, a funnel, where requests drop off → `view: sankey`, with `weight:` under each path and paths that drop off ending `=| <exit node>`. Use sankey over `ranks:` when the volume matters.
 - One quantity over time against thresholds (queue depth, lag, pool in use), as stock-and-flow → `== stock`, with `meter:` bands. For a pattern that repeats, plot one typical window and say which.
 
 **Why did it break, and where is it stuck?**
