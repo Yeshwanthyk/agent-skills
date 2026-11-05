@@ -55,7 +55,7 @@ Ground everything in evidence. Each node gets an `@path:line` and detail lines f
 **T3 Code** (the tool list has `html_render`): write the page straight into `html_preview`, read its console for `viz:` parse errors, then pass the same page to `html_render`. Do not paste viz.js.
 
 ```html
-<!doctype html><script src="https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@761677a27ca5d1f3efb1b19fb06278a6b8f7c90b/skills/viz/assets/viz.js"></script>
+<!doctype html><script src="https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@7b3bb9fa0af5bc7dab971ce295fd924bd47bbf8a/skills/viz/assets/viz.js"></script>
 <script type="text/viz">
 …
 </script>
