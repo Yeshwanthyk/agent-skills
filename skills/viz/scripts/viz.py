@@ -55,7 +55,7 @@ global.window = {}; global.document = { readyState: 'loading', addEventListener(
 require(process.argv[1]);
 const d = window.Viz.parse(require('fs').readFileSync(process.argv[2], 'utf8'));
 for (const e of d.errors) console.log(e);
-console.log(d.sections.map((s) => s.kind === 'graph' ? `graph ${s.name} (${s.view}): ${s.nodes.length} nodes, ${s.edges.length} edges, ${s.paths.length} paths, ${s.steps.length} steps${s.cover ? `, cover ${s.cover.rows.length} rows` : ''}` : `tree ${s.name}`).join('\n'));
+console.log(d.sections.map((s) => s.kind === 'graph' ? `graph ${s.name} (${s.view}): ${s.nodes.length} nodes, ${s.edges.length} edges, ${s.paths.length} paths, ${s.steps.length} steps${s.cover ? `, cover ${s.cover.rows.length} rows` : ''}` : s.kind === 'tree' ? `tree ${s.name}` : `${s.kind} ${s.name}: ${({ timing: () => `${s.lanes.length} lanes, ${s.marks.length} windows`, gantt: () => `${s.rows.length} rows, ends at ${s.end}${s.crit ? `, ${s.crit.size} on the critical path` : ''}`, causes: () => `${s.fams.length} families, ${s.fams.reduce((a, f) => a + f.causes.length, 0)} causes`, board: () => `${s.cols.length} columns, ${s.cols.reduce((a, c) => a + c.cards.length, 0)} cards`, stock: () => `${s.pts.length} points` })[s.kind]?.() ?? ''}`).join('\n'));
 process.exit(d.errors.length ? 1 : 0);
 '''
 

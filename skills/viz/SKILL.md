@@ -20,6 +20,14 @@ Model the code as nodes, paths and a view in one `== graph` section, not as hand
 - A change, on one layout → `+` and `-` on nodes and paths; the reader gets a before | both | after toggle.
 - When the why of each step matters → give paths a `| payload | narration` tail. Each one becomes a replay step.
 - A design doc that walks a reader through scenarios → add `theme drawing`, `shows: id = text` under steps for what each box finds, and a `meter:` when one number decides the outcome ([grammar](references/grammar.md#drawing-theme-and-story-detail)).
+- Which state each service is in after each message → `sets: id=*charging` under a `view: seq` edge, plus `state:` under a node for where it starts. Each lifeline shows a state pill after every message that changes it.
+- How much volume takes each way through (traffic split, funnel, where requests are lost) → `view: sankey`, with `weight:` under each path. Band width is volume.
+- What runs at the same time, and where two workers overlap or wait on each other → `== timing`, one lane per worker and a `!window` over the race.
+- Where a request spends its time, and what bounds it → `== gantt`, using `after` to chain bars. The critical path and slack are computed; `budget:` draws the limit.
+- An incident's suspected causes and which are ruled in or out → `== causes` (a fishbone).
+- Work items across stages (shards in a backfill, jobs in a pipeline), with WIP limits and what's blocked → `== board`.
+- One quantity over time (a queue depth, a lag, a pool in use) against thresholds → `== stock`, with `meter:` bands.
+- A page that will be saved, printed or shared → `theme paper` (ink on a grid sheet). Every view supports it. It paints its own sheet, so keep it off inline T3 renders, which sit on the thread background.
 - Who calls whom → `== tree`.
 - What a change did to a call tree → `== diff`. Run calldiff through the converter rather than hand-writing it:
 

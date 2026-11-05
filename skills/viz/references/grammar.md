@@ -7,6 +7,7 @@ Every visual is a `text/viz` block that [`assets/viz.js`](../assets/viz.js) rend
 - [`order-flow.viz`](../assets/examples/order-flow.viz): a layered flow with numbered edges and replay.
 - [`submit-diff.viz`](../assets/examples/submit-diff.viz): a call diff and two trees.
 - [`gate-scan.viz`](../assets/examples/gate-scan.viz): the drawing theme, with box text per story and a meter.
+- [`charts.viz`](../assets/examples/charts.viz): the time and volume views: timing, gantt, causes, board, stock, sankey, and seq state pills.
 
 ## Core: nodes, edges, paths
 
@@ -14,7 +15,7 @@ Every visual is a `text/viz` block that [`assets/viz.js`](../assets/viz.js) rend
 title Which edits re-run the archive check   # optional header lines, anywhere outside a tree or cover
 sub   example/docs @1a2b3c4
 base  src/                                   # prefix for every @ref; shown once, copied with the path
-theme drawing                                # optional: drawing or thread (see below); default otherwise
+theme drawing                                # optional: drawing, thread or paper (see below); default otherwise
 
 == graph Archive triggers                    # each == section is a tab (== flow is the same thing)
 check: Archive check [result] @archive/run.ts:7 # new ArchiveRun
@@ -44,6 +45,7 @@ autosave: draft > saved > onsave =| skip
 | `seq` | requests between services over time | one lifeline per node in declaration order; edges are messages, in order; `at: 120ms` on an edge spaces it by time |
 | `states` | the life of one field or job | layered like flow, pills only on labelled edges, no numbers; `a -> a: heartbeat` is a self-loop |
 | `stack` | a call stack at one moment | frames indented in path order; `locals: qty = NaN` lines show on the card |
+| `sankey` | how much volume takes each way through | columns by depth; `weight: 6200` under a path is its volume (unweighted paths count 1); a band is green when all of it gets through, coral when it fails, amber when it is filtered out |
 
 ```text
 == graph Checkout
@@ -55,6 +57,23 @@ api -> pay: charge
 pay -> api: ok
   at: 720ms
 api > pay > api | charge | 686 of the 840 ms are spent waiting on the charge.
+```
+
+**State pills in `seq`:** `state: idle` under a node is its starting state, and `sets: api=*charging, pay=+captured` under an edge sets states after that message. A prefix sets the tone: `+` done, `!` failed, `*` or `~` in progress, `?` unknown. While replaying, the pills of the current message light and later ones fade.
+
+**Sankey** (`view: sankey`):
+
+```text
+== graph Where checkout requests go
+view: sankey
+web: Web
+pay: Charge
+paid: Paid
+blocked: Blocked
+w1: web > pay => paid
+  weight: 6200
+w2: web =| blocked
+  weight: 300
 ```
 
 **Statecharts** (`view: states`; groups also work in `flow`):
@@ -87,6 +106,8 @@ group end
 `theme drawing` draws the page as a dark technical drawing: lettered caps, thin ink lines, square boxes that invert while a story passes through them. It is opt-in; without it nothing changes. Colour is kept for meaning only: green bar `+` added, dashed coral `-` removed, coral `!` failing, dashed amber `=|` filtered out. Plain ways through stay ink, and a line's weight is how many paths use it.
 
 `theme thread` draws cream paper cards on a teal sheet, with arrows as twisted two-colour cords: gold for paths that get through, red for failures, a dotted line for a removed arrow. A trunk several arrows share is drawn as one cord. Labels are paper tags. Use it for a change review or a flow a reader should enjoy reading; layout, replay and controls are the default ones.
+
+`theme paper` draws ink on a cream grid sheet: serif titles, boxes with a hard offset shadow, and red for the highlight. Use it for a page that will be printed, or one that sits on a light background. Every view and chart supports it.
 
 On top of the default replay, `theme drawing` adds: story chips grouped by where each story starts (click one to play it), an overview caption that counts how the stories end, the packet carrying its payload as a label, numbered hops in `ranked` and `states`, and a stamp in the caption naming the box the story ends in. It plays every story once when it first shows, then returns to the overview; touching any control stops that. Under reduced motion it shows still frames.
 
@@ -131,6 +152,83 @@ Any element on the page with `data-viz-id="<node id or path name>"` lights that 
 ```
 
 Tree depth is 2 spaces per level. Pasted `calldiff` ascii (`├─ │ └─`, `label  path:line`) also parses.
+
+## Charts: timing, gantt, causes, board, stock
+
+These five are their own `==` sections, not graphs. Each draws one chart that scales to its frame, with a readout top right and a detail line under it. Statuses use the same prefixes everywhere: `+` ok or done, `!` fails or blocked, `*` or `~` in progress or at risk, `?` unknown. `@ref` and `# note` work on every row.
+
+**Timing**: what runs at the same time. Use it for races, lock waits and overlapping retries.
+
+```text
+== timing Two workers, one row lock
+axis: ms 0..400                              # unit, then an optional range
+api: API worker @checkout/api.py:40          # a lane
+  0 (idle) | 40 read cart | 70 *charge card | 250 +write paid   # time label; (label) is quiet, drawn as a wire
+worker: Retry worker
+  0 (idle) | 90 read order | 120 !waits on lock | 280 write
+!race: 120..250 worker blocked on the order row   # a window over every lane; the prefix sets its colour (amber by default)
+```
+
+A cursor reads out every lane's state at that moment. Hover or drag to move it, or press ▶ to sweep it. It starts in the first failing window.
+
+**Gantt**: where time goes, and which chain bounds it.
+
+```text
+== gantt Checkout request
+axis: ms
+budget: 600                                  # optional dashed limit
+auth: Auth check 0..40                       # a..b ...
+cart: Load cart 60ms after auth              # ... or a duration after other rows (after a, b waits on both)
+!pay: Charge card 520ms after cart @payments/charge.py:31
+```
+
+The critical path (from the row that ends last, back through whichever row it waits on ends latest) is filled. Slack before the next row that waits on a bar is dotted. Hovering a bar fades everything it doesn't wait on.
+
+**Causes**: a fishbone for an incident.
+
+```text
+== causes Why the receipt email went missing
+effect: no receipt # 3% of orders
+-- queue                                     # a family; families alternate above and below the spine
++drop: hook raised before :240 @orders/order_service.py:236   # + ruled in
+-full: queue full                            # - ruled out
+?addr: bad email address                     # ? or no prefix: still open
+```
+
+**Board**: work items across stages.
+
+```text
+== board Backfill, by shard
+columns: queued | copying 3 | verifying | done   # a trailing number is the column's WIP limit
+-- copying
+*s4: shard 4
+  progress: 0.62                             # or 62%; draws a bar
+!s6: shard 6 # lock wait on orders           # ! is blocked
+  owner: backfill-2                          # any other key: value shows on click
+```
+
+A column at its limit turns amber, and one over it turns coral. The readout counts the last column and the blocked cards.
+
+**Stock**: one quantity over time against thresholds, drawn as a line and as a tank.
+
+```text
+== stock Email queue depth
+unit: k
+stock: email queue @mail/queue.py:10
+meter: depth | 0 ok | 20 slow | 50 shedding | 80     # same as a graph meter: ticks, each naming the band after it
+9:00 2 | in 9k/min | out 8k/min              # label value, then flows; flows carry forward until changed
+9:20 14 | in 14k/min # campaign starts        # a note marks the point on the chart
+```
+
+The first band is fine, the last is the worst, and any between is at risk. The cursor starts at the peak.
+
+## Planned views
+
+These views are not built yet. Draw them with what exists until they land:
+
+- **Wait-for graph**: who holds which lock and who waits on it, with the cycle in a deadlock highlighted. For now, use `view: flow` with `!` on the cycle's edges.
+- **Backoff timeline**: retry attempts with growing gaps, jitter bands and the give-up point. For now, use `== timing` with one lane per attempt.
+- **Permission matrix**: roles × actions, each cell allowed, denied or conditional, and why. For now, use `== cover` with `columns:`.
 
 ## Versioning
 
