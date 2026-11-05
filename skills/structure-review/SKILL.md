@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Structure review
 
-Assess whether the structure supports the intended behavior without unnecessary coordination or complexity. A review request produces findings. Apply corrections only when implementation is also requested.
+Assess whether the structure supports the intended behavior without unnecessary coordination or complexity. A review request produces findings. Apply corrections only when implementation is also requested; to restructure a whole area, use [untangle](../untangle/SKILL.md).
 
 Trace enough of the production path and its checks to understand the affected boundary. Inspect failures or adjacent paths when they can change the conclusion.
 

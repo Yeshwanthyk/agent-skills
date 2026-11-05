@@ -48,6 +48,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 **Review and verify**
 - review this diff / commit / branch / PR, reading view, feedback on one: an abridged reading drawn from git → [meat-review](../meat-review/SKILL.md)
 - review structure / ownership / maintainability → [structure-review](../structure-review/SKILL.md)
+- untangle / decouple / refactor this area / too many special cases: restructure and fix, not just report → [untangle](../untangle/SKILL.md)
 - blast radius / what could this break: beyond the diff → [blast-radius](../blast-radius/SKILL.md)
 - interrogate / challenge / are we sure / second opinion: independent reviewers, including another model's read → [interrogate](../interrogate/SKILL.md)
 - verifier / verification skill / drive the app: create, audit, or repair a project-local verifier that launches and drives a real surface → [verification-skill](../verification-skill/SKILL.md)
