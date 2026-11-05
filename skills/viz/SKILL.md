@@ -9,22 +9,22 @@ One fixed renderer, [`assets/viz.js`](assets/viz.js), draws every visual. The ag
 
 ## Pick the view
 
-Write data, not HTML: a `== graph` section for nodes and paths, or a chart section for time, progress and quantity ([charts](references/grammar.md#charts-timing-gantt-causes-board-stock)). Pick by the question the reader is asking.
+Write data, not HTML: a `== graph` section (nodes, paths and a `view:`) or one of the chart sections, `== timing`, `gantt`, `causes`, `board` and `stock` ([charts](references/grammar.md#charts-timing-gantt-causes-board-stock)). Pick by the question the reader is asking.
 
 **How does it flow?**
-- Data moving between components (branches, fallbacks, async hops, failure exits) → `view: flow`, the default. Label each edge with what moves and declare edges in the order they happen; the numbers follow.
+- Data moving between components (branches, fallbacks, async hops, failure exits) → `view: flow`, the default. "Walk me through" adds a narration tail (below). Label each edge with what moves and declare edges in the order they happen; the numbers follow.
 - Who acts, what it sends, what filters it, what results → `ranks:` columns, one path per trigger, ending `=> result` when it gets through and `=| result` when it is filtered out. Teams or services as bands → add `lane:`.
-- Requests between services over time → `view: seq`, with `at:` times when the waiting matters. Which state each service is in after each message → `sets: id=*charging` under an edge and `state:` under a node.
+- Requests between services over time → `view: seq`, with `at:` times when the waiting matters. Pick seq over flow when the order of calls and the waits between them are the point, and flow when the branches are. Which state each service is in after each message → `sets: id=*charging` under an edge and `state:` under a node.
 - The life of one field or job → `view: states`, one path per story (`!giveup: running > blocked => dead`). A user-facing flow adds a start dot (`[*] -> form`), tones and `group` boxes ([views](references/grammar.md#views)).
 - Who calls whom → `== tree`. A call stack at one moment, with the values that went wrong → `view: stack` and `locals:`.
 
 **When, and for how long?**
 - What runs at the same time: a race, a lock wait, overlapping retries → `== timing`, one lane per worker and a `!window` over the overlap.
-- Where a request's latency goes and which chain bounds it (critical path, slack) → `== gantt`, chaining bars with `after`; `budget:` draws the limit.
+- Where a request's latency goes and which chain bounds it (critical path, slack) → `== gantt`, chaining bars with `after`; `budget:` draws the limit. For a regression, draw the slow case and set `budget:` to the old number.
 
 **How much?**
-- How volume splits: a traffic split, a funnel, where requests drop off → `view: sankey`, with `weight:` under each path.
-- One quantity over time against thresholds (queue depth, lag, pool in use), as stock-and-flow → `== stock`, with `meter:` bands.
+- How volume splits: a traffic split, a funnel, where requests drop off → `view: sankey`, with `weight:` under each path and `=| left` ending traffic that drops off. Use sankey over `ranks:` when the volume matters.
+- One quantity over time against thresholds (queue depth, lag, pool in use), as stock-and-flow → `== stock`, with `meter:` bands. For a pattern that repeats, plot one typical window and say which.
 
 **Why did it break, and where is it stuck?**
 - An incident's suspected causes, ruled in or out → `== causes`, a fishbone.
@@ -33,7 +33,7 @@ Write data, not HTML: a `== graph` section for nodes and paths, or a chart secti
 
 **What changed?**
 - A change on one layout → `+` and `-` on nodes and paths; the reader gets a before | both | after toggle.
-- What a change did to a call tree → `== diff`, from the converter rather than by hand:
+- What a change did to a call tree → `== diff`, from the converter rather than by hand. `<viz>` is this skill's directory; the first two arguments are the base and head refs (a PR's base branch, then `HEAD`); `<paths>` limits the scan:
 
 ```bash
 python3 <viz>/scripts/viz.py calldiff main HEAD --max-depth 4 <paths>   # prints base + == diff, unchanged subtrees collapsed
