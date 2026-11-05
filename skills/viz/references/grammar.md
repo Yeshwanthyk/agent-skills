@@ -7,6 +7,7 @@ Every visual is a `text/viz` block that [`assets/viz.js`](../assets/viz.js) rend
 - [`order-flow.viz`](../assets/examples/order-flow.viz): a layered flow with numbered edges and replay.
 - [`submit-diff.viz`](../assets/examples/submit-diff.viz): a call diff and two trees.
 - [`gate-scan.viz`](../assets/examples/gate-scan.viz): the drawing theme, with box text per story and a meter.
+- [`charts.viz`](../assets/examples/charts.viz): every chart (timing, gantt with `was`, hist, retries, causes, board, stock, waits), sankey, and seq state pills.
 
 ## Core: nodes, edges, paths
 
@@ -14,7 +15,7 @@ Every visual is a `text/viz` block that [`assets/viz.js`](../assets/viz.js) rend
 title Which edits re-run the archive check   # optional header lines, anywhere outside a tree or cover
 sub   example/docs @1a2b3c4
 base  src/                                   # prefix for every @ref; shown once, copied with the path
-theme drawing                                # optional: drawing or thread (see below); default otherwise
+theme drawing                                # optional: drawing, thread or paper (see below); default otherwise
 
 == graph Archive triggers                    # each == section is a tab (== flow is the same thing)
 check: Archive check [result] @archive/run.ts:7 # new ArchiveRun
@@ -44,6 +45,7 @@ autosave: draft > saved > onsave =| skip
 | `seq` | requests between services over time | one lifeline per node in declaration order; edges are messages, in order; `at: 120ms` on an edge spaces it by time |
 | `states` | the life of one field or job | layered like flow, pills only on labelled edges, no numbers; `a -> a: heartbeat` is a self-loop |
 | `stack` | a call stack at one moment | frames indented in path order; `locals: qty = NaN` lines show on the card |
+| `sankey` | how much volume takes each way through | columns by depth; `weight: 6200` under a path is its volume (unweighted paths count 1); a band is green when all of it gets through, coral when it fails, amber when it is filtered out |
 
 ```text
 == graph Checkout
@@ -55,6 +57,23 @@ api -> pay: charge
 pay -> api: ok
   at: 720ms
 api > pay > api | charge | 686 of the 840 ms are spent waiting on the charge.
+```
+
+**State pills in `seq`:** `state: idle` under a node is its starting state, and `sets: api=*charging, pay=+captured` under an edge sets states after that message. A prefix sets the tone: `+` done, `!` failed, `*` or `~` in progress, `?` unknown. While replaying, the pills of the current message light and later ones fade.
+
+**Sankey** (`view: sankey`):
+
+```text
+== graph Where checkout requests go
+view: sankey
+web: Web
+pay: Charge
+paid: Paid
+blocked: Blocked
+w1: web > pay => paid
+  weight: 6200
+w2: web =| blocked
+  weight: 300
 ```
 
 **Statecharts** (`view: states`; groups also work in `flow`):
@@ -87,6 +106,8 @@ group end
 `theme drawing` draws the page as a dark technical drawing: lettered caps, thin ink lines, square boxes that invert while a story passes through them. It is opt-in; without it nothing changes. Colour is kept for meaning only: green bar `+` added, dashed coral `-` removed, coral `!` failing, dashed amber `=|` filtered out. Plain ways through stay ink, and a line's weight is how many paths use it.
 
 `theme thread` draws cream paper cards on a teal sheet, with arrows as twisted two-colour cords: gold for paths that get through, red for failures, a dotted line for a removed arrow. A trunk several arrows share is drawn as one cord. Labels are paper tags. Use it for a change review or a flow a reader should enjoy reading; layout, replay and controls are the default ones.
+
+`theme paper` draws ink on a cream grid sheet: serif titles, boxes with a hard offset shadow, and red for the highlight. Use it for a page that will be printed, or one that sits on a light background. Every view and chart supports it.
 
 On top of the default replay, `theme drawing` adds: story chips grouped by where each story starts (click one to play it), an overview caption that counts how the stories end, the packet carrying its payload as a label, numbered hops in `ranked` and `states`, and a stamp in the caption naming the box the story ends in. It plays every story once when it first shows, then returns to the overview; touching any control stops that. Under reduced motion it shows still frames.
 
@@ -131,6 +152,14 @@ Any element on the page with `data-viz-id="<node id or path name>"` lights that 
 ```
 
 Tree depth is 2 spaces per level. Pasted `calldiff` ascii (`├─ │ └─`, `label  path:line`) also parses.
+
+## Charts
+
+Time, volume and progress charts have their own grammar: [charts.md](charts.md).
+
+## Planned views
+
+- **Permission matrix**: roles × actions, each cell allowed, denied or conditional, and why. Not built yet; use `== cover` with `columns:`.
 
 ## Versioning
 

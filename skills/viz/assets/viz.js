@@ -206,6 +206,60 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
 .vz-drawing .vz-mtrack{border-color:var(--vz-fg)}.vz-drawing .vz-mband{border-color:var(--vz-line);font:10px var(--vz-letter);letter-spacing:.14em;text-transform:uppercase}
 .vz-drawing .vz-mband.on{background:var(--vz-fg);color:var(--vz-bg)}.vz-drawing .vz-mmark{background:var(--vz-fg);box-shadow:0 0 0 2px var(--vz-bg)}
 .vz-drawing .vz-mt{font:10.5px var(--vz-letter);letter-spacing:.16em;text-transform:uppercase}
+.vz{--vz-hl:var(--vz-amber);--vz-hlfg:var(--vz-bg);--vz-cw:color-mix(in srgb,var(--vz-fg) 38%,transparent);--vz-cg:color-mix(in srgb,var(--vz-fg) 9%,transparent);--vz-cb:color-mix(in srgb,var(--vz-fg) 32%,transparent)}
+.vz.vz-thread{--vz-hl:var(--vz-gold);--vz-hlfg:var(--vz-ink);--vz-cb:color-mix(in srgb,var(--vz-paper) 55%,transparent)}
+.vz.vz-drawing{--vz-hl:var(--vz-fg);--vz-hlfg:var(--vz-bg);--vz-cb:var(--vz-fg)}
+.vz.vz-paper,.vz.vz-paper.vz-solo{--vz-fg:#2b2620;--vz-dim:#857b6c;--vz-line:rgba(43,38,32,.16);--vz-amber:#b97a12;--vz-coral:#c4473a;--vz-green:#4f7f43;--vz-blue:#3e6a8a;
+--vz-card:#fffaf0;--vz-bg:#fffaf0;--vz-r:5px;--vz-hl:#c4473a;--vz-hlfg:#fffaf0;--vz-cw:rgba(43,38,32,.45);--vz-cg:rgba(43,38,32,.1);--vz-cb:#2b2620;
+--vz-type:"Courier Prime","Courier New",ui-monospace,monospace;--vz-serif:Georgia,"Iowan Old Style","Times New Roman",serif;color:var(--vz-fg);font:12.5px/1.45 var(--vz-type);
+background:linear-gradient(rgba(43,38,32,.045) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,rgba(43,38,32,.045) 1px,transparent 1px) 0 0/22px 22px,#f5efe2;padding:16px;border-radius:6px}
+.vz-paper .vz-title{font:600 17px var(--vz-serif)}.vz-paper .vz-sub{font-style:italic;font-family:var(--vz-serif)}
+.vz-paper .vz-panel{background:transparent;border-color:rgba(43,38,32,.22)}
+.vz-paper button{border-color:rgba(43,38,32,.35);color:var(--vz-fg);background:#fffaf0}
+.vz-paper .vz-box{background:#fffaf0;border:1.3px solid #2b2620;box-shadow:2px 2px 0 rgba(43,38,32,.85)}
+.vz-paper .vz-box.now{box-shadow:2px 2px 0 var(--vz-coral),0 0 0 2px var(--vz-coral)}.vz-paper .vz-box.s-fail{border-color:var(--vz-coral);box-shadow:2px 2px 0 var(--vz-coral)}
+.vz-paper .vz-pill{background:#fffaf0;border-color:rgba(43,38,32,.4)}.vz-paper .vz-num{background:var(--vz-coral);color:#fffaf0}
+.vz-paper .vz-ro b,.vz-paper .vz-cname{font-family:var(--vz-serif)}.vz-paper .vz-ro b{color:var(--vz-coral)}
+.vz-paper .vz-insp code,.vz-paper .vz-detail code{color:var(--vz-blue)}
+.vz-paper .vz-bar input[type=range]{accent-color:var(--vz-coral)}
+.vz-ctop{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:0 0 6px}
+.vz-cname{font-weight:600}.vz-ro{margin-left:auto;text-align:right;display:flex;flex-wrap:wrap;gap:2px 10px;justify-content:flex-end;align-items:baseline}
+.vz-ro b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}.vz-ro span{color:var(--vz-dim)}
+.vz-cx{overflow-x:auto}.vz-cx>svg{display:block;width:100%;height:auto;min-width:520px;overflow:visible}
+.vz-cx svg text{font-size:11px;fill:var(--vz-fg)}
+.vz-ln{stroke:var(--vz-fg);fill:none}.vz-wr{stroke:var(--vz-cw);stroke-width:1.3;fill:none}.vz-gd{stroke:var(--vz-cg);fill:none}
+.vz-cx svg .vz-td{fill:var(--vz-dim)}.vz-cx svg .vz-small{font-size:9.5px}.vz-cx svg .vz-big{font-size:12px;font-weight:600}
+.vz-cx svg .vz-tc{fill:var(--vz-dim);font-size:10px;letter-spacing:.12em;text-transform:uppercase}.vz-cx svg .vz-cap2{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.vz-bx{fill:var(--vz-bg);stroke:var(--vz-cb);stroke-width:1}.vz-bx.on{stroke-width:2;stroke:var(--vz-hl)}
+.vz-cx svg .vz-bd{fill:var(--vz-dim);font-size:10px}
+.vz-cx svg .vz-sl{paint-order:stroke;stroke:var(--vz-bg);stroke-width:4px;stroke-linejoin:round}
+.vz-hitc{fill:transparent;cursor:crosshair}
+.vz-crow,.vz-cause{cursor:pointer;transition:opacity .15s}.vz-crow.dim{opacity:.28}.vz-cause:hover text,.vz-cause:focus text{text-decoration:underline}.vz-cause:focus{outline:none}
+.vz-cx svg .vz-struck{text-decoration:line-through}
+.vz-band{transition:opacity .15s;cursor:pointer}.vz-band.dim{opacity:.18}
+.vz-kb{display:grid;gap:10px;min-width:520px}
+.vz-col{border:1px solid var(--vz-line);border-radius:var(--vz-r);padding:8px;min-height:90px;background:var(--vz-card)}
+.vz-col h4{display:flex;justify-content:space-between;gap:6px;margin:0 0 8px;font-size:10.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--vz-dim)}
+.vz-col h4 .full{color:var(--vz-amber)}.vz-col h4 .over{color:var(--vz-coral);font-weight:700}
+.vz-card{border:1px solid var(--vz-cb);border-radius:var(--vz-r);background:var(--vz-bg);padding:6px 8px;margin-bottom:6px;cursor:pointer;font-size:12px;line-height:1.35}
+.vz-card small{display:block;color:var(--vz-dim);font-size:10.5px;margin-top:2px}
+.vz-card .vz-pb{height:3px;margin-top:6px;background:var(--vz-line);border-radius:2px;overflow:hidden}.vz-card .vz-pb i{display:block;height:100%;background:var(--vz-hl)}
+.vz-card.q-ok{border-color:var(--vz-green)}.vz-card.q-fail{border-color:var(--vz-coral);border-width:1.5px}.vz-card.q-fail small{color:var(--vz-coral)}
+.vz-card.q-warn{border-color:var(--vz-amber)}.vz-card.q-unk{border-style:dashed;color:var(--vz-dim)}
+.vz-card.sel,.vz-card:focus{outline:2px solid var(--vz-hl);outline-offset:1px}
+.vz-detail .q-fail{color:var(--vz-coral)}.vz-detail .q-ok{color:var(--vz-green)}.vz-detail .q-warn{color:var(--vz-amber)}
+.vz-spill{position:absolute;transform:translateX(-50%);height:18px;line-height:16px;padding:0 8px;border:1px solid var(--vz-line);border-radius:9px;background:var(--vz-bg);
+color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,border-color .2s,color .2s;z-index:1}
+.vz-spill.hot{color:var(--vz-fg);border-color:var(--vz-hl)}.vz-flow .vz-spill.ghost{opacity:.13}
+.vz-spill.q-fail{color:var(--vz-coral);border-color:var(--vz-coral)}.vz-spill.q-ok{color:var(--vz-green)}.vz-spill.q-warn{color:var(--vz-amber)}
+.vz-drawing .vz-col h4,.vz-drawing .vz-cname{font-family:var(--vz-letter);letter-spacing:.14em;text-transform:uppercase}
+.vz-drawing .vz-col,.vz-drawing .vz-card,.vz-drawing .vz-spill{border-radius:0}.vz-drawing .vz-cx svg text{font-family:var(--vz-type)}
+.vz-thread .vz-col{background:rgba(0,0,0,.18);border:0}.vz-thread .vz-card{background:var(--vz-paper);color:var(--vz-ink);border:0;box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.vz-thread .vz-card small{color:#6d6556}.vz-thread .vz-card.q-fail{box-shadow:inset 3px 0 0 var(--vz-red)}.vz-thread .vz-card.q-fail small{color:var(--vz-red)}
+.vz-thread .vz-card.q-ok{box-shadow:inset 3px 0 0 #4f7f43}.vz-thread .vz-card.q-warn{box-shadow:inset 3px 0 0 var(--vz-gold)}
+.vz-thread .vz-ro b,.vz-thread .vz-cname{font-family:var(--vz-sans)}
+.vz-paper .vz-cx svg .vz-sl{stroke:#f5efe2}.vz-thread .vz-cx svg .vz-sl{stroke:#15302e}.vz-drawing .vz-cx svg .vz-sl{stroke:#0c0c0b}
+.vz-paper .vz-card{box-shadow:2px 2px 0 rgba(43,38,32,.8)}.vz-paper .vz-col{background:rgba(255,250,240,.6)}
 @media (prefers-reduced-motion:reduce){.vz *{transition:none!important;animation:none!important}}`;
 
   const STATUS = { '+': 'add', '-': 'del', '~': 'mod', '!': 'fail', '*': 'active', '?': 'unk' };
@@ -239,16 +293,17 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
     return { rest: s.trim(), ref, note };
   }
 
-  const VIEWS = ['flow', 'ranked', 'seq', 'states', 'stack'], THEMES = ['default', 'drawing', 'thread'];
+  const VIEWS = ['flow', 'ranked', 'seq', 'states', 'stack', 'sankey'], THEMES = ['default', 'drawing', 'thread', 'paper'];
+  const CHARTS = ['timing', 'gantt', 'causes', 'board', 'stock', 'waits', 'hist', 'retries'];
   const ID = /^[\w.$-]+$/;
   function parse(text) {
     const doc = { title: '', sub: '', base: '', theme: '', sections: [], errors: [] };
-    let sec = null, node = null, lastGraph = null, lastEdges = null, lastStep = null;
+    let sec = null, node = null, lastGraph = null, lastEdges = null, lastStep = null, lastPath = null;
     const lines = text.replace(/\t/g, '  ').split('\n');
     lines.forEach((raw, i) => {
       const n = i + 1;
       if (!raw.trim() || /^\s*\/\//.test(raw)) return;
-      const head = raw.match(/^==\s*(graph|flow|tree|diff|steps|cover)\b\s*(.*)$/);
+      const head = raw.match(/^==\s*(graph|flow|tree|diff|steps|cover|timing|gantt|causes|board|stock|waits|hist|retries)\b\s*(.*)$/);
       if (head) {
         const [, kind, name] = head;
         lastStep = null;
@@ -258,19 +313,20 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
           if (kind === 'cover') target.cover = { name: name.trim(), rows: [], columns: '', n };
           sec = { kind, graph: target }; return;
         }
+        if (CHARTS.includes(kind)) { sec = { kind, name: name.trim() || kind, lines: [] }; doc.sections.push(sec); node = null; lastEdges = null; return; }
         sec = kind === 'graph' || kind === 'flow'
           ? { kind: 'graph', name: name.trim() || 'graph', nodes: [], edges: [], byId: {}, paths: [], steps: [], ranks: [], view: '', group: -1, groups: [], tones: [], box: '' }
           : { kind: 'tree', diff: kind === 'diff', name: name.trim() || kind, lines: [] };
         doc.sections.push(sec); if (sec.kind === 'graph') lastGraph = sec; node = null; lastEdges = null; return;
       }
-      const meta = sec?.kind !== 'tree' && sec?.kind !== 'cover' && raw.match(/^(title|sub|base|theme)\s+(.*)$/);
+      const meta = sec?.kind !== 'tree' && sec?.kind !== 'cover' && !CHARTS.includes(sec?.kind) && raw.match(/^(title|sub|base|theme)\s+(.*)$/);
       if (meta) {
         doc[meta[1]] = meta[2].trim();
         if (meta[1] === 'theme' && !THEMES.includes(doc.theme)) { doc.errors.push(`line ${n}: theme must be one of ${THEMES.join(', ')}`); doc.theme = ''; }
         return;
       }
       if (!sec) { doc.errors.push(`line ${n}: expected title/sub/base or a == section`); return; }
-      if (sec.kind === 'tree') { sec.lines.push({ raw, n }); return; }
+      if (sec.kind === 'tree' || CHARTS.includes(sec.kind)) { sec.lines.push({ raw, n }); return; }
       if (sec.kind === 'steps') {
         const sd = raw.match(STEP_DETAIL);
         if (sd) { stepDetail(lastStep, sd[1], sd[2], n, doc.errors); return; }
@@ -283,7 +339,8 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
       const g = sec, t = raw.trim();
       const sdt = raw.match(STEP_DETAIL);
       if (sdt) { stepDetail(lastStep, sdt[1], sdt[2], n, doc.errors); return; }
-      lastStep = null;
+      const prevPath = lastPath;
+      lastStep = null; lastPath = null;
       const facet = /^\S/.test(raw) && t.match(/^(ranks|view|meter):\s*(.*)$/);
       if (facet) {
         if (facet[1] === 'ranks') g.ranks = facet[2].split('|').map((x) => x.trim()).filter(Boolean);
@@ -318,8 +375,10 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
         node = null; return;
       }
       // Detail lines belong to the node or edge line above them (every edge of a fan-out line).
-      const detail = raw.match(/^\s+(does|reads|writes|fails|ref|note|state|carries|locals|lane|at):\s*(.*)$/);
+      const detail = raw.match(/^\s+(does|reads|writes|fails|ref|note|state|carries|locals|lane|at|sets|weight):\s*(.*)$/);
       if (detail) {
+        // `weight:` under a path sets how much flows along it (view: sankey).
+        if (detail[1] === 'weight' && !node && !lastEdges && prevPath) { lastPath = prevPath; prevPath.weight = +detail[2].replace(/[^\d.]/g, '') || 0; return; }
         const owners = node ? [node] : lastEdges;
         if (!owners) { doc.errors.push(`line ${n}: detail before any node or edge`); return; }
         const [, key, val] = detail;
@@ -342,7 +401,7 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
         node = null; return;
       }
       const pp = parsePath(g, t, n, false);
-      if (pp) { node = null; lastEdges = null; lastStep = g.steps.includes(pp) ? pp : null; return; }
+      if (pp) { node = null; lastEdges = null; lastPath = pp; lastStep = g.steps.includes(pp) ? pp : null; return; }
       const nd = t.match(/^([+\-~!*?]?)([\w.$-]+):\s*(.*)$/);
       if (nd) {
         const [, st, id, body] = nd;
@@ -358,7 +417,7 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
       }
       doc.errors.push(`line ${n}: not a node (id: Label), edge (a -> b), path (a > b => c), or detail (  does: …): ${t}`);
     });
-    for (const s of doc.sections) if (s.kind === 'graph') finishGraph(s, doc.errors); else buildTree(s, doc.errors);
+    for (const s of doc.sections) if (s.kind === 'graph') finishGraph(s, doc.errors); else if (s.kind === 'tree') buildTree(s, doc.errors); else CHART[s.kind].parse(s, doc.errors);
     return doc;
   }
 
@@ -473,6 +532,14 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
       const ends = s.paths.filter((p) => p.ids[p.ids.length - 1] === nd.id && p.out !== 'plain');
       if (ends.some((p) => p.out === 'pass')) nd.end = 'reach';
       else if (ends.length && ends.every((p) => p.out === 'drop')) nd.end = 'dropped';
+    }
+    // `sets: a = waiting, b = !timed out` under a message: the state each party is in once it lands (view: seq).
+    for (const e of s.edges) {
+      if (!e.info.sets) continue;
+      e.sets = e.info.sets.split(/\s*,\s*/).map((x) => x.match(/^([\w.$-]+)\s*=\s*(.*)$/)).filter(Boolean).map(([, id, v]) => ({ id, ...toned(v.trim()) }));
+      for (const x of e.sets) if (!s.byId[x.id]) errors.push(`line ${e.n}: sets: names undeclared node "${x.id}"`);
+      e.sets = e.sets.filter((x) => s.byId[x.id]);
+      if (s.view !== 'seq') errors.push(`line ${e.n}: sets: draws state pills only in view: seq`);
     }
     const cv = s.cover;
     if (cv) for (const r of cv.rows) {
@@ -949,7 +1016,12 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
       b.x = x + b.w / 2; b.y = 0; x += b.w + COL; headH = Math.max(headH, b.h);
     }
     for (const nd of s.nodes) nd.box.h = headH;
-    const top = headH + 34, decor = [];
+    // State pills: with any `sets:`, each party shows its `state:` under its head, then its new state under each
+    // message that changes it.
+    const pills = s.edges.some((e) => e.sets?.length), decor = [];
+    const first = pills ? s.nodes.filter((nd) => nd.info.state) : [];
+    for (const nd of first) decor.push({ kind: 'spill', x: nd.box.x, y: headH + 10, ...toned(nd.info.state), e: null });
+    const top = headH + 34 + (first.length ? 26 : 0);
     const span = timed ? Math.max(...s.edges.map((e) => ms(e.info.at))) || 1 : 1, scale = timed ? Math.max(s.edges.length * 34, 300) / span : 0;
     let y = top - 38, last = top;
     s.edges.forEach((e) => {
@@ -959,12 +1031,16 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
       else { const dir = b.x > a.x ? 1 : -1; e.d = `M${a.x},${y} L${b.x - dir * 3},${y}`; }
       if (e.label) e.pill = { x: (a.x + b.x) / 2 + (e.from === e.to ? 40 : 0), y: y - PILL - 2, w: Math.ceil(e.label.length * c * PFS / FS) + 18 };
       if (timed) decor.push({ kind: 'tick', x: 0, y: y - 8, text: e.info.at });
+      if (e.sets?.length) { for (const x of e.sets) decor.push({ kind: 'spill', x: s.byId[x.id].box.x, y: y + 9, text: x.text, tone: x.tone, e }); y += 28; last = y; }
     });
     for (const nd of s.nodes) decor.push({ kind: 'life', x: nd.box.x, y1: headH, y2: last + 26 });
     return { w: x - COL + 20, h: Math.ceil(last + 30), decor };
   }
 
   const LAYOUT = { flow: layoutFlow, states: layoutFlow, ranked: layoutRanked, stack: layoutStack, seq: layoutSeq };
+  // A status prefix on a chart item picks its colour: + ok, ! fails, * or ~ in progress, ? unread.
+  const PRE = { '+': 'ok', '!': 'fail', '*': 'warn', '~': 'warn', '?': 'unk' };
+  const toned = (v) => (PRE[v[0]] ? { tone: PRE[v[0]], text: v.slice(1).trim() } : { tone: '', text: v });
 
   // Thread theme: an edge is a twisted two-strand cord. flat() turns a layout path (absolute M L H V Q C) into points;
   // cord() lays two strands that swap front and back every half twist over a dark tube, the way a rope reads.
@@ -1069,7 +1145,7 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
     // failing, amber filtered; how many stories use an edge sets its weight.
     const COL = drawing ? { a: 'var(--vz-wire)', h: 'var(--vz-fg)', g: 'var(--vz-green)', r: 'var(--vz-coral)', y: 'var(--vz-amber)' }
       : thread ? { a: '#b9cfc8', h: '#f7e3a3', g: '#e3b441', r: '#d0503f', x: '#cfc6b0' }
-      : { a: 'var(--vz-dim)', h: 'var(--vz-amber)', g: 'var(--vz-green)', r: 'var(--vz-coral)' };
+      : { a: 'var(--vz-dim)', h: 'var(--vz-hl)', g: 'var(--vz-green)', r: 'var(--vz-coral)' };
     // Thread: each cord colour pairs a strand with a lighter twin; the arrowhead is a solid head with an ink rim.
     const TW = { a: ['#9fbab3', '#dce9e4'], g: ['#e3b441', '#f4ead0'], r: ['#c9483c', '#ee9b8d'], h: ['#f2cf6a', '#fff4d6'] };
     for (const [id, col] of Object.entries(COL)) {
@@ -1128,7 +1204,7 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
       e.hit.addEventListener('mouseenter', () => hoverEdge(e)); e.hit.addEventListener('mouseleave', () => hoverEdge(null));
       g.append(e.path, e.hit); paint(e, false);
     }
-    const pkt = svg('circle', { r: drawing ? 3.5 : 4, fill: drawing ? 'var(--vz-fg)' : 'var(--vz-amber)', opacity: 0 });
+    const pkt = svg('circle', { r: drawing ? 3.5 : 4, fill: drawing ? 'var(--vz-fg)' : 'var(--vz-hl)', opacity: 0 });
     // The drawing theme numbers each hop as the packet passes it, and the packet carries its payload as a label.
     const hopG = svg('g', {}), pktL = drawing ? svg('text', { class: 'vz-pkl', opacity: 0 }) : null;
     g.append(hopG, pkt); if (pktL) g.append(pktL);
@@ -1148,6 +1224,8 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
       el.addEventListener('mouseenter', () => hoverNode(i)); el.addEventListener('mouseleave', () => hoverNode(null));
       stage.append(el); return el;
     });
+    const spills = L.decor.filter((d) => d.kind === 'spill');
+    for (const d of spills) { d.el = h('div', { class: `vz-spill${d.tone ? ' q-' + d.tone : ''}`, style: `left:${d.x}px;top:${d.y}px` }, d.text); stage.append(d.el); }
     const numbered = view === 'flow';
     for (const e of s.edges) {
       if (!e.pill) continue;
@@ -1287,7 +1365,7 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
     const OUT_WORD = { pass: '→ gets through', drop: '⊘ filtered out', fail: '✕ fails', plain: '→' };
     const pathEl = (p) => h('div', {}, h('span', { class: p.out === 'pass' ? 's-add' : p.out === 'fail' ? 's-fail' : 's-unk' }, OUT_WORD[p.out]), ' ',
       p.named ? h('b', {}, p.name + ' ') : '', p.ids.map((id) => s.byId[id].label).join(' › '), p.st === 'add' || p.st === 'del' ? h('span', { class: 's-' + p.st }, `  ${STATUS_WORD[p.st]}`) : '');
-    const DETAIL = ['carries', 'does', 'reads', 'writes', 'fails', 'state', 'locals', 'lane', 'at'];
+    const DETAIL = ['carries', 'does', 'reads', 'writes', 'fails', 'state', 'sets', 'weight', 'locals', 'lane', 'at'];
     function sheet(rows) {
       const dl = h('dl', {});
       for (const [k, v] of rows) if (!(v == null || v === '' || (Array.isArray(v) && !v.length))) dl.append(h('dt', {}, k), h('dd', {}, v));
@@ -1418,6 +1496,7 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
       for (const e of s.edges) for (const el of [e.path, e.hit, e.pillEl]) el?.classList.toggle('ghost', k >= 0 && bornE(e) > k);
       pkt.setAttribute('opacity', 0); pktL?.setAttribute('opacity', 0); hopG.replaceChildren();
       for (const c of storyChips) c.el.classList.toggle('on', k >= 0 && c.p === steps[k]);
+      for (const d of spills) { d.el.classList.toggle('ghost', k >= 0 && !!d.e && bornE(d.e) > k); d.el.classList.toggle('hot', k >= 0 && !!d.e && steps[k].edges.includes(d.e)); }
       boxes.forEach((b) => { const x = b.querySelector('.vz-bx'); if (x) x.textContent = ''; });
       meterTo(k >= 0 ? steps[k].meter : null);
       if (k < 0) { say(null, drawing && s.paths.length ? overview() : `Press ▶ or → to build it ${view === 'seq' ? 'message by message' : 'path by path'}.`); restore(); return; }
@@ -1668,17 +1747,709 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
     box.style.minHeight = Math.min(visible.length * 20 + 2, 460) + 'px';
   }
 
+  /* ---------- charts: timing, gantt, causes, board, stock, and view: sankey ---------- */
+  // Each chart parses its own lines and draws one SVG that scales to its frame, with a readout top right and a
+  // detail line under it. Colour keeps the graph's meaning: green ok, coral fails, amber in progress or at risk.
+  const TONE = { ok: 'var(--vz-green)', fail: 'var(--vz-coral)', warn: 'var(--vz-amber)', unk: 'var(--vz-dim)', hl: 'var(--vz-hl)' };
+  const tw = (t, fs = 11) => (String(t).length * cw() * fs) / FS;
+  const fmt = (v) => (Number.isInteger(v) ? String(v) : String(+v.toFixed(Math.abs(v) >= 10 ? 0 : 2)));
+  const kfmt = (v) => (Math.abs(v) >= 1000 ? `${+(v / 1000).toFixed(1)}k` : fmt(v));
+  const range2 = /^(-?\d*\.?\d+)\s*\.\.\s*(-?\d*\.?\d+)/;
+  function tx(x, y, t, cls, a = {}) { const e = svg('text', { x, y, class: cls, ...a }); e.textContent = t; return e; }
+  function ticks(lo, hi, n = 8) {
+    const raw = (hi - lo) / n || 1, p = 10 ** Math.floor(Math.log10(raw)), step = [1, 2, 2.5, 5, 10].map((m) => m * p).find((x) => x >= raw);
+    const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-6; v += step) out.push(+v.toFixed(6));
+    return out;
+  }
+  const refC = (doc, ref) => h('code', { title: 'copy path', onclick: () => navigator.clipboard?.writeText((doc.base || '') + ref).catch(() => {}) }, (doc.base || '') + ref);
+  const tell = (el, ...parts) => el.replaceChildren(...parts.filter((x) => x != null && x !== '').flatMap((x, j) => (j ? [' · ', x] : [x])));
+  function shell(s, mount, W, H) {
+    const ro1 = h('b', {}), ro2 = h('span', {});
+    mount.append(h('div', { class: 'vz-ctop' }, s.tabbed ? null : h('span', { class: 'vz-cname' }, s.name), h('div', { class: 'vz-ro', 'aria-live': 'polite' }, ro1, ro2)));
+    const g = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': s.name });
+    g.style.maxWidth = W + 'px';
+    const wrap = h('div', { class: 'vz-cx' }); wrap.append(g); mount.append(wrap);
+    const detail = h('div', { class: 'vz-detail', 'aria-live': 'polite' });
+    const ro = (a, b, tone) => { ro1.textContent = a; ro2.textContent = b || ''; ro1.style.color = tone ? TONE[tone] : ''; };
+    // Pointer x in chart units.
+    const at = (ev) => { const r = g.getBoundingClientRect(); return ((ev.clientX - r.left) * W) / r.width; };
+    return { g, ro, detail, at };
+  }
+  const lineErr = (errors, n, what, t) => errors.push(`line ${n}: not ${what}: ${t}`);
+
+  // timing: lanes over one time axis. A lane's indented line lists `time label` segments; `(label)` is a quiet
+  // stretch drawn as a wire. `!name: a..b text` shades a window across every lane.
+  function parseTiming(s, errors) {
+    s.lanes = []; s.marks = []; s.unit = ''; s.lo = null; s.hi = null;
+    let lane = null;
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      const ax = /^\S/.test(raw) && t.match(/^axis:\s*([^\d\s.-]\S*)?\s*(?:(-?\d*\.?\d+)\s*\.\.\s*(-?\d*\.?\d+))?\s*$/);
+      if (ax) { s.unit = ax[1] || ''; if (ax[2] != null) { s.lo = +ax[2]; s.hi = +ax[3]; } continue; }
+      if (/^\s/.test(raw)) {
+        if (!lane) { errors.push(`line ${n}: segments before any lane`); continue; }
+        for (const part of t.split('|').map((x) => x.trim()).filter(Boolean)) {
+          const m = part.match(/^(-?\d*\.?\d+)\s*(.*)$/);
+          if (!m) { errors.push(`line ${n}: a segment is "time label": ${part}`); continue; }
+          let { tone, text } = toned(m[2].trim());
+          const quiet = /^\(.*\)$/.test(text); if (quiet) text = text.slice(1, -1).trim();
+          if (lane.segs.length && +m[1] <= lane.segs[lane.segs.length - 1].t) errors.push(`line ${n}: segment times must increase: ${part}`);
+          lane.segs.push({ t: +m[1], label: text, tone, quiet });
+        }
+        continue;
+      }
+      const mk = t.match(/^([+!*~?]?)([\w.$-]+):\s*(-?\d*\.?\d+)\s*\.\.\s*(-?\d*\.?\d+)\s*(.*)$/);
+      if (mk) { s.marks.push({ tone: PRE[mk[1]] || 'warn', name: mk[2], a: +mk[3], b: +mk[4], text: mk[5].trim(), n }); lane = null; continue; }
+      const ln = t.match(/^([\w.$-]+):\s*(.*)$/);
+      if (ln) { const { rest, ref, note } = splitTail(ln[2]); lane = { id: ln[1], label: rest || ln[1], ref, note, segs: [], n }; s.lanes.push(lane); continue; }
+      lineErr(errors, n, 'a lane (id: Label), its segments (  0 idle | 40 read), a window (!name: 90..280 text) or axis: ms 0..400', t);
+    }
+    for (const l of s.lanes) if (!l.segs.length) errors.push(`line ${l.n}: lane "${l.id}" has no segments; list them on the indented line under it`);
+    s.lanes = s.lanes.filter((l) => l.segs.length);
+    if (!s.lanes.length) errors.push(`${s.name}: a timing chart needs a lane`);
+  }
+  function renderTiming(s, doc, mount) {
+    if (!s.lanes.length) return;
+    const ts = s.lanes.flatMap((l) => l.segs.map((x) => x.t)), ms2 = s.marks.flatMap((m) => [m.a, m.b]);
+    const lo = s.lo ?? Math.min(...ts, ...ms2), far = Math.max(...ts, ...ms2);
+    const hi = s.hi ?? (far + (far - lo) * 0.12 || lo + 1);
+    for (const l of s.lanes) l.segs.forEach((x, j) => { x.b = j + 1 < l.segs.length ? l.segs[j + 1].t : hi; });
+    const LW = Math.ceil(Math.max(56, ...s.lanes.map((l) => tw(l.label, 10) * 1.25 + 12)));
+    const W = 720, X0 = LW + 6, X1 = W - 8, RH = 34, X = (t) => X0 + ((t - lo) / (hi - lo)) * (X1 - X0), ends = [];
+    for (const m of s.marks) { const a = X(m.a) + 6, b = a + tw(m.text || m.name, 10) + 10; m.row = ends.findIndex((e) => e < a); if (m.row < 0) m.row = ends.length; ends[m.row] = b; }
+    const T = s.marks.length ? 12 + ends.length * 14 : 8, yA = T + s.lanes.length * RH + 4, H = yA + 22;
+    const { g, ro, detail, at } = shell(s, mount, W, H);
+    for (const m of s.marks) {
+      const c = TONE[m.tone];
+      g.append(svg('rect', { x: X(m.a), y: 4 + m.row * 14, width: Math.max(2, X(m.b) - X(m.a)), height: yA - 4 - m.row * 14, style: `fill:color-mix(in srgb,${c} 12%,transparent);stroke:${c}`, 'stroke-dasharray': '3 3' }),
+        tx(X(m.a) + 6, 15 + m.row * 14, m.text || m.name, 'vz-td vz-sl', { style: `fill:${c};font-size:10px` }));
+    }
+    const showLane = (l) => tell(detail, h('b', {}, l.label), l.ref ? refC(doc, l.ref) : null, l.note, l.segs.map((x) => `${fmt(x.t)} ${x.label || '·'}`).join(' → '));
+    s.lanes.forEach((l, i) => {
+      const y = T + i * RH, name = tx(0, y + 19, l.label, 'vz-tc vz-crow');
+      name.addEventListener('click', () => showLane(l)); g.append(name);
+      for (const x of l.segs) {
+        const x1 = X(x.t), w = X(x.b) - x1, c = x.tone ? TONE[x.tone] : '';
+        x.el = x.quiet ? svg('line', { x1, x2: x1 + w, y1: y + 16, y2: y + 16, class: 'vz-wr', style: c ? `stroke:${c}` : '' })
+          : svg('rect', { x: x1, y: y + 4, width: Math.max(1, w), height: 22, class: 'vz-bx', style: c ? `stroke:${c}` : '', ...(x.tone === 'unk' ? { 'stroke-dasharray': '3 3' } : {}) });
+        g.append(x.el);
+        if (x.label && w > tw(x.label) + 10) g.append(tx(x1 + 6, x.quiet ? y + 11 : y + 19, x.label, x.quiet ? 'vz-td' : 'vz-bt', x.tone === 'fail' ? { style: `fill:${c}` } : {}));
+      }
+    });
+    g.append(svg('line', { x1: X0, x2: X1, y1: yA, y2: yA, class: 'vz-ln' }));
+    for (const v of ticks(lo, hi, 8)) g.append(svg('line', { x1: X(v), x2: X(v), y1: yA, y2: yA + 4, class: 'vz-ln' }), tx(X(v), yA + 16, fmt(v), 'vz-td', { 'text-anchor': 'middle' }));
+    if (s.unit) g.append(tx(X0 - 10, yA + 16, s.unit, 'vz-td', { 'text-anchor': 'end' }));
+    const cur = svg('line', { y1: 2, y2: yA, stroke: 'var(--vz-hl)', 'stroke-width': 1.5 }), dot = svg('circle', { r: 4, cy: yA, fill: 'var(--vz-hl)' });
+    const hit = svg('rect', { x: X0, y: 0, width: X1 - X0, height: yA, class: 'vz-hitc' });
+    g.append(cur, dot, hit);
+    const segAt = (l, t) => l.segs.find((x) => t >= x.t && t < x.b) || (t >= hi ? l.segs[l.segs.length - 1] : null);
+    const range = h('input', { type: 'range', min: lo, max: hi, step: (hi - lo) / 400, value: lo, 'aria-label': 'time' });
+    let now = lo, raf = 0;
+    function set(t) {
+      now = t = Math.max(lo, Math.min(hi, t)); range.value = t;
+      cur.setAttribute('x1', X(t)); cur.setAttribute('x2', X(t)); dot.setAttribute('cx', X(t));
+      const on = s.marks.filter((m) => t >= m.a && t <= m.b);
+      ro(`t = ${fmt(+t.toFixed(1))}${s.unit ? ' ' + s.unit : ''}`, on.length ? on.map((m) => m.text || m.name).join(' · ') : 'hover, drag or ▶', on.find((m) => m.tone === 'fail') ? 'fail' : on.length ? on[0].tone : '');
+      for (const l of s.lanes) for (const x of l.segs) x.el.classList.toggle('on', segAt(l, t) === x);
+      detail.replaceChildren(...s.lanes.flatMap((l, j) => { const x = segAt(l, t); return [j ? ' · ' : '', h('b', {}, l.label), ' ', h('span', { class: x?.tone ? 'q-' + x.tone : '' }, x?.label || '·')]; }));
+    }
+    const playB = h('button', { 'aria-label': 'play', onclick: () => (raf ? stop() : play()) }, '▶');
+    function stop() { cancelAnimationFrame(raf); raf = 0; playB.textContent = '▶'; }
+    function play() {
+      const from = now >= hi ? lo : now, t0 = performance.now(), dur = reduced() ? 1 : 4200;
+      playB.textContent = '❚❚';
+      const f = (n2) => { const t = from + ((hi - lo) * (n2 - t0)) / dur; set(t); if (t < hi) raf = requestAnimationFrame(f); else stop(); };
+      raf = requestAnimationFrame(f);
+    }
+    range.addEventListener('input', () => { stop(); set(+range.value); });
+    hit.addEventListener('mousemove', (ev) => { if (raf) return; set(lo + ((at(ev) - X0) / (X1 - X0)) * (hi - lo)); });
+    mount.append(h('div', { class: 'vz-bar' }, playB, range), detail);
+    const m0 = s.marks.find((m) => m.tone === 'fail') || s.marks[0];
+    set(m0 ? (m0.a + m0.b) / 2 : lo);
+  }
+
+  // gantt: one bar per row, `a..b` or a duration `after` other rows. The critical path (the chain that ends last)
+  // is filled; slack before the next row that waits on a bar is dotted; `budget:` draws a limit.
+  function parseGantt(s, errors) {
+    s.rows = []; s.unit = ''; s.budget = null;
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      const f = /^\S/.test(raw) && t.match(/^(axis|budget):\s*(.*)$/);
+      if (f) { if (f[1] === 'axis') s.unit = f[2].trim(); else s.budget = parseFloat(f[2]); continue; }
+      const m = t.match(/^([+!*~?]?)([\w.$-]+):\s*(.*)$/);
+      if (!m) { lineErr(errors, n, 'a row (id: Label 0..30, or id: Label 32ms after other)', t); continue; }
+      let { rest, ref, note } = splitTail(m[3]), was = null;
+      rest = rest.replace(/\s+was\s+(?:(-?\d*\.?\d+)\s*\.\.\s*(-?\d*\.?\d+)|(\d*\.?\d+)\s*[a-zµ]*)\s*$/i, (_, a, b, d) => { was = a != null ? { a: +a, b: +b } : { dur: +d }; return ''; });
+      const tm = rest.match(/^(?:(.*?)\s+)?(?:(-?\d*\.?\d+)\s*\.\.\s*(-?\d*\.?\d+)|(\d*\.?\d+)\s*[a-zµ]*)(?:\s+after\s+(.+))?$/i);
+      if (!tm) { errors.push(`line ${n}: row "${m[2]}" wants a..b or a duration, then an optional "after id, id": ${t}`); continue; }
+      s.rows.push({ id: m[2], st: PRE[m[1]] || '', label: (tm[1] || '').trim() || m[2], a: tm[2] != null ? +tm[2] : null, b: tm[3] != null ? +tm[3] : null, dur: tm[4] != null ? +tm[4] : 0,
+        after: (tm[5] || '').split(/\s*,\s*/).filter(Boolean), ref, note, was, n });
+    }
+    const by = Object.fromEntries(s.rows.map((r) => [r.id, r]));
+    for (const r of s.rows) { for (const d of r.after) if (!by[d]) errors.push(`line ${r.n}: "${r.id}" runs after "${d}", which no row declares`); r.after = r.after.filter((d) => by[d]); }
+    const done = new Set(), busy = new Set();
+    const solve = (r) => {
+      if (done.has(r)) return;
+      if (busy.has(r)) { errors.push(`line ${r.n}: "${r.id}" waits on itself through after:`); r.after = []; }
+      busy.add(r); r.after.forEach((d) => solve(by[d])); busy.delete(r);
+      if (r.a == null) { r.a = r.after.length ? Math.max(...r.after.map((d) => by[d].b ?? 0)) : 0; r.b = r.a + r.dur; }
+      done.add(r);
+    };
+    s.rows.forEach(solve);
+    if (!s.rows.length) { errors.push(`${s.name}: a gantt chart needs a row`); return; }
+    // The old run (rows with `was`): same chain, old durations; a row without `was` kept its duration.
+    s.cmp = s.rows.some((r) => r.was);
+    if (s.cmp) {
+      const od = new Set();
+      const old = (r) => {
+        if (od.has(r)) return; od.add(r); r.after.forEach((d) => old(by[d]));
+        if (r.was?.a != null) { r.oa = r.was.a; r.ob = r.was.b; return; }
+        const dur = r.was ? r.was.dur : r.b - r.a;
+        r.oa = r.after.length ? Math.max(...r.after.map((d) => by[d].ob)) : r.a; r.ob = r.oa + dur;
+      };
+      s.rows.forEach(old);
+      s.oend = Math.max(...s.rows.map((r) => r.ob));
+    }
+    s.end = Math.max(...s.rows.map((r) => r.b));
+    // Critical path: from the row that ends last, back through whichever row it waits on ends latest.
+    s.crit = new Set();
+    for (let r = [...s.rows].reverse().find((x) => x.b === s.end); r; r = r.after.map((d) => by[d]).sort((a, b) => b.b - a.b)[0]) { if (s.crit.has(r)) break; s.crit.add(r); }
+    const linked = s.rows.some((r) => r.after.length);
+    for (const r of s.rows) {
+      const next = s.rows.filter((x) => x.after.includes(r.id));
+      r.slack = s.crit.has(r) || !linked ? 0 : (next.length ? Math.min(...next.map((x) => x.a)) : s.end) - r.b;
+    }
+    s.by = by;
+  }
+  function renderGantt(s, doc, mount) {
+    if (!s.rows.length) return;
+    const lo = Math.min(0, ...s.rows.map((r) => r.a)), hi = Math.max(s.end, s.oend || 0, s.budget || 0) * (s.cmp ? 1.1 : 1.04) || 1, u = s.unit ? ' ' + s.unit : '';
+    const LW = Math.ceil(Math.max(60, ...s.rows.map((r) => tw(r.label) + 12)));
+    const W = 720, X0 = LW + 8, X1 = W - 12, RH = 25, T = s.budget != null ? 18 : 6, yA = T + s.rows.length * RH, H = yA + 34;
+    const X = (t) => X0 + ((t - lo) / (hi - lo)) * (X1 - X0);
+    const { g, ro, detail } = shell(s, mount, W, H);
+    for (const v of ticks(lo, hi, 7)) g.append(svg('line', { x1: X(v), x2: X(v), y1: T - 4, y2: yA, class: 'vz-gd' }), tx(X(v), yA + 14, fmt(v), 'vz-td', { 'text-anchor': 'middle' }));
+    if (s.unit) g.append(tx(X0 - 8, yA + 14, s.unit, 'vz-td', { 'text-anchor': 'end' }));
+    const rowEls = new Map();
+    const chain = (r, acc = new Set()) => { acc.add(r); r.after.forEach((d) => chain(s.by[d], acc)); return acc; };
+    function focus(r) {
+      const keep = r ? chain(r) : null;
+      for (const [x, el] of rowEls) el.classList.toggle('dim', !!keep && !keep.has(x));
+      if (!r) { tell(detail, h('span', { class: 'vz-hint' }, 'Hover a bar: what it waits on, its slack, and where it lives.')); return; }
+      tell(detail, h('b', {}, r.label), `${fmt(r.a)}..${fmt(r.b)}${u} (${fmt(r.b - r.a)}${u})`, r.after.length ? 'after ' + r.after.map((d) => s.by[d].label).join(', ') : null,
+        s.crit.has(r) ? 'on the critical path' : r.slack > 0 ? `slack ${fmt(r.slack)}${u}` : null, s.cmp ? `was ${fmt(r.oa)}..${fmt(r.ob)}${u} (${fmt(r.ob - r.oa)}${u})` : null, r.ref ? refC(doc, r.ref) : null, r.note);
+    }
+    s.rows.forEach((r, i) => {
+      const y = T + i * RH + 3, crit = s.crit.has(r) && (s.crit.size > 1 || s.rows.length === 1 || s.rows.some((x) => x.after.length)), c = r.st ? TONE[r.st] : '';
+      const row = svg('g', { class: 'vz-crow' }), bw = Math.max(3, X(r.b) - X(r.a)), lab = fmt(r.b - r.a) + u, inside = bw > tw(lab) + 10;
+      row.append(svg('rect', { x: 0, y: y - 3, width: W, height: RH, fill: 'transparent' }), tx(0, y + 13, r.label, crit ? 'vz-tx' : 'vz-td'));
+      if (r.slack > 0) {
+        const sx = X(r.b) + (inside ? 0 : tw(lab) + 10), ex = X(r.b + r.slack);
+        if (ex > sx + 4) row.append(svg('line', { x1: sx, x2: ex, y1: y + 9, y2: y + 9, class: 'vz-wr', 'stroke-dasharray': '1 3' }));
+        if (ex - sx > tw(`slack ${fmt(r.slack)}`, 9.5) + 12) row.append(tx(sx + 6, y + 5, `slack ${fmt(r.slack)}`, 'vz-td vz-small'));
+      }
+      if (s.cmp) row.append(svg('rect', { x: X(r.oa), y: y - 2, width: Math.max(3, X(r.ob) - X(r.oa)), height: 22, fill: 'none', stroke: 'var(--vz-dim)', 'stroke-dasharray': '3 2' }));
+      row.append(svg('rect', { x: X(r.a), y, width: bw, height: 18, class: 'vz-bx', style: crit ? `fill:${c || 'var(--vz-hl)'};stroke:${c || 'var(--vz-hl)'}` : c ? `stroke:${c}` : '', ...(r.st === 'unk' ? { 'stroke-dasharray': '3 3' } : {}) }));
+      const lt = inside ? tx(X(r.a) + 6, y + 13, lab, 'vz-bt', crit ? { style: 'fill:var(--vz-hlfg)' } : {}) : tx(Math.max(X(r.b), s.cmp ? X(r.ob) : 0) + 5, y + 13, lab, 'vz-td');
+      const dd = s.cmp ? (r.b - r.a) - (r.ob - r.oa) : 0;
+      row.append(lt);
+      // The change against the old run sits right of both bars, in the colour of its direction.
+      if (dd) row.append(tx(Math.max(X(r.b), X(r.ob)) + 5 + (inside ? 0 : tw(lab) + 6), y + 13, `${dd > 0 ? '+' : '−'}${fmt(Math.abs(dd))}`, 'vz-td', { style: `fill:${dd > 0 ? 'var(--vz-coral)' : 'var(--vz-green)'}` }));
+      row.addEventListener('mouseenter', () => focus(r)); row.addEventListener('mouseleave', () => focus(null)); row.addEventListener('click', () => focus(r));
+      rowEls.set(r, row); g.append(row);
+    });
+    if (s.budget != null) {
+      g.append(svg('line', { x1: X(s.budget), x2: X(s.budget), y1: T - 6, y2: yA + 2, stroke: 'var(--vz-coral)', 'stroke-dasharray': '4 3', 'stroke-width': 1.3 }),
+        tx(X(s.budget) - 5, T - 8, `budget ${fmt(s.budget)}${u}`, 'vz-td', { 'text-anchor': 'end', style: 'fill:var(--vz-coral)' }));
+    }
+    if (s.crit.size > 1 || s.cmp) g.append(tx(X1, yA + 30, [s.crit.size > 1 && 'filled = critical path', s.cmp && 'dashed = was'].filter(Boolean).join(' · '), 'vz-tc', { 'text-anchor': 'end' }));
+    const over = s.budget != null && s.end > s.budget;
+    ro(`${fmt(s.end)}${u}${s.cmp ? ` · was ${fmt(s.oend)} (${s.end >= s.oend ? '+' : '−'}${fmt(Math.abs(s.end - s.oend))})` : ''}`, s.budget != null ? `budget ${fmt(s.budget)} · ${over ? 'over by ' + fmt(s.end - s.budget) : fmt(s.budget - s.end) + ' to spare'}` : s.crit.size > 1 ? `critical: ${[...s.crit].reverse().map((r) => r.label).join(' → ')}` : '', over ? 'fail' : '');
+    mount.append(detail); focus(null);
+  }
+
+  // causes: a fishbone. `-- family` lines open a bone; under each, `+id` is ruled in, `-id` ruled out, a plain or
+  // `?id` still open. `effect: what happened # was what` labels the head.
+  function parseCauses(s, errors) {
+    s.fams = []; s.effect = null;
+    let fam = null;
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      const ef = t.match(/^effect:\s*(.*)$/);
+      if (ef) { const { rest, note } = splitTail(ef[1]); s.effect = { label: rest, note }; continue; }
+      const fm = t.match(/^--\s+(.+)$/);
+      if (fm) { fam = { label: fm[1].trim(), causes: [] }; s.fams.push(fam); continue; }
+      const c = t.match(/^([+\-?]?)([\w.$-]+):\s*(.*)$/);
+      if (c) {
+        if (!fam) { errors.push(`line ${n}: cause "${c[2]}" comes before any -- family line`); continue; }
+        const { rest, ref, note } = splitTail(c[3]);
+        fam.causes.push({ id: c[2], st: { '+': 'in', '-': 'out' }[c[1]] || 'open', label: rest || c[2], ref, note, fam, n }); continue;
+      }
+      lineErr(errors, n, 'a family (-- deploy), a cause (+id: label # why), or effect:', t);
+    }
+    if (!s.fams.length) errors.push(`${s.name}: a causes chart needs a -- family line`);
+  }
+  function renderCauses(s, doc, mount) {
+    if (!s.fams.length) return;
+    const all = s.fams.flatMap((f) => f.causes), K = Math.max(1, ...s.fams.map((f) => f.causes.length));
+    const per = Math.ceil(s.fams.length / 2), maxT = Math.max(80, ...all.map((c) => tw(c.label) + 16));
+    const SP = Math.ceil(maxT + 30), BH = Math.max(84, K * 30 + 24), DX = Math.round(BH * 0.75), SY = BH + 46;
+    const eff = s.effect || { label: s.name.length <= 24 ? s.name : 'the effect', note: '' };
+    const EW = Math.ceil(Math.max(110, tw(eff.label, 12) + 26, tw(eff.note || '') + 26));
+    const base = (j) => DX + 40 + j * SP, EX = Math.ceil(base(per - 1) + maxT * 0.8 + 10), W = EX + EW + 4, H = 2 * SY;
+    const { g, ro, detail } = shell(s, mount, W, H);
+    const GLYPH = { in: '●', out: '✕', open: '○' }, COL = { in: 'var(--vz-coral)', out: 'var(--vz-dim)', open: 'var(--vz-amber)' }, WORD = { in: 'ruled in', out: 'ruled out', open: 'open' };
+    g.append(svg('line', { x1: 24, x2: EX - 2, y1: SY, y2: SY, class: 'vz-ln', 'stroke-width': 2 }), svg('path', { d: `M${EX - 10},${SY - 5} L${EX - 1},${SY} L${EX - 10},${SY + 5}`, class: 'vz-ln', 'stroke-width': 2 }));
+    g.append(svg('rect', { x: EX, y: SY - 30, width: EW, height: 60, class: 'vz-bx' }), tx(EX + EW / 2, SY + (eff.note ? -2 : 4), eff.label, 'vz-bt vz-big', { 'text-anchor': 'middle' }));
+    if (eff.note) g.append(tx(EX + EW / 2, SY + 16, eff.note, 'vz-bd', { 'text-anchor': 'middle' }));
+    const show = (c) => tell(detail, h('span', { style: `color:${COL[c.st]}` }, `${GLYPH[c.st]} ${WORD[c.st]}`), h('b', {}, c.label), c.fam.label, c.ref ? refC(doc, c.ref) : null, c.note);
+    s.fams.forEach((f, i) => {
+      const up = i % 2 === 0, j = Math.floor(i / 2), x0 = base(j), x1 = x0 - DX, y1 = up ? SY - BH : SY + BH;
+      g.append(svg('line', { x1: x0, y1: SY, x2: x1, y2: y1, class: 'vz-ln', 'stroke-width': 1.3 }));
+      const fw = tw(f.label, 10) * 1.2 + 16;
+      g.append(svg('rect', { x: x1 - fw / 2, y: up ? y1 - 20 : y1 + 2, width: fw, height: 18, class: 'vz-bx' }), tx(x1, up ? y1 - 7 : y1 + 15, f.label, 'vz-bt vz-cap2', { 'text-anchor': 'middle' }));
+      const n = f.causes.length;
+      f.causes.forEach((c, k) => {
+        const fr = n === 1 ? 0.55 : 0.24 + (k * 0.66) / (n - 1), px = x0 + (x1 - x0) * fr, py = SY + (y1 - SY) * fr;
+        const el = svg('g', { class: `vz-cause c-${c.st}`, tabindex: 0 });
+        el.append(svg('rect', { x: px - 6, y: py - 10, width: tw(c.label) + 26, height: 20, fill: 'transparent' }), tx(px, py + 4, GLYPH[c.st], 'vz-tx', { 'text-anchor': 'middle', style: `fill:${COL[c.st]}` }), tx(px + 11, py + 4, c.label, c.st === 'out' ? 'vz-td vz-struck' : 'vz-tx vz-sl'));
+        for (const ev of ['mouseenter', 'focus', 'click']) el.addEventListener(ev, () => show(c));
+        g.append(el);
+      });
+    });
+    const cnt = (st) => all.filter((c) => c.st === st).length;
+    ro(`${cnt('in')} in · ${cnt('out')} out`, `${cnt('open')} still open`, cnt('in') ? 'fail' : '');
+    tell(detail, h('span', { class: 'vz-hint' }, '● ruled in · ✕ ruled out · ○ open: hover a cause for why and where'));
+    mount.append(detail);
+  }
+
+  // board: `columns: a | b 3 | c` (a number is the WIP limit), `-- column` before its cards. `!id` is blocked,
+  // `+id` done, `?id` not started; `progress: 0.4` under a card draws a bar; other `key: value` lines show on click.
+  function parseBoard(s, errors) {
+    s.cols = [];
+    let col = null, card = null;
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      const cl = /^\S/.test(raw) && t.match(/^columns:\s*(.*)$/);
+      if (cl) { s.cols = cl[1].split('|').map((x) => x.trim()).filter(Boolean).map((x) => { const m = x.match(/^(.*?)\s+(\d+)$/); return { label: m ? m[1] : x, wip: m ? +m[2] : 0, cards: [] }; }); continue; }
+      const gm = t.match(/^--\s+(.+)$/);
+      if (gm) { col = s.cols.find((c) => c.label.toLowerCase() === gm[1].trim().toLowerCase()) || null; if (!col) errors.push(`line ${n}: "-- ${gm[1].trim()}" is not in columns: ${s.cols.map((c) => c.label).join(' | ') || '(none)'}`); card = null; continue; }
+      const dt = raw.match(/^\s+([\w-]+):\s*(.*)$/);
+      if (dt) {
+        if (!card) { errors.push(`line ${n}: detail before any card`); continue; }
+        if (dt[1] === 'progress') { const v = parseFloat(dt[2]); card.progress = Math.max(0, Math.min(1, /%/.test(dt[2]) || v > 1 ? v / 100 : v)); } else card.info.push([dt[1], dt[2].trim()]);
+        continue;
+      }
+      const cm = t.match(/^([+!*~?]?)([\w.$-]+):\s*(.*)$/);
+      if (cm) {
+        if (!col) { errors.push(`line ${n}: card "${cm[2]}" comes before any -- column line`); card = null; continue; }
+        const { rest, ref, note } = splitTail(cm[3]);
+        card = { id: cm[2], st: PRE[cm[1]] || '', label: rest || cm[2], ref, note, info: [], progress: null, col, n }; col.cards.push(card); continue;
+      }
+      lineErr(errors, n, 'columns:, a column (-- name), a card (id: Label # note) or a detail under it', t);
+    }
+    if (!s.cols.length) errors.push(`${s.name}: a board needs a columns: line`);
+  }
+  function renderBoard(s, doc, mount) {
+    if (!s.cols.length) return;
+    const all = s.cols.flatMap((c) => c.cards), last = s.cols[s.cols.length - 1], blocked = all.filter((c) => c.st === 'fail');
+    const ro1 = h('b', {}, `${last.cards.length} of ${all.length} ${last.label}`), full = s.cols.filter((c) => c.wip && c.cards.length >= c.wip);
+    const ro2 = h('span', {}, [blocked.length ? `${blocked.length} blocked` : null, ...full.map((c) => `${c.label} ${c.cards.length > c.wip ? 'over' : 'at'} its WIP limit`)].filter(Boolean).join(' · '));
+    if (blocked.length) ro1.style.color = TONE.fail;
+    mount.append(h('div', { class: 'vz-ctop' }, s.tabbed ? null : h('span', { class: 'vz-cname' }, s.name), h('div', { class: 'vz-ro' }, ro1, ro2)));
+    const detail = h('div', { class: 'vz-detail', 'aria-live': 'polite' }, h('span', { class: 'vz-hint' }, 'Click a card for its detail.'));
+    const els = [];
+    const pick = (c, el) => {
+      els.forEach((x) => x.classList.toggle('sel', x === el));
+      tell(detail, h('b', {}, c.label), c.col.label + (c.st === 'fail' ? ', blocked' : ''), c.progress != null ? `${Math.round(c.progress * 100)}%` : null, c.note,
+        ...c.info.map(([k, v]) => `${k}: ${v}`), c.ref ? refC(doc, c.ref) : null,
+        c.st === 'fail' && c.col.wip && c.col.cards.length >= c.col.wip ? `${c.col.label} is full, so the cards waiting before it stay put` : null);
+    };
+    const grid = h('div', { class: 'vz-kb', style: `grid-template-columns:repeat(${s.cols.length},minmax(130px,1fr))` }, ...s.cols.map((col) => {
+      const n = col.cards.length, lim = col.wip ? `${n}/${col.wip}` : String(n);
+      return h('div', { class: 'vz-col' }, h('h4', {}, h('span', {}, col.label), h('span', { class: col.wip && n > col.wip ? 'over' : col.wip && n === col.wip ? 'full' : '', title: col.wip ? `WIP limit ${col.wip}` : null }, col.wip ? 'WIP ' + lim : lim)),
+        ...col.cards.map((c) => {
+          const el = h('div', { class: `vz-card${c.st ? ' q-' + c.st : ''}`, role: 'button', tabindex: 0, 'data-viz-id': c.id },
+            c.label, c.note ? h('small', {}, (c.st === 'fail' ? 'blocked · ' : '') + c.note) : c.st === 'fail' ? h('small', {}, 'blocked') : null,
+            c.progress != null ? h('div', { class: 'vz-pb' }, h('i', { style: `width:${c.progress * 100}%` })) : null);
+          el.addEventListener('click', () => pick(c, el)); el.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { pick(c, el); ev.preventDefault(); } });
+          els.push(el); return el;
+        }));
+    }));
+    mount.append(h('div', { class: 'vz-cx' }, grid), detail);
+  }
+
+  // stock: one value over time, as a level in a tank and a line through meter bands. Each point is
+  // `label value [| in 9k/min | out 2k/min] [# note]`; flows carry forward until a point changes them.
+  function parseStock(s, errors) {
+    s.pts = []; s.unit = ''; s.meter = null; s.stock = null;
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      const f = /^\S/.test(raw) && t.match(/^(unit|meter|stock):\s*(.*)$/);
+      if (f) {
+        if (f[1] === 'unit') s.unit = f[2].trim();
+        else if (f[1] === 'meter') s.meter = parseMeter(f[2], n, errors);
+        else { const { rest, ref, note } = splitTail(f[2]); s.stock = { label: rest, ref, note }; }
+        continue;
+      }
+      const { rest, note } = splitTail(t), [head, ...extra] = rest.split('|').map((x) => x.trim());
+      const m = head.match(/^(\S+)\s+(-?\d*\.?\d+)$/);
+      if (!m) { lineErr(errors, n, 'a point (label value | in 9k/min | out 2k/min # note), unit:, stock: or meter:', t); continue; }
+      s.pts.push({ x: m[1], v: +m[2], kv: extra.filter(Boolean).map((x) => { const k = x.match(/^([^\s:]+):?\s+(.*)$/); return k ? [k[1], k[2]] : [x, '']; }), note, n });
+    }
+    if (s.pts.length < 2) errors.push(`${s.name}: a stock chart needs at least two points`);
+    const cur = new Map();
+    for (const p of s.pts) { for (const [k, v] of p.kv) cur.set(k, v); p.state = [...cur]; }
+  }
+  function renderStock(s, doc, mount) {
+    if (s.pts.length < 2) return;
+    const vs = s.pts.map((p) => p.v), mt = s.meter?.ticks, u = s.unit;
+    const lo = mt ? Math.min(mt[0].v, ...vs) : Math.min(0, ...vs), hi = mt ? Math.max(mt[mt.length - 1].v, ...vs) : Math.max(...vs) * 1.12 || 1;
+    const bandW = mt ? Math.max(...mt.slice(0, -1).map((t) => tw(t.label, 10) * 1.2)) + 14 : 0;
+    const W = 720, TK = 40, C0 = 160, C1 = W - Math.max(16, bandW), T = 14, B = 172, H = 204;
+    const X = (i) => C0 + (i / (s.pts.length - 1)) * (C1 - C0), Y = (v) => B - ((v - lo) / (hi - lo)) * (B - T);
+    const { g, ro, detail, at } = shell(s, mount, W, H);
+    // A band's colour: the first is fine, the last is the worst, any between is at risk.
+    const bands = mt ? mt.slice(0, -1).map((t, j) => ({ a: t.v, b: mt[j + 1].v, label: t.label, tone: j === 0 ? 'ok' : j === mt.length - 2 ? 'fail' : 'warn' })) : [];
+    for (const b of bands) {
+      g.append(svg('rect', { x: C0, y: Y(b.b), width: C1 - C0, height: Y(b.a) - Y(b.b), style: `fill:color-mix(in srgb,${TONE[b.tone]} ${b.tone === 'ok' ? 6 : 10}%,transparent)` }),
+        tx(C1 + 8, (Y(b.a) + Y(b.b)) / 2 + 4, b.label, 'vz-tc', b.tone === 'ok' ? {} : { style: `fill:${TONE[b.tone]}` }));
+    }
+    for (const t of mt ? mt.slice(1, -1) : ticks(lo, hi, 4)) g.append(svg('line', { x1: C0, x2: C1, y1: Y(t.v ?? t), y2: Y(t.v ?? t), class: 'vz-gd', 'stroke-dasharray': '3 3' }), tx(C0 - 6, Y(t.v ?? t) + 4, kfmt(t.v ?? t) + u, 'vz-td', { 'text-anchor': 'end' }));
+    g.append(svg('line', { x1: C0, x2: C1, y1: B, y2: B, class: 'vz-ln' }));
+    const every = Math.ceil(s.pts.length / 7);
+    s.pts.forEach((p, i) => { if (i % every === 0 || i === s.pts.length - 1) g.append(tx(X(i), B + 16, p.x, 'vz-td', { 'text-anchor': 'middle' })); });
+    const nEnd = [];
+    s.pts.forEach((p, i) => {
+      if (!p.note) return;
+      const a = X(i) + 5; let r = nEnd.findIndex((e) => e < a); if (r < 0) r = nEnd.length; nEnd[r] = a + tw(p.note, 10) + 8;
+      g.append(svg('line', { x1: X(i), x2: X(i), y1: T, y2: B, class: 'vz-wr', 'stroke-dasharray': '2 3' }), tx(a, T + 10 + r * 13, p.note, 'vz-td vz-sl', { style: 'font-size:10px' }));
+    });
+    g.append(svg('path', { d: 'M' + s.pts.map((p, i) => `${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join('L'), class: 'vz-ln', 'stroke-width': 1.8 }));
+    // The tank: its level is the value under the cursor; what flows in drops in from above, what drains leaves right.
+    const tx0 = 30, tw0 = 2 * TK;
+    g.append(svg('rect', { x: tx0, y: T, width: tw0, height: B - T, class: 'vz-bx', style: 'fill:none' }));
+    const lvl = svg('rect', { x: tx0 + 1, width: tw0 - 2, y: B, height: 0 });
+    g.append(lvl);
+    for (const b of bands.slice(1)) g.append(svg('line', { x1: tx0, x2: tx0 + tw0, y1: Y(b.a), y2: Y(b.a), class: 'vz-gd', 'stroke-dasharray': '3 3' }));
+    const inT = tx(tx0 + tw0 / 2 + 10, T - 2, '', 'vz-td'), outT = tx(tx0 + tw0 + 6, B - 14, '', 'vz-td');
+    const inK = s.pts.flatMap((p) => p.kv.map(([k]) => k)).find((k) => /^in/i.test(k)), outK = s.pts.flatMap((p) => p.kv.map(([k]) => k)).find((k) => /^out/i.test(k));
+    if (inK) g.append(svg('path', { d: `M${tx0 + tw0 / 2},${T - 12} v14 M${tx0 + tw0 / 2 - 5},${T - 3} l5,6 5,-6`, class: 'vz-ln' }), inT);
+    if (outK) g.append(svg('path', { d: `M${tx0 + tw0},${B - 6} h26 M${tx0 + tw0 + 20},${B - 11} l6,5 -6,5`, class: 'vz-ln' }), outT);
+    if (s.stock) g.append(tx(tx0 + tw0 / 2, B + 16, s.stock.label, 'vz-tc', { 'text-anchor': 'middle' }));
+    const cur = svg('line', { y1: T, y2: B, stroke: 'var(--vz-hl)' }), dot = svg('circle', { r: 4, fill: 'var(--vz-hl)' });
+    const hit = svg('rect', { x: C0 - 10, y: 0, width: C1 - C0 + 20, height: B + 4, class: 'vz-hitc' });
+    g.append(cur, dot, hit);
+    const bandOf = (v) => bands.find((b, j) => v >= b.a && (v < b.b || j === bands.length - 1));
+    function set(i) {
+      const p = s.pts[i], b = bandOf(p.v), st = new Map(p.state);
+      cur.setAttribute('x1', X(i)); cur.setAttribute('x2', X(i)); dot.setAttribute('cx', X(i)); dot.setAttribute('cy', Y(p.v));
+      lvl.setAttribute('y', Y(p.v)); lvl.setAttribute('height', Math.max(0, B - Y(p.v)));
+      lvl.setAttribute('style', `fill:color-mix(in srgb,${b && b.tone !== 'ok' ? TONE[b.tone] : 'var(--vz-fg)'} 30%,transparent)`);
+      if (inK) inT.textContent = `${inK} ${st.get(inK) || ''}`; if (outK) outT.textContent = `${outK} ${st.get(outK) || ''}`;
+      ro(`${p.x} · ${kfmt(p.v)}${u}`, [b?.label, ...[...st].map(([k, v]) => `${k} ${v}`)].filter(Boolean).join(' · '), b && b.tone !== 'ok' ? b.tone : '');
+      tell(detail, s.stock ? h('b', {}, s.stock.label) : null, `${p.x}: ${kfmt(p.v)}${u}`, b ? `${s.meter.title ? s.meter.title + ' ' : ''}${b.label}` : null, p.note, s.stock?.ref ? refC(doc, s.stock.ref) : null);
+    }
+    hit.addEventListener('mousemove', (ev) => set(Math.max(0, Math.min(s.pts.length - 1, Math.round(((at(ev) - C0) / (C1 - C0)) * (s.pts.length - 1))))));
+    mount.append(detail);
+    set(vs.indexOf(Math.max(...vs)));
+  }
+
+  // view: sankey: the graph's paths, drawn as bands whose width is how much flows (`weight:` under a path, or
+  // under an edge). A band is green when everything along it gets through, coral when it all fails.
+  function renderSankey(s, doc, mount) {
+    const anyW = s.paths.some((p) => p.weight != null);
+    for (const p of s.paths) p.w = p.weight ?? (anyW ? 0 : 1);
+    for (const e of s.edges) e.w = e.info.weight != null ? parseFloat(e.info.weight) || 0 : e.paths.reduce((a, p) => a + p.w, 0);
+    const es = s.edges.filter((e) => e.w > 0 && e.from !== e.to), n = s.nodes.length, idx = Object.fromEntries(s.nodes.map((nd, i) => [nd.id, i]));
+    const layer = new Array(n).fill(0);
+    for (let k = 0; k <= n; k++) { let moved = false; for (const e of es) { const u = idx[e.from], v = idx[e.to]; if (layer[v] < layer[u] + 1 && layer[u] + 1 < n) { layer[v] = layer[u] + 1; moved = true; } } if (!moved) break; }
+    const top = Math.max(0, ...layer);
+    s.nodes.forEach((nd, i) => { if (!es.some((e) => e.from === nd.id) && es.some((e) => e.to === nd.id)) layer[i] = top; });
+    const inW = (i) => es.filter((e) => idx[e.to] === i).reduce((a, e) => a + e.w, 0), outW = (i) => es.filter((e) => idx[e.from] === i).reduce((a, e) => a + e.w, 0);
+    const val = s.nodes.map((_, i) => Math.max(inW(i), outW(i)));
+    const cols = Array.from({ length: top + 1 }, (_, c) => s.nodes.map((_, i) => i).filter((i) => layer[i] === c && val[i] > 0));
+    const GAP = 16, HMAX = 240, big = Math.max(...cols.map((c) => c.reduce((a, i) => a + val[i], 0))) || 1;
+    const K = (HMAX - GAP * Math.max(0, Math.max(...cols.map((c) => c.length)) - 1)) / big;
+    const lab = (i) => `${s.nodes[i].label} ${kfmt(val[i])}`;
+    const SPC = Math.ceil(Math.max(150, ...s.nodes.map((_, i) => tw(lab(i)) + 44)));
+    const NW = 10, W = top * SPC + NW + Math.ceil(Math.max(60, ...cols[top].map((i) => tw(lab(i)) + 16))) + 4;
+    const y0 = [], hgt = [];
+    cols.forEach((c, ci) => {
+      // Order a column by where its inputs come from, so bands cross as little as they can.
+      if (ci) c.sort((a, b) => { const m = (i) => { const ins = es.filter((e) => idx[e.to] === i); const w = ins.reduce((x, e) => x + e.w, 0) || 1; return ins.reduce((x, e) => x + (y0[idx[e.from]] ?? 0) * e.w, 0) / w; }; return m(a) - m(b); });
+      let y = 14; for (const i of c) { y0[i] = y; hgt[i] = Math.max(3, val[i] * K); y += hgt[i] + GAP; }
+    });
+    const H = Math.ceil(Math.max(...s.nodes.map((_, i) => (y0[i] ?? 0) + (hgt[i] ?? 0)))) + 20;
+    const { g, ro, detail } = shell(s, mount, W, H);
+    const xOf = (i) => layer[i] * SPC, oOut = new Array(n).fill(0), oIn = new Array(n).fill(0);
+    const sorted = [...es].sort((a, b) => y0[idx[a.from]] - y0[idx[b.from]] || y0[idx[a.to]] - y0[idx[b.to]]);
+    const toneOf = (e) => (!e.paths.length ? '' : e.paths.every((p) => p.out === 'pass') ? 'ok' : e.paths.every((p) => p.out === 'fail') ? 'fail' : e.paths.every((p) => p.out === 'drop') ? 'warn' : '');
+    const bandG = svg('g', {}); g.append(bandG);
+    for (const e of [...es].sort((a, b) => y0[idx[a.to]] - y0[idx[b.to]] || y0[idx[a.from]] - y0[idx[b.from]])) { e.zIn = oIn[idx[e.to]]; oIn[idx[e.to]] += e.w * K; }
+    for (const e of sorted) {
+      const u = idx[e.from], v = idx[e.to], th = e.w * K, a0 = y0[u] + oOut[u], b0 = y0[v] + e.zIn; oOut[u] += th;
+      const xa = xOf(u) + NW, xb = xOf(v), m = (xa + xb) / 2, t = toneOf(e), c = t ? TONE[t] : 'var(--vz-fg)';
+      e.band = svg('path', { d: `M${xa},${a0}C${m},${a0} ${m},${b0} ${xb},${b0}L${xb},${b0 + th}C${m},${b0 + th} ${m},${a0 + th} ${xa},${a0 + th}Z`, class: 'vz-band', style: `fill:color-mix(in srgb,${c} ${t === 'fail' ? 55 : t ? 26 : 16}%,transparent)${t === 'fail' ? `;stroke:${c}` : ''}` });
+      e.band.addEventListener('mouseenter', () => light(new Set([e]), e)); e.band.addEventListener('mouseleave', () => light(null));
+      e.band.addEventListener('click', () => tell(detail, h('b', {}, `${s.byId[e.from].label} → ${s.byId[e.to].label}`), kfmt(e.w), e.label, ...e.paths.map((p) => (p.named ? p.name : p.ids.join(' › ')) + ` ${kfmt(p.w)}`), e.ref ? refC(doc, e.ref) : null));
+      bandG.append(e.band);
+    }
+    const total = cols[0].reduce((a, i) => a + val[i], 0) || 1, sum = (o) => s.paths.filter((p) => p.out === o).reduce((a, p) => a + p.w, 0);
+    const ends = (i) => s.paths.filter((p) => p.ids[p.ids.length - 1] === s.nodes[i].id);
+    s.nodes.forEach((nd, i) => {
+      if (y0[i] == null) return;
+      const en = ends(i), bad = nd.st === 'fail' || (en.length && en.every((p) => p.out === 'fail')) ? 'var(--vz-coral)' : en.length && en.every((p) => p.out === 'drop' || p.out === 'fail') ? 'var(--vz-amber)' : '', x = xOf(i);
+      const el = svg('g', { class: 'vz-crow', 'data-viz-id': nd.id });
+      el.append(svg('rect', { x, y: y0[i], width: NW, height: hgt[i], style: `fill:${bad || 'var(--vz-fg)'}` }),
+        tx(x + NW + 6, y0[i] + hgt[i] / 2 + 4, lab(i), 'vz-tx vz-sl', bad ? { style: `fill:${bad}` } : {}));
+      const mine = new Set(es.filter((e) => e.from === nd.id || e.to === nd.id));
+      el.addEventListener('mouseenter', () => light(mine)); el.addEventListener('mouseleave', () => light(null));
+      el.addEventListener('click', () => tell(detail, h('b', {}, nd.label), `${kfmt(val[i])} · ${fmt(+((100 * val[i]) / total).toFixed(1))}% of the inflow`, nd.ref ? refC(doc, nd.ref) : null, nd.note, ...DETAIL_KEYS.map((k) => nd.info[k] && `${k}: ${nd.info[k]}`)));
+      g.append(el);
+    });
+    const pass = sum('pass'), lost = sum('fail') + sum('drop'), idle = () => ro(pass + lost ? `${fmt(+((100 * pass) / (pass + lost)).toFixed(1))}% get through` : `${kfmt(total)} in`,
+      [sum('fail') && `${kfmt(sum('fail'))} fail`, sum('drop') && `${kfmt(sum('drop'))} filtered out`].filter(Boolean).join(' · '), lost && !pass ? 'fail' : '');
+    function light(set, e) {
+      for (const x of es) x.band.classList.toggle('dim', !!set && !set.has(x));
+      if (e) ro(`${kfmt(e.w)} · ${fmt(+((100 * e.w) / total).toFixed(1))}%`, `${s.byId[e.from].label} → ${s.byId[e.to].label}${e.label ? ': ' + e.label : ''}`, toneOf(e)); else idle();
+    }
+    idle(); tell(detail, h('span', { class: 'vz-hint' }, 'Width is volume. Hover a band or a node; click for detail.'));
+    mount.append(detail);
+  }
+  // waits: a wait-for graph. `a holds r` and `a waits r [text] [@ref]` lines, with optional `id: Label` lines. It is
+  // drawn as a states graph (waiter → resource → holder); every cycle is a deadlock and becomes a failing path.
+  function parseWaits(s, errors) {
+    const decl = new Map(), rel = [], seen = [];
+    const use = (id) => { if (!seen.includes(id)) seen.push(id); };
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      const r = t.match(/^([\w.$#-]+)\s+(holds|waits)\s+([\w.$#-]+)\s*(.*)$/);
+      if (r) { const { rest, ref, note } = splitTail(r[4]); rel.push({ a: r[1], v: r[2], b: r[3], text: rest, ref, note, n }); use(r[1]); use(r[3]); continue; }
+      const d = t.match(/^([\w.$#-]+):\s*(.*)$/);
+      if (d) { decl.set(d[1], d[2]); use(d[1]); continue; }
+      lineErr(errors, n, 'a holder (a holds r), a waiter (a waits r 3s @ref) or a label (a: Worker A @ref)', t);
+    }
+    const res = new Set(rel.map((x) => x.b)), holder = new Map(), out = new Map();
+    for (const x of rel) if (x.v === 'holds') { if (holder.has(x.b)) errors.push(`line ${x.n}: "${x.b}" already held by "${holder.get(x.b)}"`); else holder.set(x.b, x.a); }
+    for (const x of rel) if (x.v === 'waits') (out.get(x.a) || out.set(x.a, []).get(x.a)).push(x.b);
+    // Cycles: follow waiter → resource → its holder until a node repeats.
+    const cycles = [], inCyc = new Set();
+    for (const start of out.keys()) {
+      if (inCyc.has(start)) continue;
+      const walk = (a, trail) => {
+        for (const r of out.get(a) || []) {
+          const hd = holder.get(r); if (!hd) continue;
+          const at = trail.indexOf(hd);
+          if (at >= 0) { const c = [...trail.slice(at), r]; if (!c.some((x) => inCyc.has(x))) { cycles.push(c); c.forEach((x) => inCyc.add(x)); } continue; }
+          if (trail.length < 40) walk(hd, [...trail, r, hd]);
+        }
+      };
+      walk(start, [start]);
+    }
+    // Stuck: anyone whose wait leads, through holders, into a cycle.
+    const stuck = new Set();
+    const leads = (a, vis = new Set()) => { if (inCyc.has(a)) return true; if (vis.has(a)) return false; vis.add(a); return (out.get(a) || []).some((r) => holder.has(r) && leads(holder.get(r), vis)); };
+    for (const a of out.keys()) if (!inCyc.has(a) && leads(a)) stuck.add(a);
+    const lab = (id) => { const v = decl.get(id); return v == null ? id : splitTail(v).rest.replace(/\s*\[.*\]$/, '') || id; };
+    const L = [`== graph ${s.name}`, 'view: states'];
+    for (const id of seen) { const v = decl.get(id) ?? id, kind = res.has(id) && !/\[/.test(v) ? ' [lock]' : ''; L.push(`${inCyc.has(id) ? '!' : stuck.has(id) ? '*' : ''}${id}: ${v.replace(/(\s@|\s#\s|$)/, kind + '$1')}`); }
+    for (const x of rel) {
+      const [f, t2] = x.v === 'holds' ? [x.b, x.a] : [x.a, x.b];
+      L.push(`${f} -> ${t2}: ${x.v === 'holds' ? 'held by' : 'waits'}${x.text ? ' ' + x.text : ''}${x.ref ? ' @' + x.ref : ''}`);
+      if (x.note) L.push(`  note: ${x.note}`);
+    }
+    cycles.forEach((c, j) => L.push(`!deadlock${cycles.length > 1 ? j + 1 : ''}: ${[...c, c[0]].join(' > ')}`));
+    const sub = parse(L.join('\n'));
+    for (const e of sub.errors) errors.push(`${s.name}: ${e}`);
+    s.graph = sub.sections[0]; s.cycles = cycles; s.stuck = [...stuck]; s.rel = rel;
+    s.say = cycles.length ? cycles.map((c) => { const who = c.filter((x) => !res.has(x)).map(lab); return 'deadlock: ' + (who.length === 2 ? who.join(' ⇄ ') : [...who, who[0]].join(' → ')); }).join(' · ') : 'no cycle';
+    s.say2 = stuck.size ? 'also stuck: ' + s.stuck.map(lab).join(', ') : cycles.length ? '' : `${rel.filter((x) => x.v === 'waits').length} waits, each ends at a holder that can run`;
+    if (!rel.length) errors.push(`${s.name}: a waits chart needs holds or waits lines`);
+  }
+  function renderWaits(s, doc, mount) {
+    if (!s.graph) return;
+    mount.append(h('div', { class: 'vz-ctop' }, s.tabbed ? null : h('span', { class: 'vz-cname' }, s.name),
+      h('div', { class: 'vz-ro' }, h('b', { style: s.cycles.length ? 'color:var(--vz-coral)' : '' }, s.say), h('span', {}, s.say2))));
+    s.graph.uid = s.uid; s.graph.tabbed = true;
+    renderGraph(s.graph, doc, mount);
+  }
+
+  // hist: a latency distribution. Bucket lines are `upper count` pairs; `was:` the same for a ghost to compare.
+  // p50, p90 and p99 are interpolated from the buckets unless a `p99: 900` line gives a measured one.
+  function parseHist(s, errors) {
+    s.b = []; s.was = null; s.unit = ''; s.budget = null; s.ps = [];
+    const pairs = (str, n) => str.split('|').map((x) => x.trim()).filter(Boolean).flatMap((x) => { const m = x.match(/^(\d*\.?\d+)\s+(\d*\.?\d+)$/); if (!m) { errors.push(`line ${n}: a bucket is "upper count": ${x}`); return []; } return [{ le: +m[1], c: +m[2] }]; });
+    for (const { raw, n } of s.lines) {
+      const t = splitTail(raw.trim()).rest;
+      const f = t.match(/^(unit|budget|was):\s*(.*)$/);
+      if (f) { if (f[1] === 'unit') s.unit = f[2]; else if (f[1] === 'budget') s.budget = parseFloat(f[2]); else s.was = pairs(f[2], n); continue; }
+      const p = t.match(/^([+!*~?]?)p(\d+(?:\.\d+)?):\s*(\d*\.?\d+)\s*(.*)$/);
+      if (p) { s.ps.push({ q: +p[2], v: +p[3], tone: PRE[p[1]] || '', text: p[4], measured: true }); continue; }
+      s.b.push(...pairs(t, n));
+    }
+    s.b.sort((a, c) => a.le - c.le);
+    if (s.b.length < 2) { errors.push(`${s.name}: a hist needs at least two buckets (upper count | upper count)`); return; }
+    const pct = (bs, q) => {
+      const tot = bs.reduce((a, x) => a + x.c, 0); let acc = 0;
+      for (let i = 0; i < bs.length; i++) { const lo = i ? bs[i - 1].le : 0; if (acc + bs[i].c >= (q / 100) * tot) return lo + ((q / 100 * tot - acc) / (bs[i].c || 1)) * (bs[i].le - lo); acc += bs[i].c; }
+      return bs[bs.length - 1].le;
+    };
+    for (const q of [50, 90, 99]) if (!s.ps.some((p) => p.q === q)) s.ps.push({ q, v: pct(s.b, q), tone: '', text: '', measured: false });
+    s.ps.sort((a, c) => a.q - c.q);
+    s.pw = s.was ? Object.fromEntries([50, 90, 99, ...s.ps.map((p) => p.q)].map((q) => [q, pct([...s.was].sort((a, c) => a.le - c.le), q)])) : null;
+    s.total = s.b.reduce((a, x) => a + x.c, 0);
+  }
+  function renderHist(s, doc, mount) {
+    if (s.b.length < 2) return;
+    const u = s.unit ? ' ' + s.unit : '', W = 720, X0 = 44, X1 = W - 14, T = 30, B = 190, H = 230, n = s.b.length;
+    // Buckets take equal widths (they usually grow ×2), so a value maps through its bucket.
+    const X = (v) => { let i = s.b.findIndex((x) => v <= x.le); if (i < 0) return X1; const lo = i ? s.b[i - 1].le : 0; return X0 + ((i + (v - lo) / (s.b[i].le - lo || 1)) / n) * (X1 - X0); };
+    const share = (bs) => { const tot = bs.reduce((a, x) => a + x.c, 0) || 1; return bs.map((x) => x.c / tot); };
+    const sh = share(s.b), wmap = s.was ? new Map(s.was.map((x, j, all) => [x.le, x.c / (all.reduce((a, y) => a + y.c, 0) || 1)])) : null;
+    const top = Math.max(...sh, ...(wmap ? [...wmap.values()] : [])) * 1.1 || 1, Y = (f) => B - (f / top) * (B - T);
+    const { g, ro, detail } = shell(s, mount, W, H), bw = (X1 - X0) / n;
+    for (const v of ticks(0, top * 100, 4)) if (v > 0) g.append(svg('line', { x1: X0, x2: X1, y1: Y(v / 100), y2: Y(v / 100), class: 'vz-gd', 'stroke-dasharray': '3 3' }), tx(X0 - 6, Y(v / 100) + 4, v + '%', 'vz-td', { 'text-anchor': 'end' }));
+    const bars = s.b.map((x, i) => {
+      const lo = i ? s.b[i - 1].le : 0, over = s.budget != null && lo >= s.budget, c = over ? 'var(--vz-coral)' : 'var(--vz-fg)';
+      const el = svg('g', { class: 'vz-crow' });
+      el.append(svg('rect', { x: X0 + i * bw, y: T - 4, width: bw, height: B - T + 4, fill: 'transparent' }),
+        svg('rect', { x: X0 + i * bw + 2, y: Y(sh[i]), width: bw - 4, height: B - Y(sh[i]), style: `fill:color-mix(in srgb,${c} ${over ? 45 : 22}%,transparent);stroke:${c};stroke-width:.8` }));
+      if (wmap?.has(x.le)) el.append(svg('line', { x1: X0 + i * bw + 2, x2: X0 + (i + 1) * bw - 2, y1: Y(wmap.get(x.le)), y2: Y(wmap.get(x.le)), stroke: 'var(--vz-dim)', 'stroke-width': 2, 'stroke-dasharray': '4 2' }));
+      g.append(el, tx(X0 + (i + 1) * bw, B + 14, kfmt(x.le), 'vz-td', { 'text-anchor': 'middle' }));
+      const cum = s.b.slice(0, i + 1).reduce((a, y) => a + y.c, 0);
+      const show = () => tell(detail, h('b', {}, `${fmt(lo)}–${fmt(x.le)}${u}`), `${kfmt(x.c)} (${fmt(+(sh[i] * 100).toFixed(1))}%)`, wmap?.has(x.le) ? `was ${fmt(+(wmap.get(x.le) * 100).toFixed(1))}%` : null, `${fmt(+((100 * cum) / s.total).toFixed(1))}% at or under ${fmt(x.le)}${u}`);
+      el.addEventListener('mouseenter', show); el.addEventListener('click', show);
+      return el;
+    });
+    g.append(svg('line', { x1: X0, x2: X1, y1: B, y2: B, class: 'vz-ln' }), tx(X0, B + 14, '0', 'vz-td', { 'text-anchor': 'middle' }));
+    if (s.unit) g.append(tx(X1, B + 30, s.unit, 'vz-td', { 'text-anchor': 'end' }));
+    const taken = [];
+    for (const p of s.ps) {
+      const x = X(p.v), c = p.tone ? TONE[p.tone] : p.q >= 99 ? 'var(--vz-hl)' : 'var(--vz-dim)', right = x > X1 - 150;
+      const wl = tw(`p${p.q} ≈${kfmt(+p.v.toFixed(0))}${s.pw ? ` (was ${kfmt(+(s.pw[p.q] || 0).toFixed(0))})` : ''}`, 10) + 8, span = right ? [x - wl, x] : [x, x + wl];
+      let row = 0; while (taken.some((t) => t.row === row && t.a < span[1] && span[0] < t.b)) row++;
+      taken.push({ row, a: span[0], b: span[1] });
+      g.append(svg('line', { x1: x, x2: x, y1: T - 8, y2: B, stroke: c, 'stroke-width': 1.3, ...(p.measured ? {} : { 'stroke-dasharray': '2 2' }) }),
+        tx(right ? x - 4 : x + 4, T - 18 + row * 12, `p${p.q} ${p.measured ? '' : '≈'}${kfmt(+p.v.toFixed(p.v < 10 ? 1 : 0))}${s.pw?.[p.q] != null ? ` (was ${kfmt(+s.pw[p.q].toFixed(0))})` : ''}`, 'vz-td vz-sl', { style: `fill:${c};font-size:10px`, ...(right ? { 'text-anchor': 'end' } : {}) }));
+    }
+    if (s.budget != null) g.append(svg('line', { x1: X(s.budget), x2: X(s.budget), y1: T - 4, y2: B + 2, stroke: 'var(--vz-coral)', 'stroke-dasharray': '4 3' }));
+    const p99 = s.ps.find((p) => p.q === 99), over = s.budget != null ? s.b.reduce((a, x, i) => a + ((i ? s.b[i - 1].le : 0) >= s.budget ? x.c : x.le > s.budget ? (x.c * (x.le - s.budget)) / (x.le - (i ? s.b[i - 1].le : 0)) : 0), 0) : 0;
+    ro(p99 ? `p99 ${kfmt(+p99.v.toFixed(0))}${u}${s.pw ? ` · was ${kfmt(+s.pw[99].toFixed(0))}` : ''}` : `${kfmt(s.total)} samples`,
+      [`${kfmt(s.total)} samples`, s.budget != null ? `${fmt(+((100 * over) / s.total).toFixed(1))}% over ${fmt(s.budget)}${u}` : null, s.was ? 'dashed = was' : null].filter(Boolean).join(' · '), s.budget != null && p99 && p99.v > s.budget ? 'fail' : '');
+    tell(detail, h('span', { class: 'vz-hint' }, `Hover a bucket. Percentiles marked ≈ are interpolated from the buckets.`));
+    mount.append(detail);
+  }
+
+  // retries: attempts per client on one time axis. `policy: 1 x2 cap 30 jitter 50%` shades where each retry should
+  // land after the last attempt ends; `giveup: 60` draws the deadline. The strip below counts attempts over time.
+  function parseRetries(s, errors) {
+    s.lanes = []; s.unit = ''; s.policy = null; s.giveup = null; s.max = null;
+    let lane = null;
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      if (/^\S/.test(raw)) {
+        const f = t.match(/^(axis|policy|giveup|max):\s*(.*)$/);
+        if (f) {
+          const v = splitTail(f[2]).rest;
+          if (f[1] === 'axis') s.unit = v;
+          else if (f[1] === 'giveup') s.giveup = parseFloat(v);
+          else if (f[1] === 'max') s.max = parseInt(v, 10);
+          else {
+            const m = v.match(/^(\d*\.?\d+)\s*[a-zµ]*(?:\s+x(\d*\.?\d+))?(?:\s+cap\s+(\d*\.?\d+)\s*[a-zµ]*)?(?:\s+jitter\s+(\d*\.?\d+)%?)?$/i);
+            if (!m) errors.push(`line ${n}: policy is "first x2 cap 30 jitter 50%": ${v}`);
+            else s.policy = { base: +m[1], f: m[2] ? +m[2] : 2, cap: m[3] ? +m[3] : Infinity, j: m[4] ? +m[4] / (+m[4] > 1 ? 100 : 1) : 0 };
+          }
+          continue;
+        }
+        const ln = t.match(/^([\w.$-]+):\s*(.*)$/);
+        if (ln) { const { rest, ref, note } = splitTail(ln[2]); lane = { id: ln[1], label: rest || ln[1], ref, note, at: [], n }; s.lanes.push(lane); continue; }
+        lineErr(errors, n, 'a client (id: Label), its attempts (  0..2 !timeout | 3 !503), axis:, policy:, giveup: or max:', t); continue;
+      }
+      if (!lane) { errors.push(`line ${n}: attempts before any client`); continue; }
+      for (const part of t.split('|').map((x) => x.trim()).filter(Boolean)) {
+        const m = part.match(/^(-?\d*\.?\d+)(?:\s*\.\.\s*(-?\d*\.?\d+))?\s*(.*)$/);
+        if (!m) { errors.push(`line ${n}: an attempt is "start[..end] label": ${part}`); continue; }
+        const { tone, text } = toned(m[3].trim());
+        if (lane.at.length && +m[1] < lane.at[lane.at.length - 1].a) errors.push(`line ${n}: attempt times must increase: ${part}`);
+        lane.at.push({ a: +m[1], b: m[2] != null ? +m[2] : +m[1], tone: tone || (/^(ok|200|done)/i.test(text) ? 'ok' : ''), label: text });
+      }
+    }
+    if (!s.lanes.some((l) => l.at.length)) errors.push(`${s.name}: a retries chart needs a client with attempts`);
+    const delay = (k) => s.policy && Math.min(s.policy.cap, s.policy.base * s.policy.f ** k);
+    for (const l of s.lanes) l.at.forEach((x, k) => {
+      if (!k) return;
+      const prev = l.at[k - 1], d = delay(k - 1);
+      x.gap = x.a - prev.b;
+      if (d != null) { x.exp = [prev.b + d * (1 - s.policy.j), prev.b + d * (1 + s.policy.j)]; x.off = x.a < x.exp[0] - 1e-9 ? 'early' : x.a > x.exp[1] + 1e-9 ? 'late' : ''; }
+    });
+  }
+  function renderRetries(s, doc, mount) {
+    const lanes = s.lanes.filter((l) => l.at.length); if (!lanes.length) return;
+    const all = lanes.flatMap((l) => l.at), u = s.unit ? ' ' + s.unit : '';
+    const lo = Math.min(0, ...all.map((x) => x.a)), far = Math.max(...all.map((x) => x.b), ...all.flatMap((x) => (x.exp ? [x.exp[1]] : [])), s.giveup ?? -Infinity);
+    const hi = far + (far - lo) * 0.06 || 1;
+    const LW = Math.ceil(Math.max(56, ...lanes.map((l) => tw(l.label, 10) * 1.25 + 12)));
+    const W = 720, X0 = LW + 6, X1 = W - 10, RH = 34, T = 8, SH = 26, yS = T + lanes.length * RH + 6, yA = yS + SH, H = yA + 22;
+    const X = (t) => X0 + ((t - lo) / (hi - lo)) * (X1 - X0);
+    const { g, ro, detail } = shell(s, mount, W, H);
+    if (s.giveup != null) g.append(svg('line', { x1: X(s.giveup), x2: X(s.giveup), y1: 2, y2: yA, stroke: 'var(--vz-coral)', 'stroke-dasharray': '4 3', 'stroke-width': 1.3 }), tx(X(s.giveup) - 4, yA - 4, 'give up', 'vz-td vz-sl', { 'text-anchor': 'end', style: 'fill:var(--vz-coral);font-size:10px' }));
+    const show = (l, x, k) => tell(detail, h('b', {}, `${l.label}, attempt ${k + 1}`), `at ${fmt(x.a)}${u}${x.b > x.a ? ` for ${fmt(+(x.b - x.a).toFixed(2))}${u}` : ''}`, x.label,
+      x.gap != null ? `${fmt(+x.gap.toFixed(2))}${u} after the last` : null, x.exp ? `policy says ${+x.exp[0].toFixed(1)}..${+x.exp[1].toFixed(1)}${x.off ? ` (${x.off})` : ''}` : null, l.ref ? refC(doc, l.ref) : null);
+    lanes.forEach((l, i) => {
+      const y = T + i * RH, mid = y + 15;
+      g.append(tx(0, mid + 4, l.label, 'vz-tc'), svg('line', { x1: X(l.at[0].a), x2: X(l.at[l.at.length - 1].b), y1: mid, y2: mid, class: 'vz-wr' }));
+      l.at.forEach((x, k) => {
+        if (x.exp) g.append(svg('rect', { x: X(x.exp[0]), y: y + 4, width: Math.max(2, X(x.exp[1]) - X(x.exp[0])), height: 22, style: 'fill:color-mix(in srgb,var(--vz-hl) 13%,transparent)' }));
+        if (x.gap != null && X(x.a) - X(l.at[k - 1].b) > tw('+' + fmt(x.gap), 9) + 8) g.append(tx((X(x.a) + X(l.at[k - 1].b)) / 2, y + 2, '+' + fmt(+x.gap.toFixed(2)), 'vz-td vz-small', { 'text-anchor': 'middle' }));
+      });
+      l.at.forEach((x, k) => {
+        const c = x.tone ? TONE[x.tone] : 'var(--vz-fg)', w = Math.max(7, X(x.b) - X(x.a)), el = svg('g', { class: 'vz-crow' });
+        el.append(svg('rect', { x: X(x.a), y: y + 8, width: w, height: 14, rx: 2, style: `fill:color-mix(in srgb,${c} 35%,var(--vz-ground,#111));stroke:${c}` }));
+        if (x.off) el.append(svg('rect', { x: X(x.a) - 3, y: y + 5, width: w + 6, height: 20, rx: 3, fill: 'none', stroke: 'var(--vz-amber)', 'stroke-dasharray': '2 2' }));
+        el.addEventListener('mouseenter', () => show(l, x, k)); el.addEventListener('click', () => show(l, x, k));
+        g.append(el);
+      });
+    });
+    // Pile-up strip: attempts started per slot, across every client.
+    const N = 48, cnt = new Array(N).fill(0);
+    for (const x of all) cnt[Math.min(N - 1, Math.floor(((x.a - lo) / (hi - lo)) * N))]++;
+    const peak = Math.max(...cnt), pi = cnt.indexOf(peak), sw = (X1 - X0) / N;
+    cnt.forEach((c, j) => c && g.append(svg('rect', { x: X0 + j * sw + 1, y: yA - (c / peak) * (SH - 6), width: sw - 2, height: (c / peak) * (SH - 6), style: `fill:${c === peak && peak > 1 ? 'var(--vz-hl)' : 'var(--vz-dim)'}` })));
+    g.append(svg('line', { x1: X0, x2: X1, y1: yA, y2: yA, class: 'vz-ln' }), tx(X0 - 6, yA - 4, 'tries', 'vz-td vz-small', { 'text-anchor': 'end' }));
+    for (const v of ticks(lo, hi, 8)) g.append(tx(X(v), yA + 14, fmt(v), 'vz-td', { 'text-anchor': 'middle' }));
+    if (s.unit) g.append(tx(X0 - 10, yA + 14, s.unit, 'vz-td', { 'text-anchor': 'end' }));
+    const okN = lanes.filter((l) => l.at[l.at.length - 1].tone === 'ok').length, offN = all.filter((x) => x.off).length;
+    const tooMany = s.max != null ? lanes.filter((l) => l.at.length > s.max).length : 0, late = s.giveup != null ? all.filter((x) => x.a > s.giveup).length : 0;
+    const t0 = lo + (pi / N) * (hi - lo);
+    ro(`${all.length} attempts · ${okN}/${lanes.length} succeed`,
+      [peak > 1 && lanes.length > 1 ? `peak ${peak} at ${fmt(+t0.toFixed(1))}${u}` : null, offN ? `${offN} off policy` : null, tooMany ? `${tooMany} past max ${s.max}` : null, late ? `${late} after give-up` : null].filter(Boolean).join(' · '),
+      okN < lanes.length ? 'fail' : '');
+    tell(detail, h('span', { class: 'vz-hint' }, s.policy ? 'Shaded: where the policy puts each retry. Dashed ring: off policy. Hover an attempt.' : 'Hover an attempt. Add policy: to shade where each retry should land.'));
+    mount.append(detail);
+  }
+
+  const DETAIL_KEYS = ['does', 'reads', 'writes', 'fails', 'state', 'carries'];
+  const CHART = { timing: { parse: parseTiming, render: renderTiming }, gantt: { parse: parseGantt, render: renderGantt }, causes: { parse: parseCauses, render: renderCauses },
+    board: { parse: parseBoard, render: renderBoard }, stock: { parse: parseStock, render: renderStock },
+    waits: { parse: parseWaits, render: renderWaits }, hist: { parse: parseHist, render: renderHist }, retries: { parse: parseRetries, render: renderRetries } };
+
   /* ---------- mount ---------- */
   let uid = 0;
   function render(el, text) {
     if (!document.getElementById('vz-css')) document.head.append(h('style', { id: 'vz-css' }, CSS));
     const doc = parse(text);
-    const root = h('div', { class: doc.theme === 'drawing' ? 'vz vz-drawing' : doc.theme === 'thread' ? 'vz vz-thread' : 'vz' });
+    const root = h('div', { class: doc.theme && doc.theme !== 'default' ? `vz vz-${doc.theme}` : 'vz' });
     if (doc.title || doc.sub) root.append(h('div', { class: 'vz-head' }, h('span', { class: 'vz-title' }, doc.title), h('span', { class: 'vz-sub' }, [doc.sub, doc.base && `paths under ${doc.base}`].filter(Boolean).join(' · '))));
     for (const e of doc.errors) console.error('viz: ' + e);
     if (doc.errors.length) root.append(h('div', { class: 'vz-err' }, doc.errors.join('\n')));
     const secs = doc.sections;
-    const panels = secs.map((s) => { s.uid = ++uid; const p = h('div', { class: 'vz-panel', role: 'tabpanel' }); (s.kind === 'graph' ? renderGraph : renderTree)(s, doc, p); return p; });
+    const panels = secs.map((s) => {
+      s.uid = ++uid; s.tabbed = secs.length > 1;
+      const p = h('div', { class: 'vz-panel', role: 'tabpanel' });
+      (s.kind === 'graph' ? (s.view === 'sankey' ? renderSankey : renderGraph) : s.kind === 'tree' ? renderTree : CHART[s.kind].render)(s, doc, p);
+      return p;
+    });
     if (secs.length > 1) {
       const tabs = secs.map((s, i) => h('button', { role: 'tab', 'aria-selected': i === 0, onclick: () => show(i) }, s.name));
       const show = (i, quiet) => {
