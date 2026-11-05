@@ -294,7 +294,7 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
   }
 
   const VIEWS = ['flow', 'ranked', 'seq', 'states', 'stack', 'sankey'], THEMES = ['default', 'drawing', 'thread', 'paper'];
-  const CHARTS = ['timing', 'gantt', 'causes', 'board', 'stock'];
+  const CHARTS = ['timing', 'gantt', 'causes', 'board', 'stock', 'waits', 'hist', 'retries'];
   const ID = /^[\w.$-]+$/;
   function parse(text) {
     const doc = { title: '', sub: '', base: '', theme: '', sections: [], errors: [] };
@@ -303,7 +303,7 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     lines.forEach((raw, i) => {
       const n = i + 1;
       if (!raw.trim() || /^\s*\/\//.test(raw)) return;
-      const head = raw.match(/^==\s*(graph|flow|tree|diff|steps|cover|timing|gantt|causes|board|stock)\b\s*(.*)$/);
+      const head = raw.match(/^==\s*(graph|flow|tree|diff|steps|cover|timing|gantt|causes|board|stock|waits|hist|retries)\b\s*(.*)$/);
       if (head) {
         const [, kind, name] = head;
         lastStep = null;
@@ -1878,11 +1878,12 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       if (f) { if (f[1] === 'axis') s.unit = f[2].trim(); else s.budget = parseFloat(f[2]); continue; }
       const m = t.match(/^([+!*~?]?)([\w.$-]+):\s*(.*)$/);
       if (!m) { lineErr(errors, n, 'a row (id: Label 0..30, or id: Label 32ms after other)', t); continue; }
-      const { rest, ref, note } = splitTail(m[3]);
+      let { rest, ref, note } = splitTail(m[3]), was = null;
+      rest = rest.replace(/\s+was\s+(?:(-?\d*\.?\d+)\s*\.\.\s*(-?\d*\.?\d+)|(\d*\.?\d+)\s*[a-zµ]*)\s*$/i, (_, a, b, d) => { was = a != null ? { a: +a, b: +b } : { dur: +d }; return ''; });
       const tm = rest.match(/^(?:(.*?)\s+)?(?:(-?\d*\.?\d+)\s*\.\.\s*(-?\d*\.?\d+)|(\d*\.?\d+)\s*[a-zµ]*)(?:\s+after\s+(.+))?$/i);
       if (!tm) { errors.push(`line ${n}: row "${m[2]}" wants a..b or a duration, then an optional "after id, id": ${t}`); continue; }
       s.rows.push({ id: m[2], st: PRE[m[1]] || '', label: (tm[1] || '').trim() || m[2], a: tm[2] != null ? +tm[2] : null, b: tm[3] != null ? +tm[3] : null, dur: tm[4] != null ? +tm[4] : 0,
-        after: (tm[5] || '').split(/\s*,\s*/).filter(Boolean), ref, note, n });
+        after: (tm[5] || '').split(/\s*,\s*/).filter(Boolean), ref, note, was, n });
     }
     const by = Object.fromEntries(s.rows.map((r) => [r.id, r]));
     for (const r of s.rows) { for (const d of r.after) if (!by[d]) errors.push(`line ${r.n}: "${r.id}" runs after "${d}", which no row declares`); r.after = r.after.filter((d) => by[d]); }
@@ -1896,6 +1897,19 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     };
     s.rows.forEach(solve);
     if (!s.rows.length) { errors.push(`${s.name}: a gantt chart needs a row`); return; }
+    // The old run (rows with `was`): same chain, old durations; a row without `was` kept its duration.
+    s.cmp = s.rows.some((r) => r.was);
+    if (s.cmp) {
+      const od = new Set();
+      const old = (r) => {
+        if (od.has(r)) return; od.add(r); r.after.forEach((d) => old(by[d]));
+        if (r.was?.a != null) { r.oa = r.was.a; r.ob = r.was.b; return; }
+        const dur = r.was ? r.was.dur : r.b - r.a;
+        r.oa = r.after.length ? Math.max(...r.after.map((d) => by[d].ob)) : r.a; r.ob = r.oa + dur;
+      };
+      s.rows.forEach(old);
+      s.oend = Math.max(...s.rows.map((r) => r.ob));
+    }
     s.end = Math.max(...s.rows.map((r) => r.b));
     // Critical path: from the row that ends last, back through whichever row it waits on ends latest.
     s.crit = new Set();
@@ -1909,7 +1923,7 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
   }
   function renderGantt(s, doc, mount) {
     if (!s.rows.length) return;
-    const lo = Math.min(0, ...s.rows.map((r) => r.a)), hi = Math.max(s.end, s.budget || 0) * 1.04 || 1, u = s.unit ? ' ' + s.unit : '';
+    const lo = Math.min(0, ...s.rows.map((r) => r.a)), hi = Math.max(s.end, s.oend || 0, s.budget || 0) * (s.cmp ? 1.1 : 1.04) || 1, u = s.unit ? ' ' + s.unit : '';
     const LW = Math.ceil(Math.max(60, ...s.rows.map((r) => tw(r.label) + 12)));
     const W = 720, X0 = LW + 8, X1 = W - 12, RH = 25, T = s.budget != null ? 18 : 6, yA = T + s.rows.length * RH, H = yA + 34;
     const X = (t) => X0 + ((t - lo) / (hi - lo)) * (X1 - X0);
@@ -1923,7 +1937,7 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       for (const [x, el] of rowEls) el.classList.toggle('dim', !!keep && !keep.has(x));
       if (!r) { tell(detail, h('span', { class: 'vz-hint' }, 'Hover a bar: what it waits on, its slack, and where it lives.')); return; }
       tell(detail, h('b', {}, r.label), `${fmt(r.a)}..${fmt(r.b)}${u} (${fmt(r.b - r.a)}${u})`, r.after.length ? 'after ' + r.after.map((d) => s.by[d].label).join(', ') : null,
-        s.crit.has(r) ? 'on the critical path' : r.slack > 0 ? `slack ${fmt(r.slack)}${u}` : null, r.ref ? refC(doc, r.ref) : null, r.note);
+        s.crit.has(r) ? 'on the critical path' : r.slack > 0 ? `slack ${fmt(r.slack)}${u}` : null, s.cmp ? `was ${fmt(r.oa)}..${fmt(r.ob)}${u} (${fmt(r.ob - r.oa)}${u})` : null, r.ref ? refC(doc, r.ref) : null, r.note);
     }
     s.rows.forEach((r, i) => {
       const y = T + i * RH + 3, crit = s.crit.has(r) && (s.crit.size > 1 || s.rows.length === 1 || s.rows.some((x) => x.after.length)), c = r.st ? TONE[r.st] : '';
@@ -1934,8 +1948,13 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
         if (ex > sx + 4) row.append(svg('line', { x1: sx, x2: ex, y1: y + 9, y2: y + 9, class: 'vz-wr', 'stroke-dasharray': '1 3' }));
         if (ex - sx > tw(`slack ${fmt(r.slack)}`, 9.5) + 12) row.append(tx(sx + 6, y + 5, `slack ${fmt(r.slack)}`, 'vz-td vz-small'));
       }
+      if (s.cmp) row.append(svg('rect', { x: X(r.oa), y: y - 2, width: Math.max(3, X(r.ob) - X(r.oa)), height: 22, fill: 'none', stroke: 'var(--vz-dim)', 'stroke-dasharray': '3 2' }));
       row.append(svg('rect', { x: X(r.a), y, width: bw, height: 18, class: 'vz-bx', style: crit ? `fill:${c || 'var(--vz-hl)'};stroke:${c || 'var(--vz-hl)'}` : c ? `stroke:${c}` : '', ...(r.st === 'unk' ? { 'stroke-dasharray': '3 3' } : {}) }));
-      row.append(inside ? tx(X(r.a) + 6, y + 13, lab, 'vz-bt', crit ? { style: 'fill:var(--vz-hlfg)' } : {}) : tx(X(r.b) + 5, y + 13, lab, 'vz-td'));
+      const lt = inside ? tx(X(r.a) + 6, y + 13, lab, 'vz-bt', crit ? { style: 'fill:var(--vz-hlfg)' } : {}) : tx(Math.max(X(r.b), s.cmp ? X(r.ob) : 0) + 5, y + 13, lab, 'vz-td');
+      const dd = s.cmp ? (r.b - r.a) - (r.ob - r.oa) : 0;
+      row.append(lt);
+      // The change against the old run sits right of both bars, in the colour of its direction.
+      if (dd) row.append(tx(Math.max(X(r.b), X(r.ob)) + 5 + (inside ? 0 : tw(lab) + 6), y + 13, `${dd > 0 ? '+' : '−'}${fmt(Math.abs(dd))}`, 'vz-td', { style: `fill:${dd > 0 ? 'var(--vz-coral)' : 'var(--vz-green)'}` }));
       row.addEventListener('mouseenter', () => focus(r)); row.addEventListener('mouseleave', () => focus(null)); row.addEventListener('click', () => focus(r));
       rowEls.set(r, row); g.append(row);
     });
@@ -1943,9 +1962,9 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       g.append(svg('line', { x1: X(s.budget), x2: X(s.budget), y1: T - 6, y2: yA + 2, stroke: 'var(--vz-coral)', 'stroke-dasharray': '4 3', 'stroke-width': 1.3 }),
         tx(X(s.budget) - 5, T - 8, `budget ${fmt(s.budget)}${u}`, 'vz-td', { 'text-anchor': 'end', style: 'fill:var(--vz-coral)' }));
     }
-    if (s.crit.size > 1) g.append(tx(X1, yA + 30, 'filled = critical path', 'vz-tc', { 'text-anchor': 'end' }));
+    if (s.crit.size > 1 || s.cmp) g.append(tx(X1, yA + 30, [s.crit.size > 1 && 'filled = critical path', s.cmp && 'dashed = was'].filter(Boolean).join(' · '), 'vz-tc', { 'text-anchor': 'end' }));
     const over = s.budget != null && s.end > s.budget;
-    ro(`${fmt(s.end)}${u}`, s.budget != null ? `budget ${fmt(s.budget)} · ${over ? 'over by ' + fmt(s.end - s.budget) : fmt(s.budget - s.end) + ' to spare'}` : s.crit.size > 1 ? `critical: ${[...s.crit].reverse().map((r) => r.label).join(' → ')}` : '', over ? 'fail' : '');
+    ro(`${fmt(s.end)}${u}${s.cmp ? ` · was ${fmt(s.oend)} (${s.end >= s.oend ? '+' : '−'}${fmt(Math.abs(s.end - s.oend))})` : ''}`, s.budget != null ? `budget ${fmt(s.budget)} · ${over ? 'over by ' + fmt(s.end - s.budget) : fmt(s.budget - s.end) + ' to spare'}` : s.crit.size > 1 ? `critical: ${[...s.crit].reverse().map((r) => r.label).join(' → ')}` : '', over ? 'fail' : '');
     mount.append(detail); focus(null);
   }
 
@@ -2198,9 +2217,222 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     idle(); tell(detail, h('span', { class: 'vz-hint' }, 'Width is volume. Hover a band or a node; click for detail.'));
     mount.append(detail);
   }
+  // waits: a wait-for graph. `a holds r` and `a waits r [text] [@ref]` lines, with optional `id: Label` lines. It is
+  // drawn as a states graph (waiter → resource → holder); every cycle is a deadlock and becomes a failing path.
+  function parseWaits(s, errors) {
+    const decl = new Map(), rel = [], seen = [];
+    const use = (id) => { if (!seen.includes(id)) seen.push(id); };
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      const r = t.match(/^([\w.$#-]+)\s+(holds|waits)\s+([\w.$#-]+)\s*(.*)$/);
+      if (r) { const { rest, ref, note } = splitTail(r[4]); rel.push({ a: r[1], v: r[2], b: r[3], text: rest, ref, note, n }); use(r[1]); use(r[3]); continue; }
+      const d = t.match(/^([\w.$#-]+):\s*(.*)$/);
+      if (d) { decl.set(d[1], d[2]); use(d[1]); continue; }
+      lineErr(errors, n, 'a holder (a holds r), a waiter (a waits r 3s @ref) or a label (a: Worker A @ref)', t);
+    }
+    const res = new Set(rel.map((x) => x.b)), holder = new Map(), out = new Map();
+    for (const x of rel) if (x.v === 'holds') { if (holder.has(x.b)) errors.push(`line ${x.n}: "${x.b}" already held by "${holder.get(x.b)}"`); else holder.set(x.b, x.a); }
+    for (const x of rel) if (x.v === 'waits') (out.get(x.a) || out.set(x.a, []).get(x.a)).push(x.b);
+    // Cycles: follow waiter → resource → its holder until a node repeats.
+    const cycles = [], inCyc = new Set();
+    for (const start of out.keys()) {
+      if (inCyc.has(start)) continue;
+      const walk = (a, trail) => {
+        for (const r of out.get(a) || []) {
+          const hd = holder.get(r); if (!hd) continue;
+          const at = trail.indexOf(hd);
+          if (at >= 0) { const c = [...trail.slice(at), r]; if (!c.some((x) => inCyc.has(x))) { cycles.push(c); c.forEach((x) => inCyc.add(x)); } continue; }
+          if (trail.length < 40) walk(hd, [...trail, r, hd]);
+        }
+      };
+      walk(start, [start]);
+    }
+    // Stuck: anyone whose wait leads, through holders, into a cycle.
+    const stuck = new Set();
+    const leads = (a, vis = new Set()) => { if (inCyc.has(a)) return true; if (vis.has(a)) return false; vis.add(a); return (out.get(a) || []).some((r) => holder.has(r) && leads(holder.get(r), vis)); };
+    for (const a of out.keys()) if (!inCyc.has(a) && leads(a)) stuck.add(a);
+    const lab = (id) => { const v = decl.get(id); return v == null ? id : splitTail(v).rest.replace(/\s*\[.*\]$/, '') || id; };
+    const L = [`== graph ${s.name}`, 'view: states'];
+    for (const id of seen) { const v = decl.get(id) ?? id, kind = res.has(id) && !/\[/.test(v) ? ' [lock]' : ''; L.push(`${inCyc.has(id) ? '!' : stuck.has(id) ? '*' : ''}${id}: ${v.replace(/(\s@|\s#\s|$)/, kind + '$1')}`); }
+    for (const x of rel) {
+      const [f, t2] = x.v === 'holds' ? [x.b, x.a] : [x.a, x.b];
+      L.push(`${f} -> ${t2}: ${x.v === 'holds' ? 'held by' : 'waits'}${x.text ? ' ' + x.text : ''}${x.ref ? ' @' + x.ref : ''}`);
+      if (x.note) L.push(`  note: ${x.note}`);
+    }
+    cycles.forEach((c, j) => L.push(`!deadlock${cycles.length > 1 ? j + 1 : ''}: ${[...c, c[0]].join(' > ')}`));
+    const sub = parse(L.join('\n'));
+    for (const e of sub.errors) errors.push(`${s.name}: ${e}`);
+    s.graph = sub.sections[0]; s.cycles = cycles; s.stuck = [...stuck]; s.rel = rel;
+    s.say = cycles.length ? cycles.map((c) => { const who = c.filter((x) => !res.has(x)).map(lab); return 'deadlock: ' + (who.length === 2 ? who.join(' ⇄ ') : [...who, who[0]].join(' → ')); }).join(' · ') : 'no cycle';
+    s.say2 = stuck.size ? 'also stuck: ' + s.stuck.map(lab).join(', ') : cycles.length ? '' : `${rel.filter((x) => x.v === 'waits').length} waits, each ends at a holder that can run`;
+    if (!rel.length) errors.push(`${s.name}: a waits chart needs holds or waits lines`);
+  }
+  function renderWaits(s, doc, mount) {
+    if (!s.graph) return;
+    mount.append(h('div', { class: 'vz-ctop' }, s.tabbed ? null : h('span', { class: 'vz-cname' }, s.name),
+      h('div', { class: 'vz-ro' }, h('b', { style: s.cycles.length ? 'color:var(--vz-coral)' : '' }, s.say), h('span', {}, s.say2))));
+    s.graph.uid = s.uid; s.graph.tabbed = true;
+    renderGraph(s.graph, doc, mount);
+  }
+
+  // hist: a latency distribution. Bucket lines are `upper count` pairs; `was:` the same for a ghost to compare.
+  // p50, p90 and p99 are interpolated from the buckets unless a `p99: 900` line gives a measured one.
+  function parseHist(s, errors) {
+    s.b = []; s.was = null; s.unit = ''; s.budget = null; s.ps = [];
+    const pairs = (str, n) => str.split('|').map((x) => x.trim()).filter(Boolean).flatMap((x) => { const m = x.match(/^(\d*\.?\d+)\s+(\d*\.?\d+)$/); if (!m) { errors.push(`line ${n}: a bucket is "upper count": ${x}`); return []; } return [{ le: +m[1], c: +m[2] }]; });
+    for (const { raw, n } of s.lines) {
+      const t = splitTail(raw.trim()).rest;
+      const f = t.match(/^(unit|budget|was):\s*(.*)$/);
+      if (f) { if (f[1] === 'unit') s.unit = f[2]; else if (f[1] === 'budget') s.budget = parseFloat(f[2]); else s.was = pairs(f[2], n); continue; }
+      const p = t.match(/^([+!*~?]?)p(\d+(?:\.\d+)?):\s*(\d*\.?\d+)\s*(.*)$/);
+      if (p) { s.ps.push({ q: +p[2], v: +p[3], tone: PRE[p[1]] || '', text: p[4], measured: true }); continue; }
+      s.b.push(...pairs(t, n));
+    }
+    s.b.sort((a, c) => a.le - c.le);
+    if (s.b.length < 2) { errors.push(`${s.name}: a hist needs at least two buckets (upper count | upper count)`); return; }
+    const pct = (bs, q) => {
+      const tot = bs.reduce((a, x) => a + x.c, 0); let acc = 0;
+      for (let i = 0; i < bs.length; i++) { const lo = i ? bs[i - 1].le : 0; if (acc + bs[i].c >= (q / 100) * tot) return lo + ((q / 100 * tot - acc) / (bs[i].c || 1)) * (bs[i].le - lo); acc += bs[i].c; }
+      return bs[bs.length - 1].le;
+    };
+    for (const q of [50, 90, 99]) if (!s.ps.some((p) => p.q === q)) s.ps.push({ q, v: pct(s.b, q), tone: '', text: '', measured: false });
+    s.ps.sort((a, c) => a.q - c.q);
+    s.pw = s.was ? Object.fromEntries([50, 90, 99, ...s.ps.map((p) => p.q)].map((q) => [q, pct([...s.was].sort((a, c) => a.le - c.le), q)])) : null;
+    s.total = s.b.reduce((a, x) => a + x.c, 0);
+  }
+  function renderHist(s, doc, mount) {
+    if (s.b.length < 2) return;
+    const u = s.unit ? ' ' + s.unit : '', W = 720, X0 = 44, X1 = W - 14, T = 30, B = 190, H = 230, n = s.b.length;
+    // Buckets take equal widths (they usually grow ×2), so a value maps through its bucket.
+    const X = (v) => { let i = s.b.findIndex((x) => v <= x.le); if (i < 0) return X1; const lo = i ? s.b[i - 1].le : 0; return X0 + ((i + (v - lo) / (s.b[i].le - lo || 1)) / n) * (X1 - X0); };
+    const share = (bs) => { const tot = bs.reduce((a, x) => a + x.c, 0) || 1; return bs.map((x) => x.c / tot); };
+    const sh = share(s.b), wmap = s.was ? new Map(s.was.map((x, j, all) => [x.le, x.c / (all.reduce((a, y) => a + y.c, 0) || 1)])) : null;
+    const top = Math.max(...sh, ...(wmap ? [...wmap.values()] : [])) * 1.1 || 1, Y = (f) => B - (f / top) * (B - T);
+    const { g, ro, detail } = shell(s, mount, W, H), bw = (X1 - X0) / n;
+    for (const v of ticks(0, top * 100, 4)) if (v > 0) g.append(svg('line', { x1: X0, x2: X1, y1: Y(v / 100), y2: Y(v / 100), class: 'vz-gd', 'stroke-dasharray': '3 3' }), tx(X0 - 6, Y(v / 100) + 4, v + '%', 'vz-td', { 'text-anchor': 'end' }));
+    const bars = s.b.map((x, i) => {
+      const lo = i ? s.b[i - 1].le : 0, over = s.budget != null && lo >= s.budget, c = over ? 'var(--vz-coral)' : 'var(--vz-fg)';
+      const el = svg('g', { class: 'vz-crow' });
+      el.append(svg('rect', { x: X0 + i * bw, y: T - 4, width: bw, height: B - T + 4, fill: 'transparent' }),
+        svg('rect', { x: X0 + i * bw + 2, y: Y(sh[i]), width: bw - 4, height: B - Y(sh[i]), style: `fill:color-mix(in srgb,${c} ${over ? 45 : 22}%,transparent);stroke:${c};stroke-width:.8` }));
+      if (wmap?.has(x.le)) el.append(svg('line', { x1: X0 + i * bw + 2, x2: X0 + (i + 1) * bw - 2, y1: Y(wmap.get(x.le)), y2: Y(wmap.get(x.le)), stroke: 'var(--vz-dim)', 'stroke-width': 2, 'stroke-dasharray': '4 2' }));
+      g.append(el, tx(X0 + (i + 1) * bw, B + 14, kfmt(x.le), 'vz-td', { 'text-anchor': 'middle' }));
+      const cum = s.b.slice(0, i + 1).reduce((a, y) => a + y.c, 0);
+      const show = () => tell(detail, h('b', {}, `${fmt(lo)}–${fmt(x.le)}${u}`), `${kfmt(x.c)} (${fmt(+(sh[i] * 100).toFixed(1))}%)`, wmap?.has(x.le) ? `was ${fmt(+(wmap.get(x.le) * 100).toFixed(1))}%` : null, `${fmt(+((100 * cum) / s.total).toFixed(1))}% at or under ${fmt(x.le)}${u}`);
+      el.addEventListener('mouseenter', show); el.addEventListener('click', show);
+      return el;
+    });
+    g.append(svg('line', { x1: X0, x2: X1, y1: B, y2: B, class: 'vz-ln' }), tx(X0, B + 14, '0', 'vz-td', { 'text-anchor': 'middle' }));
+    if (s.unit) g.append(tx(X1, B + 30, s.unit, 'vz-td', { 'text-anchor': 'end' }));
+    const taken = [];
+    for (const p of s.ps) {
+      const x = X(p.v), c = p.tone ? TONE[p.tone] : p.q >= 99 ? 'var(--vz-hl)' : 'var(--vz-dim)', right = x > X1 - 150;
+      const wl = tw(`p${p.q} ≈${kfmt(+p.v.toFixed(0))}${s.pw ? ` (was ${kfmt(+(s.pw[p.q] || 0).toFixed(0))})` : ''}`, 10) + 8, span = right ? [x - wl, x] : [x, x + wl];
+      let row = 0; while (taken.some((t) => t.row === row && t.a < span[1] && span[0] < t.b)) row++;
+      taken.push({ row, a: span[0], b: span[1] });
+      g.append(svg('line', { x1: x, x2: x, y1: T - 8, y2: B, stroke: c, 'stroke-width': 1.3, ...(p.measured ? {} : { 'stroke-dasharray': '2 2' }) }),
+        tx(right ? x - 4 : x + 4, T - 18 + row * 12, `p${p.q} ${p.measured ? '' : '≈'}${kfmt(+p.v.toFixed(p.v < 10 ? 1 : 0))}${s.pw?.[p.q] != null ? ` (was ${kfmt(+s.pw[p.q].toFixed(0))})` : ''}`, 'vz-td vz-sl', { style: `fill:${c};font-size:10px`, ...(right ? { 'text-anchor': 'end' } : {}) }));
+    }
+    if (s.budget != null) g.append(svg('line', { x1: X(s.budget), x2: X(s.budget), y1: T - 4, y2: B + 2, stroke: 'var(--vz-coral)', 'stroke-dasharray': '4 3' }));
+    const p99 = s.ps.find((p) => p.q === 99), over = s.budget != null ? s.b.reduce((a, x, i) => a + ((i ? s.b[i - 1].le : 0) >= s.budget ? x.c : x.le > s.budget ? (x.c * (x.le - s.budget)) / (x.le - (i ? s.b[i - 1].le : 0)) : 0), 0) : 0;
+    ro(p99 ? `p99 ${kfmt(+p99.v.toFixed(0))}${u}${s.pw ? ` · was ${kfmt(+s.pw[99].toFixed(0))}` : ''}` : `${kfmt(s.total)} samples`,
+      [`${kfmt(s.total)} samples`, s.budget != null ? `${fmt(+((100 * over) / s.total).toFixed(1))}% over ${fmt(s.budget)}${u}` : null, s.was ? 'dashed = was' : null].filter(Boolean).join(' · '), s.budget != null && p99 && p99.v > s.budget ? 'fail' : '');
+    tell(detail, h('span', { class: 'vz-hint' }, `Hover a bucket. Percentiles marked ≈ are interpolated from the buckets.`));
+    mount.append(detail);
+  }
+
+  // retries: attempts per client on one time axis. `policy: 1 x2 cap 30 jitter 50%` shades where each retry should
+  // land after the last attempt ends; `giveup: 60` draws the deadline. The strip below counts attempts over time.
+  function parseRetries(s, errors) {
+    s.lanes = []; s.unit = ''; s.policy = null; s.giveup = null; s.max = null;
+    let lane = null;
+    for (const { raw, n } of s.lines) {
+      const t = raw.trim();
+      if (/^\S/.test(raw)) {
+        const f = t.match(/^(axis|policy|giveup|max):\s*(.*)$/);
+        if (f) {
+          const v = splitTail(f[2]).rest;
+          if (f[1] === 'axis') s.unit = v;
+          else if (f[1] === 'giveup') s.giveup = parseFloat(v);
+          else if (f[1] === 'max') s.max = parseInt(v, 10);
+          else {
+            const m = v.match(/^(\d*\.?\d+)\s*[a-zµ]*(?:\s+x(\d*\.?\d+))?(?:\s+cap\s+(\d*\.?\d+)\s*[a-zµ]*)?(?:\s+jitter\s+(\d*\.?\d+)%?)?$/i);
+            if (!m) errors.push(`line ${n}: policy is "first x2 cap 30 jitter 50%": ${v}`);
+            else s.policy = { base: +m[1], f: m[2] ? +m[2] : 2, cap: m[3] ? +m[3] : Infinity, j: m[4] ? +m[4] / (+m[4] > 1 ? 100 : 1) : 0 };
+          }
+          continue;
+        }
+        const ln = t.match(/^([\w.$-]+):\s*(.*)$/);
+        if (ln) { const { rest, ref, note } = splitTail(ln[2]); lane = { id: ln[1], label: rest || ln[1], ref, note, at: [], n }; s.lanes.push(lane); continue; }
+        lineErr(errors, n, 'a client (id: Label), its attempts (  0..2 !timeout | 3 !503), axis:, policy:, giveup: or max:', t); continue;
+      }
+      if (!lane) { errors.push(`line ${n}: attempts before any client`); continue; }
+      for (const part of t.split('|').map((x) => x.trim()).filter(Boolean)) {
+        const m = part.match(/^(-?\d*\.?\d+)(?:\s*\.\.\s*(-?\d*\.?\d+))?\s*(.*)$/);
+        if (!m) { errors.push(`line ${n}: an attempt is "start[..end] label": ${part}`); continue; }
+        const { tone, text } = toned(m[3].trim());
+        if (lane.at.length && +m[1] < lane.at[lane.at.length - 1].a) errors.push(`line ${n}: attempt times must increase: ${part}`);
+        lane.at.push({ a: +m[1], b: m[2] != null ? +m[2] : +m[1], tone: tone || (/^(ok|200|done)/i.test(text) ? 'ok' : ''), label: text });
+      }
+    }
+    if (!s.lanes.some((l) => l.at.length)) errors.push(`${s.name}: a retries chart needs a client with attempts`);
+    const delay = (k) => s.policy && Math.min(s.policy.cap, s.policy.base * s.policy.f ** k);
+    for (const l of s.lanes) l.at.forEach((x, k) => {
+      if (!k) return;
+      const prev = l.at[k - 1], d = delay(k - 1);
+      x.gap = x.a - prev.b;
+      if (d != null) { x.exp = [prev.b + d * (1 - s.policy.j), prev.b + d * (1 + s.policy.j)]; x.off = x.a < x.exp[0] - 1e-9 ? 'early' : x.a > x.exp[1] + 1e-9 ? 'late' : ''; }
+    });
+  }
+  function renderRetries(s, doc, mount) {
+    const lanes = s.lanes.filter((l) => l.at.length); if (!lanes.length) return;
+    const all = lanes.flatMap((l) => l.at), u = s.unit ? ' ' + s.unit : '';
+    const lo = Math.min(0, ...all.map((x) => x.a)), far = Math.max(...all.map((x) => x.b), ...all.flatMap((x) => (x.exp ? [x.exp[1]] : [])), s.giveup ?? -Infinity);
+    const hi = far + (far - lo) * 0.06 || 1;
+    const LW = Math.ceil(Math.max(56, ...lanes.map((l) => tw(l.label, 10) * 1.25 + 12)));
+    const W = 720, X0 = LW + 6, X1 = W - 10, RH = 34, T = 8, SH = 26, yS = T + lanes.length * RH + 6, yA = yS + SH, H = yA + 22;
+    const X = (t) => X0 + ((t - lo) / (hi - lo)) * (X1 - X0);
+    const { g, ro, detail } = shell(s, mount, W, H);
+    if (s.giveup != null) g.append(svg('line', { x1: X(s.giveup), x2: X(s.giveup), y1: 2, y2: yA, stroke: 'var(--vz-coral)', 'stroke-dasharray': '4 3', 'stroke-width': 1.3 }), tx(X(s.giveup) - 4, yA - 4, 'give up', 'vz-td vz-sl', { 'text-anchor': 'end', style: 'fill:var(--vz-coral);font-size:10px' }));
+    const show = (l, x, k) => tell(detail, h('b', {}, `${l.label}, attempt ${k + 1}`), `at ${fmt(x.a)}${u}${x.b > x.a ? ` for ${fmt(+(x.b - x.a).toFixed(2))}${u}` : ''}`, x.label,
+      x.gap != null ? `${fmt(+x.gap.toFixed(2))}${u} after the last` : null, x.exp ? `policy says ${+x.exp[0].toFixed(1)}..${+x.exp[1].toFixed(1)}${x.off ? ` (${x.off})` : ''}` : null, l.ref ? refC(doc, l.ref) : null);
+    lanes.forEach((l, i) => {
+      const y = T + i * RH, mid = y + 15;
+      g.append(tx(0, mid + 4, l.label, 'vz-tc'), svg('line', { x1: X(l.at[0].a), x2: X(l.at[l.at.length - 1].b), y1: mid, y2: mid, class: 'vz-wr' }));
+      l.at.forEach((x, k) => {
+        if (x.exp) g.append(svg('rect', { x: X(x.exp[0]), y: y + 4, width: Math.max(2, X(x.exp[1]) - X(x.exp[0])), height: 22, style: 'fill:color-mix(in srgb,var(--vz-hl) 13%,transparent)' }));
+        if (x.gap != null && X(x.a) - X(l.at[k - 1].b) > tw('+' + fmt(x.gap), 9) + 8) g.append(tx((X(x.a) + X(l.at[k - 1].b)) / 2, y + 2, '+' + fmt(+x.gap.toFixed(2)), 'vz-td vz-small', { 'text-anchor': 'middle' }));
+      });
+      l.at.forEach((x, k) => {
+        const c = x.tone ? TONE[x.tone] : 'var(--vz-fg)', w = Math.max(7, X(x.b) - X(x.a)), el = svg('g', { class: 'vz-crow' });
+        el.append(svg('rect', { x: X(x.a), y: y + 8, width: w, height: 14, rx: 2, style: `fill:color-mix(in srgb,${c} 35%,var(--vz-ground,#111));stroke:${c}` }));
+        if (x.off) el.append(svg('rect', { x: X(x.a) - 3, y: y + 5, width: w + 6, height: 20, rx: 3, fill: 'none', stroke: 'var(--vz-amber)', 'stroke-dasharray': '2 2' }));
+        el.addEventListener('mouseenter', () => show(l, x, k)); el.addEventListener('click', () => show(l, x, k));
+        g.append(el);
+      });
+    });
+    // Pile-up strip: attempts started per slot, across every client.
+    const N = 48, cnt = new Array(N).fill(0);
+    for (const x of all) cnt[Math.min(N - 1, Math.floor(((x.a - lo) / (hi - lo)) * N))]++;
+    const peak = Math.max(...cnt), pi = cnt.indexOf(peak), sw = (X1 - X0) / N;
+    cnt.forEach((c, j) => c && g.append(svg('rect', { x: X0 + j * sw + 1, y: yA - (c / peak) * (SH - 6), width: sw - 2, height: (c / peak) * (SH - 6), style: `fill:${c === peak && peak > 1 ? 'var(--vz-hl)' : 'var(--vz-dim)'}` })));
+    g.append(svg('line', { x1: X0, x2: X1, y1: yA, y2: yA, class: 'vz-ln' }), tx(X0 - 6, yA - 4, 'tries', 'vz-td vz-small', { 'text-anchor': 'end' }));
+    for (const v of ticks(lo, hi, 8)) g.append(tx(X(v), yA + 14, fmt(v), 'vz-td', { 'text-anchor': 'middle' }));
+    if (s.unit) g.append(tx(X0 - 10, yA + 14, s.unit, 'vz-td', { 'text-anchor': 'end' }));
+    const okN = lanes.filter((l) => l.at[l.at.length - 1].tone === 'ok').length, offN = all.filter((x) => x.off).length;
+    const tooMany = s.max != null ? lanes.filter((l) => l.at.length > s.max).length : 0, late = s.giveup != null ? all.filter((x) => x.a > s.giveup).length : 0;
+    const t0 = lo + (pi / N) * (hi - lo);
+    ro(`${all.length} attempts · ${okN}/${lanes.length} succeed`,
+      [peak > 1 && lanes.length > 1 ? `peak ${peak} at ${fmt(+t0.toFixed(1))}${u}` : null, offN ? `${offN} off policy` : null, tooMany ? `${tooMany} past max ${s.max}` : null, late ? `${late} after give-up` : null].filter(Boolean).join(' · '),
+      okN < lanes.length ? 'fail' : '');
+    tell(detail, h('span', { class: 'vz-hint' }, s.policy ? 'Shaded: where the policy puts each retry. Dashed ring: off policy. Hover an attempt.' : 'Hover an attempt. Add policy: to shade where each retry should land.'));
+    mount.append(detail);
+  }
+
   const DETAIL_KEYS = ['does', 'reads', 'writes', 'fails', 'state', 'carries'];
   const CHART = { timing: { parse: parseTiming, render: renderTiming }, gantt: { parse: parseGantt, render: renderGantt }, causes: { parse: parseCauses, render: renderCauses },
-    board: { parse: parseBoard, render: renderBoard }, stock: { parse: parseStock, render: renderStock } };
+    board: { parse: parseBoard, render: renderBoard }, stock: { parse: parseStock, render: renderStock },
+    waits: { parse: parseWaits, render: renderWaits }, hist: { parse: parseHist, render: renderHist }, retries: { parse: parseRetries, render: renderRetries } };
 
   /* ---------- mount ---------- */
   let uid = 0;

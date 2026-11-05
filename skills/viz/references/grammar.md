@@ -7,7 +7,7 @@ Every visual is a `text/viz` block that [`assets/viz.js`](../assets/viz.js) rend
 - [`order-flow.viz`](../assets/examples/order-flow.viz): a layered flow with numbered edges and replay.
 - [`submit-diff.viz`](../assets/examples/submit-diff.viz): a call diff and two trees.
 - [`gate-scan.viz`](../assets/examples/gate-scan.viz): the drawing theme, with box text per story and a meter.
-- [`charts.viz`](../assets/examples/charts.viz): the time and volume views: timing, gantt, causes, board, stock, sankey, and seq state pills.
+- [`charts.viz`](../assets/examples/charts.viz): every chart (timing, gantt with `was`, hist, retries, causes, board, stock, waits), sankey, and seq state pills.
 
 ## Core: nodes, edges, paths
 
@@ -153,82 +153,13 @@ Any element on the page with `data-viz-id="<node id or path name>"` lights that 
 
 Tree depth is 2 spaces per level. Pasted `calldiff` ascii (`├─ │ └─`, `label  path:line`) also parses.
 
-## Charts: timing, gantt, causes, board, stock
+## Charts
 
-These five are their own `==` sections, not graphs. Each draws one chart that scales to its frame, with a readout top right and a detail line under it. Statuses use the same prefixes everywhere: `+` ok or done, `!` fails or blocked, `*` or `~` in progress or at risk, `?` unknown. `@ref` and `# note` work on every row.
-
-**Timing**: what runs at the same time. Use it for races, lock waits and overlapping retries.
-
-```text
-== timing Two workers, one row lock
-axis: ms 0..400                              # unit, then an optional range
-api: API worker @checkout/api.py:40          # a lane
-  0 (idle) | 40 read cart | 70 *charge card | 250 +write paid   # time label; (label) is quiet, drawn as a wire
-worker: Retry worker
-  0 (idle) | 90 read order | 120 !waits on lock | 280 write
-!race: 120..250 worker blocked on the order row   # a window over every lane; the prefix sets its colour (amber by default)
-```
-
-A cursor reads out every lane's state at that moment. Hover or drag to move it, or press ▶ to sweep it. It starts in the first failing window.
-
-**Gantt**: where time goes, and which chain bounds it.
-
-```text
-== gantt Checkout request
-axis: ms
-budget: 600                                  # optional dashed limit
-auth: Auth check 0..40                       # a..b ...
-cart: Load cart 60ms after auth              # ... or a duration after other rows (after a, b waits on both)
-!pay: Charge card 520ms after cart @payments/charge.py:31
-```
-
-The critical path (from the row that ends last, back through whichever row it waits on ends latest) is filled. Slack before the next row that waits on a bar is dotted. Hovering a bar fades everything it doesn't wait on.
-
-**Causes**: a fishbone for an incident.
-
-```text
-== causes Why the receipt email went missing
-effect: no receipt # 3% of orders
--- queue                                     # a family; families alternate above and below the spine
-+drop: hook raised before :240 @orders/order_service.py:236   # + ruled in
--full: queue full                            # - ruled out
-?addr: bad email address                     # ? or no prefix: still open
-```
-
-**Board**: work items across stages.
-
-```text
-== board Backfill, by shard
-columns: queued | copying 3 | verifying | done   # a trailing number is the column's WIP limit
--- copying
-*s4: shard 4
-  progress: 0.62                             # or 62%; draws a bar
-!s6: shard 6 # lock wait on orders           # ! is blocked
-  owner: backfill-2                          # any other key: value shows on click
-```
-
-A column at its limit turns amber, and one over it turns coral. The readout counts the last column and the blocked cards.
-
-**Stock**: one quantity over time against thresholds, drawn as a line and as a tank.
-
-```text
-== stock Email queue depth
-unit: k
-stock: email queue @mail/queue.py:10
-meter: depth | 0 ok | 20 slow | 50 shedding | 80     # same as a graph meter: ticks, each naming the band after it
-9:00 2 | in 9k/min | out 8k/min              # label value, then flows; flows carry forward until changed
-9:20 14 | in 14k/min # campaign starts        # a note marks the point on the chart
-```
-
-The first band is fine, the last is the worst, and any between is at risk. The cursor starts at the peak.
+Time, volume and progress charts have their own grammar: [charts.md](charts.md).
 
 ## Planned views
 
-These views are not built yet. Draw them with what exists until they land:
-
-- **Wait-for graph**: who holds which lock and who waits on it, with the cycle in a deadlock highlighted. For now, use `view: flow` with `!` on the cycle's edges.
-- **Backoff timeline**: retry attempts with growing gaps, jitter bands and the give-up point. For now, use `== timing` with one lane per attempt.
-- **Permission matrix**: roles × actions, each cell allowed, denied or conditional, and why. For now, use `== cover` with `columns:`.
+- **Permission matrix**: roles × actions, each cell allowed, denied or conditional, and why. Not built yet; use `== cover` with `columns:`.
 
 ## Versioning
 
