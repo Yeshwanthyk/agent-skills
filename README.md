@@ -74,6 +74,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`structure-review`](./skills/structure-review) | Audit code structure and propose fixes backed by evidence. |
 | [`teach`](./skills/teach) | Teach a subsystem or change in plain layers, built on `how`, with diagrams that build up. |
 | [`swarm`](./skills/swarm) | Run parallel agents for coverage, a solution race, or a best-of pick. |
+| [`untangle`](./skills/untangle) | Refactor an area so what changes together sits together, and special cases fold into the design. |
 | [`unslop`](./skills/unslop) | Clean up prose, docs, PR bodies, and commits. |
 | [`verification-skill`](./skills/verification-skill) | Build or fix a project skill that drives one real app surface. |
 | [`viz`](./skills/viz) | Render a flow, DAG, call tree, or call diff from a few lines of text. |

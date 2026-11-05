@@ -47,6 +47,12 @@ prompt = "Review state.py and webhooks.py for ownership and contract problems. F
 expect = { methods = ["structure-review"], no_edits = true }
 
 [[case]]
+id = "untangle-area"
+activation = "router"
+prompt = "state.py and webhooks.py keep changing together and are full of one-off ifs. Untangle them."
+expect = { methods = ["untangle"] }
+
+[[case]]
 id = "blast-radius-transitions"
 activation = "router"
 prompt = "If I change the TRANSITIONS table in state.py, what else could break beyond that file?"
