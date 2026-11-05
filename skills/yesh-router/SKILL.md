@@ -66,7 +66,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 
 **Explain and write**
 - show me / draw / diagram / sketch: the current topic → [show-me](../show-me/SKILL.md)
-- viz / visualize / graph: an interactive flow, DAG, call tree, or call diff → [viz](../viz/SKILL.md)
+- viz / visualize / graph / chart: an interactive flow, DAG, sequence, call tree or call diff, or a timing, gantt, sankey, fishbone, kanban or stock chart → [viz](../viz/SKILL.md)
 - unslop / slop / too much text: prose, docs, PR bodies, or commits that must read on first pass; *On request* "bro" or plain talk turns on its plain mode → [unslop](../unslop/SKILL.md)
 
 **Improve the method** (*on request*)

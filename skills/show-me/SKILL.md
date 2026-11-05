@@ -13,7 +13,7 @@ Whenever creating a PR or updating its description, follow [`references/visual-p
 
 ## Choose the form
 
-Read the active host's note in [hosts](../yesh-router/references/hosts/) for its rendering limits, such as terminal width in [pi](../yesh-router/references/hosts/pi.md). Where the host renders HTML inline in the chat, such as [T3 Code](../yesh-router/references/hosts/t3.md), lean into it: flows and DAGs, call trees, and `calldiff` output go to [viz](../viz/SKILL.md), and other comparisons take the HTML branch. Pseudocode, diffs, and copyable code stay as text. Elsewhere, choose from this list as written.
+Read the active host's note in [hosts](../yesh-router/references/hosts/) for its rendering limits, such as terminal width in [pi](../yesh-router/references/hosts/pi.md). Where the host renders HTML inline in the chat, such as [T3 Code](../yesh-router/references/hosts/t3.md), lean into it: anything viz has a view for goes to [viz](../viz/SKILL.md) (its Pick the view list is the source of truth: flows, sequences, states, call trees and diffs, timing, gantt, sankey, causes, board, stock), and other comparisons take the HTML branch. Pseudocode, diffs, and copyable code stay as text. Elsewhere, choose from this list as written.
 
 - Use pseudocode for logic or an algorithm.
 - Use a call tree for runtime control flow that is only nested calls; once it branches, retries, or exits on failure, it is a flow for viz.
@@ -24,7 +24,8 @@ Read the active host's note in [hosts](../yesh-router/references/hosts/) for its
 - Use a whole code block when omitted context would hide ownership or order, or the user needs a copyable target.
 - Use `calldiff` for a changed call tree or stack.
 - Use [viz](../viz/SKILL.md) for a flow or DAG with branches or failure paths, a call tree or call diff too long to read as text, or whenever the user wants to click through it. Elsewhere it opens a temp HTML page.
-- Use focused HTML for a visual comparison or concept too dense for viz.
+- Use viz charts for time, volume and progress: a race or lock wait, where latency goes, a traffic split, incident causes, work items across stages, a quantity over time.
+- Use focused HTML for a comparison or concept no viz view fits.
 
 Never draw boxes or arrows (`┌ │ ─ ▶ →`, `-->`) in a code block; they read as noise in T3 Code, GitHub, and narrow terminals. A drawing that needs them is a viz.
 

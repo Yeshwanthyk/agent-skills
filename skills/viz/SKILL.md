@@ -1,6 +1,6 @@
 ---
 name: viz
-description: "Render an interactive flow, DAG, trigger map, sequence, state machine, call tree, or call diff from a few lines of text, inline in T3 Code or as an HTML page. Use for viz, visualize, graph, or any diagram."
+description: "Render an interactive diagram or chart from a few lines of text, inline in T3 Code or as an HTML page: flow, DAG, sequence, state machine, call tree or call diff; timing of a race, gantt of where latency goes, sankey of a traffic split, fishbone of incident causes, kanban of work items, stock-and-flow of a queue over time. Use for viz, visualize, graph, chart, or any diagram."
 ---
 
 # Viz
@@ -9,34 +9,43 @@ One fixed renderer, [`assets/viz.js`](assets/viz.js), draws every visual. The ag
 
 ## Pick the view
 
-Model the code as nodes, paths and a view in one `== graph` section, not as hand-built HTML. Every shape below comes from the same renderer, with hover tracing, replay and the inspector built in.
+Write data, not HTML: a `== graph` section for nodes and paths, or a chart section for time, progress and quantity ([charts](references/grammar.md#charts-timing-gantt-causes-board-stock)). Pick by the question the reader is asking.
 
+**How does it flow?**
 - Data moving between components (branches, fallbacks, async hops, failure exits) → `view: flow`, the default. Label each edge with what moves and declare edges in the order they happen; the numbers follow.
-- Who acts, what it sends, what filters it, what results → `ranks:` columns. Write one path per trigger, ending `=> result` when it gets through and `=| result` when it is filtered out. Teams or services as bands → add `lane:`.
-- Which inputs a check reads and which triggers keep each one fresh → a `== cover` section after the graph. Rows point at path names; gaps fall out of the paths. A writer × field matrix → `columns: <rank>`.
-- Requests between services over time → `view: seq`, with `at:` times when the waiting matters.
-- The life of one field or job → `view: states`, with one path per story (`!giveup: running > blocked => dead`). A user-facing flow adds a start dot (`[*] -> form`), tones for categories, and `group` boxes for phases ([grammar](references/grammar.md#views)).
-- A call stack at one moment, with the values that went wrong → `view: stack` and `locals:`.
-- A change, on one layout → `+` and `-` on nodes and paths; the reader gets a before | both | after toggle.
-- When the why of each step matters → give paths a `| payload | narration` tail. Each one becomes a replay step.
-- A design doc that walks a reader through scenarios → add `theme drawing`, `shows: id = text` under steps for what each box finds, and a `meter:` when one number decides the outcome ([grammar](references/grammar.md#drawing-theme-and-story-detail)).
-- Which state each service is in after each message → `sets: id=*charging` under a `view: seq` edge, plus `state:` under a node for where it starts. Each lifeline shows a state pill after every message that changes it.
-- How much volume takes each way through (traffic split, funnel, where requests are lost) → `view: sankey`, with `weight:` under each path. Band width is volume.
-- What runs at the same time, and where two workers overlap or wait on each other → `== timing`, one lane per worker and a `!window` over the race.
-- Where a request spends its time, and what bounds it → `== gantt`, using `after` to chain bars. The critical path and slack are computed; `budget:` draws the limit.
-- An incident's suspected causes and which are ruled in or out → `== causes` (a fishbone).
-- Work items across stages (shards in a backfill, jobs in a pipeline), with WIP limits and what's blocked → `== board`.
-- One quantity over time (a queue depth, a lag, a pool in use) against thresholds → `== stock`, with `meter:` bands.
-- A page that will be saved, printed or shared → `theme paper` (ink on a grid sheet). Every view supports it. It paints its own sheet, so keep it off inline T3 renders, which sit on the thread background.
-- Who calls whom → `== tree`.
-- What a change did to a call tree → `== diff`. Run calldiff through the converter rather than hand-writing it:
+- Who acts, what it sends, what filters it, what results → `ranks:` columns, one path per trigger, ending `=> result` when it gets through and `=| result` when it is filtered out. Teams or services as bands → add `lane:`.
+- Requests between services over time → `view: seq`, with `at:` times when the waiting matters. Which state each service is in after each message → `sets: id=*charging` under an edge and `state:` under a node.
+- The life of one field or job → `view: states`, one path per story (`!giveup: running > blocked => dead`). A user-facing flow adds a start dot (`[*] -> form`), tones and `group` boxes ([views](references/grammar.md#views)).
+- Who calls whom → `== tree`. A call stack at one moment, with the values that went wrong → `view: stack` and `locals:`.
+
+**When, and for how long?**
+- What runs at the same time: a race, a lock wait, overlapping retries → `== timing`, one lane per worker and a `!window` over the overlap.
+- Where a request's latency goes and which chain bounds it (critical path, slack) → `== gantt`, chaining bars with `after`; `budget:` draws the limit.
+
+**How much?**
+- How volume splits: a traffic split, a funnel, where requests drop off → `view: sankey`, with `weight:` under each path.
+- One quantity over time against thresholds (queue depth, lag, pool in use), as stock-and-flow → `== stock`, with `meter:` bands.
+
+**Why did it break, and where is it stuck?**
+- An incident's suspected causes, ruled in or out → `== causes`, a fishbone.
+- Work items across stages (shards in a backfill, jobs in a pipeline), with WIP limits and what is blocked → `== board`, a kanban.
+- Which inputs a check reads and which triggers keep each fresh → `== cover` after the graph; a writer × field matrix → `columns: <rank>`.
+
+**What changed?**
+- A change on one layout → `+` and `-` on nodes and paths; the reader gets a before | both | after toggle.
+- What a change did to a call tree → `== diff`, from the converter rather than by hand:
 
 ```bash
 python3 <viz>/scripts/viz.py calldiff main HEAD --max-depth 4 <paths>   # prints base + == diff, unchanged subtrees collapsed
 python3 <viz>/scripts/viz.py calltree --entry submitForm
 ```
 
-Ground every node in the code: give each node an `@path:line`, mark anything you have not read with `?`, and put reads, writes, and failure behaviour in detail lines.
+Add to any view as needed:
+- The why of each step → a `| payload | narration` tail on paths; each becomes a replay step.
+- A design doc that walks scenarios → `theme drawing`, `shows: id = text` under steps, and a `meter:` when one number decides the outcome ([drawing](references/grammar.md#drawing-theme-and-story-detail)).
+- A page that will be saved, printed or shared → `theme paper`. It paints its own sheet, so inline T3 renders keep the default theme.
+
+Ground everything in evidence. Each node gets an `@path:line` and detail lines for reads, writes and failure behaviour. Each number (a duration, a weight, a level) comes from a trace, log, query or the code. Mark anything you have not read or measured with `?`: a `?` prefix on a node, path, bar or segment, and a `# estimate` note on a stock point.
 
 ## Show it
 
@@ -61,4 +70,4 @@ The visual carries the structure. The reply adds only what it can't show: what y
 
 ## Completion
 
-Done when the visual renders without `viz:` errors, every node is grounded or marked `?`, and you have seen it where the reader will look: inline in T3, or a screenshot of the opened page elsewhere. A headless load, a `curl`, or a clean console is not seeing it; when you could not look, say so instead of calling it rendered.
+Done when the visual renders without `viz:` errors, every node and number is grounded or marked `?`, and you have seen it where the reader will look: inline in T3, or a screenshot of the opened page elsewhere. A headless load, a `curl`, or a clean console is not seeing it; when you could not look, say so instead of calling it rendered.
