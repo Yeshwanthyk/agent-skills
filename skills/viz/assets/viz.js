@@ -250,6 +250,10 @@ background:linear-gradient(rgba(43,38,32,.045) 1px,transparent 1px) 0 0/22px 22p
 .vz-detail .q-fail{color:var(--vz-coral)}.vz-detail .q-ok{color:var(--vz-green)}.vz-detail .q-warn{color:var(--vz-amber)}
 .vz-spill{position:absolute;transform:translateX(-50%);height:18px;line-height:16px;padding:0 8px;border:1px solid var(--vz-line);border-radius:9px;background:var(--vz-bg);
 color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,border-color .2s,color .2s;z-index:1}
+.vz-life{stroke:color-mix(in srgb,var(--vz-fg) 26%,transparent);stroke-width:1.25}
+.vz-sbar,.vz-sbar-key{background:color-mix(in srgb,var(--vz-fg) 14%,transparent);border-radius:3px}.vz-sbar{position:absolute;width:8px;transform:translateX(-50%);transition:opacity 160ms var(--vz-out)}
+.vz-sbar-key{display:inline-block;width:8px;height:12px;margin-right:5px;vertical-align:-1px}.vz-flow .vz-sbar.ghost{opacity:.13}
+.vz-sbar.q-warn,.vz-sbar-key.q-warn{background:color-mix(in srgb,var(--vz-amber) 55%,transparent)}.vz-sbar.q-ok,.vz-sbar-key.q-ok{background:color-mix(in srgb,var(--vz-green) 55%,transparent)}.vz-sbar.q-fail,.vz-sbar-key.q-fail{background:color-mix(in srgb,var(--vz-coral) 60%,transparent)}
 .vz-spill.hot{color:var(--vz-fg);border-color:var(--vz-hl)}.vz-flow .vz-spill.ghost{opacity:.13}
 .vz-spill.q-fail{color:var(--vz-coral);border-color:var(--vz-coral)}.vz-spill.q-ok{color:var(--vz-green)}.vz-spill.q-warn{color:var(--vz-amber)}
 .vz-drawing .vz-col h4,.vz-drawing .vz-cname{font-family:var(--vz-letter);letter-spacing:.14em;text-transform:uppercase}
@@ -1030,6 +1034,10 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     const pills = s.edges.some((e) => e.sets?.length), decor = [];
     const first = pills ? s.nodes.filter((nd) => nd.info.state) : [];
     for (const nd of first) decor.push({ kind: 'spill', x: nd.box.x, y: headH + 10, ...toned(nd.info.state), e: null });
+    // Each state is also a bar on its lifeline, from the message that sets it to the next change, so how long a
+    // party sits in a state reads as length.
+    const open = new Map(), bar = (id, y2) => { const o = open.get(id); if (o && y2 - 3 > o.y1) decor.push({ kind: 'sbar', x: s.byId[id].box.x, y1: o.y1, y2: y2 - 3, tone: o.tone, e: o.e }); open.delete(id); };
+    for (const nd of first) open.set(nd.id, { y1: headH + 10, tone: toned(nd.info.state).tone, e: null });
     const top = headH + 34 + (first.length ? 26 : 0);
     const span = timed ? Math.max(...s.edges.map((e) => ms(e.info.at))) || 1 : 1, scale = timed ? Math.max(s.edges.length * 34, 300) / span : 0;
     let y = top - 38, last = top;
@@ -1037,11 +1045,15 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       y = timed ? Math.max(y + 38, top + ms(e.info.at) * scale) : y + 38; last = y;
       const a = s.byId[e.from].box, b = s.byId[e.to].box;
       if (e.from === e.to) e.d = `M${a.x},${y} C${a.x + 44},${y} ${a.x + 44},${y + 16} ${a.x + 4},${y + 16}`;
-      else { const dir = b.x > a.x ? 1 : -1; e.d = `M${a.x},${y} L${b.x - dir * 3},${y}`; }
+      else { const dir = b.x > a.x ? 1 : -1, gap = pills ? 6 : 3; e.d = `M${a.x + dir * (pills ? 4 : 0)},${y} L${b.x - dir * gap},${y}`; }
       if (e.label) e.pill = { x: (a.x + b.x) / 2 + (e.from === e.to ? 40 : 0), y: y - PILL - 2, w: Math.ceil(e.label.length * c * PFS / FS) + 18 };
       if (timed) decor.push({ kind: 'tick', x: 0, y: y - 8, text: e.info.at });
-      if (e.sets?.length) { for (const x of e.sets) decor.push({ kind: 'spill', x: s.byId[x.id].box.x, y: y + 9, text: x.text, tone: x.tone, e }); y += 28; last = y; }
+      if (e.sets?.length) {
+        for (const x of e.sets) { bar(x.id, y); open.set(x.id, { y1: y, tone: x.tone, e }); decor.push({ kind: 'spill', x: s.byId[x.id].box.x, y: y + 9, text: x.text, tone: x.tone, e }); }
+        y += 28; last = y;
+      }
     });
+    for (const id of [...open.keys()]) bar(id, last + 14);
     for (const nd of s.nodes) decor.push({ kind: 'life', x: nd.box.x, y1: headH, y2: last + 26 });
     return { w: x - COL + 20, h: Math.ceil(last + 30), decor };
   }
@@ -1171,7 +1183,7 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       defs.append(f);
     }
     g.append(defs);
-    for (const d of L.decor) if (d.kind === 'life') g.append(svg('line', { x1: d.x, x2: d.x, y1: d.y1, y2: d.y2, stroke: 'var(--vz-line)', 'stroke-dasharray': '3 4' }));
+    for (const d of L.decor) if (d.kind === 'life') g.append(svg('line', { x1: d.x, x2: d.x, y1: d.y1, y2: d.y2, class: 'vz-life' }));
     const base = thread ? (e) => (e.st === 'del' ? 'x' : e.out === 'pass' ? 'g' : e.out === 'fail' || e.out === 'drop' ? 'r' : 'a')
       : drawing ? (e) => (e.st === 'add' ? 'g' : e.st === 'del' || e.out === 'fail' ? 'r' : e.out === 'drop' ? 'y' : 'a')
       : (e) => (e.st === 'add' ? 'g' : e.st === 'del' ? 'r' : e.out === 'pass' ? 'g' : e.out === 'fail' ? 'r' : 'a');
@@ -1233,6 +1245,8 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       el.addEventListener('mouseenter', () => hoverNode(i)); el.addEventListener('mouseleave', () => hoverNode(null));
       stage.append(el); return el;
     });
+    const sbars = L.decor.filter((d) => d.kind === 'sbar');
+    for (const d of sbars) { d.el = h('div', { class: `vz-sbar${d.tone ? ' q-' + d.tone : ''}`, style: `left:${d.x}px;top:${d.y1}px;height:${d.y2 - d.y1}px` }); stage.append(d.el); }
     const spills = L.decor.filter((d) => d.kind === 'spill');
     for (const d of spills) { d.el = h('div', { class: `vz-spill${d.tone ? ' q-' + d.tone : ''}`, style: `left:${d.x}px;top:${d.y}px` }, d.text); stage.append(d.el); }
     const numbered = view === 'flow';
@@ -1259,6 +1273,8 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       outs.has('drop') ? h('span', { class: drawing ? 's-mod' : null, title: 'A dashed line: every story through it is stopped before the end.' }, '┄ filtered out') : null,
       outs.has('fail') ? h('span', { class: 's-fail', title: 'A coral line: a story through it ends in a failure.' }, '! — fails') : null,
       s.edges.some((e) => e.async) ? h('span', { title: 'Fire and forget: the sender does not wait for this hop.' }, '┄ async') : null,
+      ...[['warn', 'in progress'], ['ok', 'done'], ['fail', 'failed']].filter(([t]) => L.decor.some((d) => d.kind === 'sbar' && d.tone === t))
+        .map(([t, w]) => h('span', { title: 'A bar on a lifeline: how long that party stays in the state named at its top.' }, h('span', { class: `vz-sbar-key q-${t}` }), w)),
       ...used.map((st) => h('span', { class: 's-' + st, title: STATUS_TIP[st] }, `${MARK[st]} ${STATUS_WORD[st]}`)),
       null);
 
@@ -1506,6 +1522,7 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       for (const e of s.edges) for (const el of [e.path, e.hit, e.pillEl]) el?.classList.toggle('ghost', k >= 0 && bornE(e) > k);
       pkt.setAttribute('opacity', 0); pktL?.setAttribute('opacity', 0); hopG.replaceChildren();
       for (const c of storyChips) c.el.classList.toggle('on', k >= 0 && c.p === steps[k]);
+      for (const d of sbars) d.el.classList.toggle('ghost', k >= 0 && !!d.e && bornE(d.e) > k);
       for (const d of spills) { d.el.classList.toggle('ghost', k >= 0 && !!d.e && bornE(d.e) > k); d.el.classList.toggle('hot', k >= 0 && !!d.e && steps[k].edges.includes(d.e)); }
       boxes.forEach((b) => { const x = b.querySelector('.vz-bx'); if (x) x.textContent = ''; });
       meterTo(k >= 0 ? steps[k].meter : null);

@@ -59,7 +59,7 @@ pay -> api: ok
 api > pay > api | charge | 686 of the 840 ms are spent waiting on the charge.
 ```
 
-**State pills in `seq`:** `state: idle` under a node is its starting state, and `sets: api=*charging, pay=+captured` under an edge sets states after that message. A prefix sets the tone: `+` done, `!` failed, `*` or `~` in progress, `?` unknown. While replaying, the pills of the current message light and later ones fade.
+**States in `seq`:** `state: idle` under a node is its starting state, and `sets: api=*charging, pay=+captured` under an edge sets states after that message. Each state draws as a pill where it starts and a bar on the lifeline until the next change, so a long wait shows as a long bar. A prefix sets the tone: `+` done, `!` failed, `*` or `~` in progress, `?` unknown. While replaying, the pills of the current message light and later ones fade.
 
 **Sankey** (`view: sankey`):
 
