@@ -12,6 +12,19 @@ A refactoring changes structure while preserving behavior. Pin behavior with a c
 
 For contested abstractions, consult the [simplicity principle](../../yesh-router/references/principles/simplicity.md). Before changing persistent forms, account for data migration and rollback. During implementation, migrate affected callers with the change and verify the resulting behavior or equivalence at the named boundary.
 
+## Shape check
+
+Before writing code, a writer replies with at most 15 lines:
+
+- files: each path, new or edited
+- precedent: each new piece → the file:line it copies
+- new types: name, and the one reason it exists
+- new imports: from → to (a model importing a service is a stop)
+- calls: the product path this exercises end to end
+- non-goals: what is deliberately left out
+
+The coordinator approves or corrects it in one turn. A line with no precedent, or a type with no reason, gets cut here rather than in review.
+
 ## Plan test
 
 The chosen branch is sufficient when it names the behavior or equivalence contract, affected locations and callers, dependency order, proof boundary, and rollout or recovery details that matter. Omit dimensions that do not apply rather than filling them with ceremony.
