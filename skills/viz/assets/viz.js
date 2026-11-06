@@ -85,7 +85,7 @@ transition:opacity 160ms var(--vz-out),border-color 160ms var(--vz-out),box-shad
 .vz-box.done{box-shadow:0 0 0 1px var(--vz-green)}.vz-box.now{box-shadow:0 0 0 2px var(--vz-amber)}.vz-box.nowfail{box-shadow:0 0 0 2px var(--vz-coral)}
 .vz-pill{position:absolute;transform:translateX(-50%);height:20px;line-height:18px;padding:0 8px 0 2px;font-size:11px;white-space:nowrap;cursor:pointer;
 border:1px solid var(--vz-line);border-radius:10px;background:linear-gradient(var(--vz-card),var(--vz-card)),var(--vz-bg);transition:opacity 160ms var(--vz-out),border-color 160ms var(--vz-out)}
-.vz-pill.s-add{color:var(--vz-green)}.vz-pill.s-del{color:var(--vz-coral);text-decoration:line-through}.vz-pill.hot{border-color:var(--vz-amber)}
+.vz-pill.multi{height:auto;line-height:14px;padding:2px 8px 3px 2px;border-radius:8px;text-align:center}.vz-pill.multi>span:last-child{display:inline-block;vertical-align:middle}.vz-pill.s-add{color:var(--vz-green)}.vz-pill.s-del{color:var(--vz-coral);text-decoration:line-through}.vz-pill.hot{border-color:var(--vz-amber)}
 .vz-num{display:inline-block;min-width:16px;height:16px;padding:0 3px;margin-right:5px;border-radius:8px;background:var(--vz-amber);color:var(--vz-bg);text-align:center;line-height:16px;font-size:10px;font-weight:700;vertical-align:1px;text-decoration:none}
 .vz-pill .vz-num:last-child{margin-right:-6px}
 .vz-dimmed .vz-box:not(.hot),.vz-dimmed .vz-pill:not(.hot){opacity:.35}
@@ -602,13 +602,22 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
   // Wrap at a space, comma or paren, or before a dot, so `Class.method` breaks between the two. A part longer than the
   // limit stays whole and the box widens: meaning is never cut.
   function wrap(text, max) {
-    const parts = text.split(/(?<=[\s,(])|(?=\.)/), lines = [];
+    const parts = text.split(/(?<=[\s,]|\S\()|(?=\.)/), lines = [];
     let cur = '';
     for (const p of parts) {
       if (cur && (cur + p).trimEnd().length > max) { lines.push(cur.trimEnd()); cur = p.trimStart(); } else cur += p;
     }
     if (cur.trim()) lines.push(cur.trimEnd());
     return lines.length ? lines : [text];
+  }
+  // An edge label over PWRAP + 8 characters wraps at PWRAP so a long one stacks instead of widening the graph, which would
+  // then shrink to fit and leave every label too small to read.
+  const PWRAP = 24, PLINE = 14;
+  function pillDims(e, extra, pre = 0) {
+    const lines = !e.label ? [] : e.label.length > PWRAP + 8 ? wrap(e.label, PWRAP) : [e.label];
+    e.plines = lines;
+    const w = Math.ceil((pre + Math.max(0, ...lines.map((l) => l.length))) * cw() * PFS / FS) + extra;
+    return { w, h: lines.length > 1 ? lines.length * PLINE + 6 : PILL };
   }
   const MARK = { add: '+', del: '−', mod: '~', fail: '!', active: '*', unk: '?' };
 
@@ -683,8 +692,8 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       let prev = s.nodes[u].box; e.chain = [];
       for (let r = ru + 1; r < rv; r++) {
         const pill = r === ru + 1 && pilled(e);
-        const text = (numbered ? String(e.num).length + 1 : 0) + e.label.length;
-        const it = put({ kind: pill ? 'pill' : 'v', e, w: pill ? Math.ceil(text * c * PFS / FS) + (numbered ? (e.label ? 30 : 22) : 18) : 2, h: pill ? PILL : 0 }, r);
+        const pd = pill ? pillDims(e, numbered ? (e.label ? 30 : 22) : 18, numbered ? String(e.num).length + 1 : 0) : null;
+        const it = put({ kind: pill ? 'pill' : 'v', e, w: pd ? pd.w : 2, h: pd ? pd.h : 0 }, r);
         prev.down.push(it); it.up.push(prev); prev = it; e.chain.push(it);
       }
       prev.down.push(s.nodes[v].box); s.nodes[v].box.up.push(prev);
@@ -741,7 +750,7 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     }
     // x: each item wants the mean of its neighbours' centres; pav keeps the rank order and minimum spacing.
     // A self-loop and its label take room right of their box.
-    for (const e of s.edges) if (e.from === e.to) { const b = s.byId[e.from].box; b.xr = Math.max(b.xr || 0, 30 + (e.label ? Math.ceil(e.label.length * c * PFS / FS) + 22 : 0)); }
+    for (const e of s.edges) if (e.from === e.to) { const b = s.byId[e.from].box; b.xr = Math.max(b.xr || 0, 30 + (e.label ? pillDims(e, 22).w : 0)); }
     const sep = (a, b) => (a.w + b.w) / 2 + (a.xr || 0) + (a.kind === 'node' && b.kind === 'node' ? GAP : a.kind === 'v' && b.kind === 'v' ? 8 : 14);
     for (const rk of ranks) { let x = 0; rk.forEach((it, j) => { if (j) x += sep(rk[j - 1], it); it.x = x; }); }
     const place = (rk, want) => {
@@ -883,8 +892,8 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       const b = s.byId[e.from].box;
       e.d = selfLoop(b);
       if (e.label) {
-        const w = Math.ceil(e.label.length * c * PFS / FS) + 18;
-        e.pill = { x: b.x + b.w / 2 + 30 + w / 2, y: b.y + b.h / 2 - PILL / 2, w };
+        const { w, h: ph } = pillDims(e, 18);
+        e.pill = { x: b.x + b.w / 2 + 30 + w / 2, y: b.y + b.h / 2 - ph / 2, w };
         right = Math.max(right, e.pill.x + w / 2 + 4);
       }
     }
@@ -1230,7 +1239,8 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     for (const e of s.edges) {
       if (!e.pill) continue;
       e.pillEl = h('div', { class: `vz-pill ${e.st ? 's-' + e.st : ''} f-${e.out || 'none'}`, style: `left:${e.pill.x}px;top:${e.pill.y}px`, role: 'button', title: e.label || `${s.byId[e.from].label} → ${s.byId[e.to].label}` },
-        numbered ? h('span', { class: 'vz-num' }, e.num) : null, e.label ? h('span', {}, e.label) : null);
+        numbered ? h('span', { class: 'vz-num' }, e.num) : null, e.label ? h('span', {}, ...(e.plines?.length > 1 ? e.plines.flatMap((l, i) => (i ? [h('br'), l] : [l])) : [e.label])) : null);
+      if (e.plines?.length > 1) e.pillEl.classList.add('multi');
       if (!numbered) e.pillEl.classList.add('plain');
       e.pillEl.addEventListener('click', () => pickEdge(e));
       e.pillEl.addEventListener('mouseenter', () => hoverEdge(e)); e.pillEl.addEventListener('mouseleave', () => hoverEdge(null));
@@ -1618,18 +1628,17 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       if (named.length) chipsEl = h('div', { class: 'vz-schips' }, ...[...by].map(([id, ps]) => h('span', { class: 'vz-cg' }, h('i', {}, s.byId[id].label), ...ps.map(chip))));
     }
     mount.append(...(drawing ? [chipsEl, wrapEl, meterEl, narr, bar, legend, coverEl, insp] : [bar, narr, wrapEl, meterEl, legend, coverEl, insp]).filter(Boolean));
-    // A graph wider than its frame, or taller than about half the screen, shrinks to fit, down to 70%; past that it
-    // scrolls. Seeing the whole flow at once beats full-size text, and the inspector then sits in view below it.
-    // The fit button switches to full size and back.
+    // A graph wider than its frame, or taller than about half the screen, shrinks to fit, but only down to 85%:
+    // below that the labels get too small to read, so the rest scrolls. The button switches to 100% and back.
     let zoom = 1, fit = true;
     const tall = () => Math.max(420, Math.round((window.screen?.availHeight || 900) * 0.55));
-    const fitBtn = h('button', { class: 'vz-fit', title: 'Fit: the whole graph on one screen. Full size: larger text, more scrolling.', onclick: () => { fit = !fit; refit(); } });
+    const fitBtn = h('button', { class: 'vz-fit', title: 'Fit: shrink the graph toward one screen. Full size: 100% text, more scrolling.', onclick: () => { fit = !fit; refit(); } });
     function refit() {
       const room = wrapEl.clientWidth;
       if (!room) return;
-      const kw = room / L.w, kh = tall() / L.h, want = fit ? Math.min(kw, kh) : kw;
-      const k = Math.min(1, Math.max(0.7, Math.floor(want * 100) / 100));
-      fitBtn.hidden = kh >= 1 || Math.min(1, Math.max(0.7, kw)) <= Math.max(0.7, kh);
+      const want = Math.min(room / L.w, tall() / L.h), fitK = Math.min(1, Math.max(0.85, Math.floor(want * 100) / 100));
+      const k = fit ? fitK : 1;
+      fitBtn.hidden = fitK >= 1;
       fitBtn.textContent = fit ? 'full size' : 'fit';
       if (k !== zoom) { zoom = k; stage.style.zoom = k; }
     }
