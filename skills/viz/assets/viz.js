@@ -2,62 +2,13 @@
    coverage strips, call trees and call diffs. Grammar: ../references/grammar.md. The page holds only data; this file is loaded from the CDN or inlined by scripts/viz.py. */
 (() => {
   const CSS = `
-.vz.vz-thread,.vz.vz-thread.vz-solo{--vz-fg:#efe6cf;--vz-dim:#a9b9b2;--vz-line:rgba(239,230,207,.16);--vz-amber:#e3b441;--vz-coral:#e0705f;--vz-green:#e3b441;--vz-blue:#9fc9d3;
---vz-card:transparent;--vz-bg:#15302e;--vz-r:3px;--vz-paper:#f2ead6;--vz-ink:#1f1b15;--vz-gold:#e3b441;--vz-red:#b23a2c;
---vz-sans:"Avenir Next",system-ui,"Segoe UI",sans-serif;
-background:radial-gradient(120% 90% at 42% 35%,#1e403d 0%,#16312f 55%,#0f2422 100%);color:var(--vz-fg);padding:18px 18px 14px;border-radius:var(--radius,8px);font:13px/1.5 var(--vz-sans);position:relative;isolation:isolate}
-.vz-thread::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:.5;mix-blend-mode:soft-light;
-background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
-.vz-thread .vz-head{gap:2px 12px;margin-bottom:12px}.vz-thread .vz-title{font:600 15px/1.3 var(--vz-sans);letter-spacing:.01em;color:var(--vz-paper)}.vz-thread .vz-sub{font-size:12.5px}
-.vz-thread .vz-panel{border:0;background:none;padding:0}
-.vz-thread button{border-radius:999px;background:rgba(239,230,207,.04);border-color:rgba(239,230,207,.2);color:var(--vz-fg);font:12px var(--vz-sans);padding:2px 10px}
-.vz-thread button[aria-pressed=true],.vz-thread button[aria-selected=true]{background:var(--vz-paper);border-color:var(--vz-paper);color:var(--vz-ink)}
-.vz-thread .vz-bar input[type=range]{accent-color:var(--vz-gold)}.vz-thread .vz-count{font-size:12px}
-.vz-thread .vz-box,.vz-thread .vz-box.s-add,.vz-thread .vz-box.s-mod,.vz-thread .vz-box.s-active,.vz-thread .vz-box.s-unk{background:var(--vz-paper);color:var(--vz-ink);border:0;border-radius:2px;padding:6px 10px;
-box-shadow:0 0 0 6px rgba(212,232,227,.07),0 0 0 7px rgba(227,241,237,.20),0 10px 22px -8px rgba(0,0,0,.55)}
-.vz-thread .vz-box::before{content:"";position:absolute;left:-3px;top:-4.5px;width:46%;height:1.2px;border-radius:2px;background:linear-gradient(90deg,rgba(244,251,249,.6),rgba(244,251,249,0));pointer-events:none}
-.vz-thread .vz-box .vz-bl{font:500 13.5px/17px var(--vz-sans);letter-spacing:.005em}
-.vz-thread .vz-box .vz-bs,.vz-thread .vz-box .vz-bn{font:11.5px/15px var(--vz-sans);color:#7a6f5c;letter-spacing:.01em}
-.vz-thread .vz-box .vz-bx{font:11.5px/15px var(--vz-sans);color:#8a5d10}.vz-thread .vz-box .vz-bv{color:#2f5d6a}
-.vz-thread .vz-box .vz-mk{display:none}
-.vz-thread .vz-box.s-add{box-shadow:inset 5px 0 0 var(--vz-gold),0 0 0 6px rgba(212,232,227,.07),0 0 0 7px rgba(227,241,237,.20),0 10px 22px -8px rgba(0,0,0,.55)}
-.vz-thread .vz-box.s-del{background:transparent;color:var(--vz-paper);box-shadow:none;outline:1.5px dashed rgba(242,234,214,.55);outline-offset:0;opacity:.7}.vz-thread .vz-box.s-del::before{display:none}
-.vz-thread .vz-box.s-del .vz-bs{color:var(--vz-dim)}
-.vz-thread .vz-box.s-fail,.vz-thread .vz-box.e-dropped{color:var(--vz-red);box-shadow:3px 4px 0 rgba(4,10,10,.45)}.vz-thread .vz-box.s-fail::before,.vz-thread .vz-box.e-dropped::before{display:none}
-.vz-thread .vz-box.s-fail .vz-bs,.vz-thread .vz-box.e-dropped .vz-bs{color:#a0645a}
-.vz-thread .vz-box.s-mod{box-shadow:inset 0 -3px 0 var(--vz-gold),0 0 0 6px rgba(212,232,227,.07),0 0 0 7px rgba(227,241,237,.20)}
-.vz-thread .vz-box.s-unk,.vz-thread .vz-box.s-active{outline:1.5px dashed var(--vz-ink);outline-offset:-4px}
-.vz-thread .vz-box.k-event{outline:1.5px dashed rgba(31,27,21,.45);outline-offset:-4px}
-.vz-thread .vz-box[class*=" t-"]{background:linear-gradient(color-mix(in srgb,var(--vz-t) 22%,transparent),color-mix(in srgb,var(--vz-t) 22%,transparent)),var(--vz-paper)}
-.vz-thread .vz-box.k-start{background:var(--vz-gold);box-shadow:0 0 0 5px rgba(227,180,65,.18);width:14px}.vz-thread .vz-box.k-start::before{display:none}
-.vz-thread .vz-box.hot,.vz-thread .vz-box.done{box-shadow:0 0 0 7px rgba(247,227,163,.20),0 0 0 8px rgba(247,227,163,.75),0 10px 22px -8px rgba(0,0,0,.55)}
-.vz-thread .vz-box.now{box-shadow:0 0 0 7px rgba(247,227,163,.32),0 0 0 9px var(--vz-gold),0 0 34px rgba(247,227,163,.35)}
-.vz-thread .vz-box.nowfail{box-shadow:0 0 0 7px rgba(224,112,95,.25),0 0 0 9px var(--vz-coral)}
-.vz-thread .vz-pill{background:var(--vz-paper);color:#2a251e;border:0;border-radius:1.5px;height:21px;line-height:21px;padding:0 9px;font:12px var(--vz-sans);letter-spacing:.03em;
-box-shadow:2px 3px 0 rgba(4,10,10,.42);rotate:-1.4deg}
-.vz-thread .vz-pill:nth-of-type(3n){rotate:1.2deg}.vz-thread .vz-pill:nth-of-type(3n+1){rotate:-.6deg}
-.vz-thread .vz-pill.f-fail,.vz-thread .vz-pill.f-drop{color:var(--vz-red)}
-.vz-thread .vz-pill.s-del{background:#d8d1c0;color:#6d6457;text-decoration:line-through;text-decoration-color:var(--vz-red);text-decoration-thickness:1.5px;opacity:.8}
-.vz-thread .vz-pill.s-add{color:#2a251e}.vz-thread .vz-pill.hot{box-shadow:2px 3px 0 rgba(4,10,10,.42),0 0 0 2px var(--vz-gold)}
-.vz-thread .vz-num{background:var(--vz-ink);color:var(--vz-paper);min-width:17px;height:17px;line-height:17px;border-radius:9px;font-size:11.5px;padding:0 3px;vertical-align:0;font-feature-settings:"tnum"}
-.vz-thread .vz-group{border:1px solid rgba(239,230,207,.18);background:rgba(239,230,207,.035);border-radius:6px}
-.vz-thread .vz-group>span{border-bottom-color:rgba(239,230,207,.12);color:var(--vz-paper);font:600 12px/26px var(--vz-sans);letter-spacing:.02em}
-.vz-thread .vz-group>span>b{background:none}
-.vz-thread .vz-colhead,.vz-thread .vz-lane span,.vz-thread .vz-cap{font:600 10.5px var(--vz-sans);letter-spacing:.16em;color:var(--vz-dim)}
-.vz-thread .vz-lane{background:rgba(239,230,207,.03);border-color:rgba(239,230,207,.1)}
-.vz-thread .vz-legend{font-size:12px;color:var(--vz-dim)}.vz-thread .vz-legend .s-add,.vz-thread .vz-legend .s-ok{color:var(--vz-gold)}
-.vz-thread .vz-narr{font:13.5px/1.5 var(--vz-sans);color:var(--vz-paper)}.vz-thread .vz-detail,.vz-thread .vz-stories{font-size:12.5px;color:var(--vz-dim)}.vz-thread .vz-detail{border-top-color:var(--vz-line)}.vz-thread .vz-stories b{color:var(--vz-paper);font-weight:600}
-.vz-thread .vz-insp{border-top-color:var(--vz-line);font-size:12.5px}.vz-thread .vz-insp code,.vz-thread .vz-detail code{color:#f2d788;font-family:var(--font-mono,ui-monospace,monospace);font-size:11.5px}
-.vz-thread .vz-payload{color:var(--vz-ink);background:var(--vz-gold);border-color:var(--vz-gold)}
-.vz-thread .vz-chip{font-family:var(--vz-sans)}
-.vz-thread .vz-pkl{font:11px var(--vz-sans);fill:var(--vz-paper);stroke:#10201f}
-.vz-thread path.vz-core{stroke:transparent!important}.vz-thread .vz-cord{transition:opacity 160ms var(--vz-out)}.vz-thread .vz-cord.on{filter:brightness(1.18) drop-shadow(0 0 4px rgba(247,227,163,.45))}
 .vz{--vz-fg:var(--foreground,#e9e6e1);--vz-dim:var(--muted-foreground,#8a857e);--vz-line:var(--border,rgba(255,255,255,.13));
 --vz-amber:var(--warning,#e6b04f);--vz-coral:var(--destructive,#e0736a);--vz-green:var(--success,#9cc48a);--vz-blue:var(--info,#7aa2d6);
 --vz-card:var(--card,rgba(255,255,255,.03));--vz-bg:var(--vz-ground,#0a0a0a);--vz-r:var(--radius,6px);--vz-out:cubic-bezier(.23,1,.32,1);
 color:var(--vz-fg);font:12.5px/1.45 var(--font-mono,"IBM Plex Mono","Berkeley Mono",ui-monospace,SFMono-Regular,Menlo,monospace)}
 .vz *{box-sizing:border-box}
-.vz.vz-solo{background:#0a0a0a;padding:16px;border-radius:8px}
+.vz.vz-solo{background:#0a0a0a;padding:16px;border-radius:8px}.vz.vz-solo.vz-lt{background:#fff;box-shadow:inset 0 0 0 1px rgba(17,24,39,.08)}
+.vz.vz-lt:not(.vz-drawing):not(.vz-paper){--vz-fg:#1d2026;--vz-dim:#6b7280;--vz-line:rgba(17,24,39,.12);--vz-amber:#b45309;--vz-coral:#c93a32;--vz-green:#1f8a4c;--vz-blue:#2f5fd0;--vz-card:rgba(17,24,39,.025)}
 .vz-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0 0 8px}
 .vz-title{font-weight:600;font-size:14px}.vz-sub{color:var(--vz-dim)}
 .vz-tabs{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}
@@ -207,21 +158,20 @@ transition:opacity 300ms var(--vz-out),background-color 220ms var(--vz-out),colo
 .vz-drawing .vz-mband.on{background:var(--vz-fg);color:var(--vz-bg)}.vz-drawing .vz-mmark{background:var(--vz-fg);box-shadow:0 0 0 2px var(--vz-bg)}
 .vz-drawing .vz-mt{font:10.5px var(--vz-letter);letter-spacing:.16em;text-transform:uppercase}
 .vz{--vz-hl:var(--vz-amber);--vz-hlfg:var(--vz-bg);--vz-cw:color-mix(in srgb,var(--vz-fg) 38%,transparent);--vz-cg:color-mix(in srgb,var(--vz-fg) 9%,transparent);--vz-cb:color-mix(in srgb,var(--vz-fg) 32%,transparent)}
-.vz.vz-thread{--vz-hl:var(--vz-gold);--vz-hlfg:var(--vz-ink);--vz-cb:color-mix(in srgb,var(--vz-paper) 55%,transparent)}
 .vz.vz-drawing{--vz-hl:var(--vz-fg);--vz-hlfg:var(--vz-bg);--vz-cb:var(--vz-fg)}
-.vz.vz-paper,.vz.vz-paper.vz-solo{--vz-fg:#2b2620;--vz-dim:#857b6c;--vz-line:rgba(43,38,32,.16);--vz-amber:#b97a12;--vz-coral:#c4473a;--vz-green:#4f7f43;--vz-blue:#3e6a8a;
---vz-card:#fffaf0;--vz-bg:#fffaf0;--vz-r:5px;--vz-hl:#c4473a;--vz-hlfg:#fffaf0;--vz-cw:rgba(43,38,32,.45);--vz-cg:rgba(43,38,32,.1);--vz-cb:#2b2620;
---vz-type:"Courier Prime","Courier New",ui-monospace,monospace;--vz-serif:Georgia,"Iowan Old Style","Times New Roman",serif;color:var(--vz-fg);font:12.5px/1.45 var(--vz-type);
-background:linear-gradient(rgba(43,38,32,.045) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,rgba(43,38,32,.045) 1px,transparent 1px) 0 0/22px 22px,#f5efe2;padding:16px;border-radius:6px}
-.vz-paper .vz-title{font:600 17px var(--vz-serif)}.vz-paper .vz-sub{font-style:italic;font-family:var(--vz-serif)}
-.vz-paper .vz-panel{background:transparent;border-color:rgba(43,38,32,.22)}
-.vz-paper button{border-color:rgba(43,38,32,.35);color:var(--vz-fg);background:#fffaf0}
-.vz-paper .vz-box{background:#fffaf0;border:1.3px solid #2b2620;box-shadow:2px 2px 0 rgba(43,38,32,.85)}
-.vz-paper .vz-box.now{box-shadow:2px 2px 0 var(--vz-coral),0 0 0 2px var(--vz-coral)}.vz-paper .vz-box.s-fail{border-color:var(--vz-coral);box-shadow:2px 2px 0 var(--vz-coral)}
-.vz-paper .vz-pill{background:#fffaf0;border-color:rgba(43,38,32,.4)}.vz-paper .vz-num{background:var(--vz-coral);color:#fffaf0}
-.vz-paper .vz-ro b,.vz-paper .vz-cname{font-family:var(--vz-serif)}.vz-paper .vz-ro b{color:var(--vz-coral)}
+.vz.vz-paper,.vz.vz-paper.vz-solo{--vz-fg:#1d2026;--vz-dim:#6b7280;--vz-line:rgba(17,24,39,.1);--vz-amber:#b45309;--vz-coral:#d0423b;--vz-green:#1f8a4c;--vz-blue:#2f5fd0;
+--vz-card:#fff;--vz-bg:#fff;--vz-r:6px;--vz-hl:#2f5fd0;--vz-hlfg:#fff;--vz-cw:rgba(17,24,39,.38);--vz-cg:rgba(17,24,39,.07);--vz-cb:rgba(17,24,39,.3);
+--vz-sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--vz-fg);background:#f7f8fa;padding:18px;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(17,24,39,.06)}
+.vz-paper .vz-title{font:600 16px/1.3 var(--vz-sans);letter-spacing:-.01em}.vz-paper .vz-sub{font-family:var(--vz-sans);font-size:12.5px}
+.vz-paper .vz-panel{background:#fff;border-color:rgba(17,24,39,.08);box-shadow:0 1px 2px rgba(17,24,39,.04)}
+.vz-paper button{border-color:rgba(17,24,39,.14);color:var(--vz-fg);background:#fff}
+.vz-paper button[aria-pressed=true],.vz-paper button[aria-selected=true]{background:#1d2026;border-color:#1d2026;color:#fff}
+.vz-paper .vz-box{background:#fff;border:1px solid rgba(17,24,39,.16);box-shadow:0 1px 2px rgba(17,24,39,.06),0 2px 6px rgba(17,24,39,.04)}
+.vz-paper .vz-box.now{border-color:var(--vz-hl);box-shadow:0 0 0 3px color-mix(in srgb,var(--vz-hl) 18%,transparent)}.vz-paper .vz-box.s-fail{border-color:var(--vz-coral);box-shadow:0 0 0 3px color-mix(in srgb,var(--vz-coral) 14%,transparent)}
+.vz-paper .vz-pill{background:#fff;border-color:rgba(17,24,39,.14)}.vz-paper .vz-num{background:var(--vz-hl);color:#fff}
+.vz-paper .vz-ro b,.vz-paper .vz-cname{font-family:var(--vz-sans)}.vz-paper .vz-ro b{color:var(--vz-hl)}
 .vz-paper .vz-insp code,.vz-paper .vz-detail code{color:var(--vz-blue)}
-.vz-paper .vz-bar input[type=range]{accent-color:var(--vz-coral)}
+.vz-paper .vz-bar input[type=range]{accent-color:var(--vz-hl)}
 .vz-ctop{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:0 0 6px}
 .vz-cname{font-weight:600}.vz-ro{margin-left:auto;text-align:right;display:flex;flex-wrap:wrap;gap:2px 10px;justify-content:flex-end;align-items:baseline}
 .vz-ro b{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}.vz-ro span{color:var(--vz-dim)}
@@ -258,12 +208,8 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
 .vz-spill.q-fail{color:var(--vz-coral);border-color:var(--vz-coral)}.vz-spill.q-ok{color:var(--vz-green)}.vz-spill.q-warn{color:var(--vz-amber)}
 .vz-drawing .vz-col h4,.vz-drawing .vz-cname{font-family:var(--vz-letter);letter-spacing:.14em;text-transform:uppercase}
 .vz-drawing .vz-col,.vz-drawing .vz-card,.vz-drawing .vz-spill{border-radius:0}.vz-drawing .vz-cx svg text{font-family:var(--vz-type)}
-.vz-thread .vz-col{background:rgba(0,0,0,.18);border:0}.vz-thread .vz-card{background:var(--vz-paper);color:var(--vz-ink);border:0;box-shadow:0 1px 0 rgba(0,0,0,.4)}
-.vz-thread .vz-card small{color:#6d6556}.vz-thread .vz-card.q-fail{box-shadow:inset 3px 0 0 var(--vz-red)}.vz-thread .vz-card.q-fail small{color:var(--vz-red)}
-.vz-thread .vz-card.q-ok{box-shadow:inset 3px 0 0 #4f7f43}.vz-thread .vz-card.q-warn{box-shadow:inset 3px 0 0 var(--vz-gold)}
-.vz-thread .vz-ro b,.vz-thread .vz-cname{font-family:var(--vz-sans)}
-.vz-paper .vz-cx svg .vz-sl{stroke:#f5efe2}.vz-thread .vz-cx svg .vz-sl{stroke:#15302e}.vz-drawing .vz-cx svg .vz-sl{stroke:#0c0c0b}
-.vz-paper .vz-card{box-shadow:2px 2px 0 rgba(43,38,32,.8)}.vz-paper .vz-col{background:rgba(255,250,240,.6)}
+.vz-paper .vz-cx svg .vz-sl{stroke:#fff}.vz-drawing .vz-cx svg .vz-sl{stroke:#0c0c0b}
+.vz-paper .vz-card{background:#fff;box-shadow:0 1px 2px rgba(17,24,39,.06)}.vz-paper .vz-col{background:#f3f4f6;border-color:rgba(17,24,39,.06)}
 @media (prefers-reduced-motion:reduce){.vz *{transition:none!important;animation:none!important}}`;
 
   const STATUS = { '+': 'add', '-': 'del', '~': 'mod', '!': 'fail', '*': 'active', '?': 'unk' };
@@ -297,7 +243,7 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     return { rest: s.trim(), ref, note };
   }
 
-  const VIEWS = ['flow', 'ranked', 'seq', 'states', 'stack', 'sankey'], THEMES = ['default', 'drawing', 'thread', 'paper'];
+  const VIEWS = ['flow', 'ranked', 'seq', 'states', 'stack', 'sankey'], THEMES = ['default', 'drawing', 'paper'];
   const CHARTS = ['timing', 'gantt', 'causes', 'board', 'stock', 'waits', 'hist', 'retries'];
   const ID = /^[\w.$-]+$/;
   function parse(text) {
@@ -1063,87 +1009,9 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
   const PRE = { '+': 'ok', '!': 'fail', '*': 'warn', '~': 'warn', '?': 'unk' };
   const toned = (v) => (PRE[v[0]] ? { tone: PRE[v[0]], text: v.slice(1).trim() } : { tone: '', text: v });
 
-  // Thread theme: an edge is a twisted two-strand cord. flat() turns a layout path (absolute M L H V Q C) into points;
-  // cord() lays two strands that swap front and back every half twist over a dark tube, the way a rope reads.
-  function flat(d) {
-    const t = d.match(/[MLHVQCZ]|-?[\d.]+(?:e-?\d+)?/gi) || [], pts = [];
-    let i = 0, c = 'M', x = 0, y = 0;
-    const num = () => +t[i++];
-    while (i < t.length) {
-      if (/[A-Z]/i.test(t[i])) c = t[i++].toUpperCase();
-      if (c === 'M' || c === 'L') { x = num(); y = num(); pts.push([x, y]); }
-      else if (c === 'H') { x = num(); pts.push([x, y]); } else if (c === 'V') { y = num(); pts.push([x, y]); }
-      else if (c === 'Q') { const [ax, ay, bx, by] = [num(), num(), num(), num()]; for (let k = 1; k <= 6; k++) { const u = k / 6, v = 1 - u; pts.push([v * v * x + 2 * v * u * ax + u * u * bx, v * v * y + 2 * v * u * ay + u * u * by]); } x = bx; y = by; }
-      else if (c === 'C') { const [ax, ay, bx, by, cx, cy] = [num(), num(), num(), num(), num(), num()]; for (let k = 1; k <= 16; k++) { const u = k / 16, v = 1 - u; pts.push([v * v * v * x + 3 * v * v * u * ax + 3 * v * u * u * bx + u * u * u * cx, v * v * v * y + 3 * v * v * u * ay + 3 * v * u * u * by + u * u * u * cy]); } x = cx; y = cy; }
-      else i++;
-    }
-    return pts;
-  }
-  function resample(pts, step) {
-    const out = [pts[0]]; let carry = 0;
-    for (let k = 1; k < pts.length; k++) {
-      const [ax, ay] = pts[k - 1], [bx, by] = pts[k], L = Math.hypot(bx - ax, by - ay);
-      let p = step - carry;
-      while (p <= L) { out.push([ax + (bx - ax) * p / L, ay + (by - ay) * p / L]); p += step; }
-      carry = L - (p - step);
-    }
-    out.push(pts[pts.length - 1]); return out;
-  }
-  const poly = (p) => 'M' + p.map(([x, y]) => x.toFixed(1) + ' ' + y.toFixed(1)).join('L');
-  function cord(d, a, b, k = 1, occ = null, id = 0, all = null) {
-    let pts = flat(d); if (pts.length < 2) return svg('g', {});
-    pts = resample(pts, 1.2);
-    let tot = 0; for (let j = 1; j < pts.length; j++) tot += Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]);
-    const trim = Math.min(7, tot / 4); // stop short so the arrowhead sits on the cord's end
-    let acc = tot; while (pts.length > 2 && acc > tot - trim) { const q = pts.pop(), r = pts[pts.length - 1]; acc -= Math.hypot(q[0] - r[0], q[1] - r[1]); }
-    const amp = 1.6 * k, per = 19 * k, w = 2.5 * k, half = per / 2, A = [], B = [];
-    // Where another cord runs within ~9px the twist flattens, so neighbours stay apart instead of rubbing.
-    const near = pts.map(([x, y]) => {
-      if (!all) return 0; const cx = Math.round(x / 3), cy = Math.round(y / 3);
-      for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const o = all.get((cx + i) + ',' + (cy + j)); if (o && (o.size > 1 || !o.has(id))) return 1; }
-      return 0;
-    });
-    const fl = near.map((_, j) => { let t = 0, n = 0; for (let q = Math.max(0, j - 8); q <= Math.min(near.length - 1, j + 8); q++) { t += near[q]; n++; } return 1 - 0.7 * t / n; });
-    let s = 0;
-    pts.forEach((p, j) => {
-      const P = pts[Math.max(0, j - 1)], N = pts[Math.min(pts.length - 1, j + 1)], dx = N[0] - P[0], dy = N[1] - P[1], L = Math.hypot(dx, dy) || 1;
-      if (j) s += Math.hypot(p[0] - pts[j - 1][0], p[1] - pts[j - 1][1]);
-      const o = amp * fl[j] * Math.sin(s / per * 6.2832);
-      A.push({ p: [p[0] - dy / L * o, p[1] + dx / L * o], s }); B.push({ p: [p[0] + dy / L * o, p[1] - dx / L * o], s });
-    });
-    // A trunk several edges share is drawn once: cells an earlier cord claimed hide this cord there.
-    const key = (x, y) => Math.round(x / 3) + ',' + Math.round(y / 3), vis = pts.map(([x, y]) => {
-      if (!occ) return true; const cx = Math.round(x / 3), cy = Math.round(y / 3);
-      for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) { const o = occ.get((cx + i) + ',' + (cy + j)); if (o !== undefined && o !== id) return false; }
-      return true;
-    });
-    if (occ) pts.forEach(([x, y]) => occ.set(key(x, y), id));
-    const runs = []; let r0 = -1;
-    vis.forEach((v, j) => { if (v && r0 < 0) r0 = j; if ((!v || j === vis.length - 1) && r0 >= 0) { const r1 = v ? j : j - 1; if (r1 - r0 >= 4) runs.push([r0, r1]); r0 = -1; } });
-    const segs = [];
-    [A, B].forEach((S, c) => {
-      for (const [r0, r1] of runs) {
-        let cur = [], q0 = Math.floor(S[r0].s / half);
-        for (const m of S.slice(r0, r1 + 1)) { const q = Math.floor(m.s / half); if (q !== q0 && cur.length) { segs.push({ pts: cur, front: (q0 + c) % 2 === 0, c }); cur = [cur[cur.length - 1]]; q0 = q; } cur.push(m.p); }
-        if (cur.length > 1) segs.push({ pts: cur, front: (q0 + c) % 2 === 0, c });
-      }
-    });
-    const g = svg('g', { class: 'vz-cord' });
-    for (const [r0, r1] of runs) {
-      let j0 = r0;
-      for (let j = r0 + 1; j <= r1 + 1; j++) if (j > r1 || (fl[j] < 0.6) !== (fl[j0] < 0.6)) {
-        const tight = fl[j0] < 0.6; g.append(svg('path', { d: poly(pts.slice(j0, Math.min(j, r1) + 1)), fill: 'none', stroke: '#0b1716', 'stroke-width': amp * 2 * (tight ? 0.3 : 1) + w + 1.8, 'stroke-linecap': 'round', opacity: 0.7, class: 'vz-tube' })); j0 = j;
-      }
-    }
-    for (const front of [false, true]) for (const m of segs) if (m.front === front) {
-      g.append(svg('path', { d: poly(m.pts), fill: 'none', stroke: '#0b1716', 'stroke-width': w + 1.3, 'stroke-linecap': 'round' }),
-        svg('path', { d: poly(m.pts), fill: 'none', stroke: m.c ? b : a, 'stroke-width': w, 'stroke-linecap': 'round' }));
-    }
-    return g;
-  }
   function renderGraph(s, doc, mount) {
     const idx = Object.fromEntries(s.nodes.map((nd, i) => [nd.id, i]));
-    const L = LAYOUT[s.view](s), steps = s.steps, view = s.view, drawing = doc.theme === 'drawing', thread = doc.theme === 'thread';
+    const L = LAYOUT[s.view](s), steps = s.steps, view = s.view, drawing = doc.theme === 'drawing';
     const wrapEl = h('div', { class: `vz-flow vz-v-${view}`, role: 'group', 'aria-label': s.name, tabindex: 0 });
     const stage = h('div', { class: 'vz-stage', style: `width:${L.w}px;height:${L.h}px` });
     const groupEls = new Map();
@@ -1165,27 +1033,14 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     // The drawing theme keeps colour for meaning only: ink for the plain way through, green added, coral removed or
     // failing, amber filtered; how many stories use an edge sets its weight.
     const COL = drawing ? { a: 'var(--vz-wire)', h: 'var(--vz-fg)', g: 'var(--vz-green)', r: 'var(--vz-coral)', y: 'var(--vz-amber)' }
-      : thread ? { a: '#b9cfc8', h: '#f7e3a3', g: '#e3b441', r: '#d0503f', x: '#cfc6b0' }
       : { a: 'var(--vz-dim)', h: 'var(--vz-hl)', g: 'var(--vz-green)', r: 'var(--vz-coral)' };
-    // Thread: each cord colour pairs a strand with a lighter twin; the arrowhead is a solid head with an ink rim.
-    const TW = { a: ['#9fbab3', '#dce9e4'], g: ['#e3b441', '#f4ead0'], r: ['#c9483c', '#ee9b8d'], h: ['#f2cf6a', '#fff4d6'] };
     for (const [id, col] of Object.entries(COL)) {
-      const m = thread ? svg('marker', { id: `vz-${id}-${s.uid}`, viewBox: '-1 -1 12 12', refX: 9, refY: 5, markerWidth: 12, markerHeight: 12, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' })
-        : svg('marker', { id: `vz-${id}-${s.uid}`, viewBox: '0 0 6 6', refX: 5, refY: 3, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse', ...(drawing ? { markerUnits: 'userSpaceOnUse' } : {}) });
-      m.append(thread ? svg('path', { d: 'M0,0 L10,5 L0,10 z', fill: col, stroke: '#0b1716', 'stroke-width': 1.4, 'stroke-linejoin': 'round' }) : svg('path', { d: 'M0,0 L6,3 L0,6 z', fill: col })); defs.append(m);
-    }
-    if (thread) {
-      // Chalk: noise cuts small holes in the cords, nothing moves or blurs.
-      const f = svg('filter', { id: `vz-chalk-${s.uid}`, x: '-2%', y: '-2%', width: '104%', height: '104%' });
-      f.append(svg('feTurbulence', { type: 'fractalNoise', baseFrequency: 1.1, numOctaves: 2, seed: 9, result: 'n' }),
-        svg('feColorMatrix', { in: 'n', values: '0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -7 4.9', result: 'm' }),
-        svg('feComposite', { in: 'SourceGraphic', in2: 'm', operator: 'in' }));
-      defs.append(f);
+      const m = svg('marker', { id: `vz-${id}-${s.uid}`, viewBox: '0 0 6 6', refX: 5, refY: 3, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse', ...(drawing ? { markerUnits: 'userSpaceOnUse' } : {}) });
+      m.append(svg('path', { d: 'M0,0 L6,3 L0,6 z', fill: col })); defs.append(m);
     }
     g.append(defs);
     for (const d of L.decor) if (d.kind === 'life') g.append(svg('line', { x1: d.x, x2: d.x, y1: d.y1, y2: d.y2, class: 'vz-life' }));
-    const base = thread ? (e) => (e.st === 'del' ? 'x' : e.out === 'pass' ? 'g' : e.out === 'fail' || e.out === 'drop' ? 'r' : 'a')
-      : drawing ? (e) => (e.st === 'add' ? 'g' : e.st === 'del' || e.out === 'fail' ? 'r' : e.out === 'drop' ? 'y' : 'a')
+    const base = drawing ? (e) => (e.st === 'add' ? 'g' : e.st === 'del' || e.out === 'fail' ? 'r' : e.out === 'drop' ? 'y' : 'a')
       : (e) => (e.st === 'add' ? 'g' : e.st === 'del' ? 'r' : e.out === 'pass' ? 'g' : e.out === 'fail' ? 'r' : 'a');
     let lit = null;
     const weight = (e) => (drawing ? 0.8 + 0.55 * Math.min(e.paths.length, 6) : 1.3);
@@ -1193,33 +1048,10 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       const k = on ? 'h' : base(e), quiet = drawing && !on && !!lit;
       e.path.setAttribute('stroke', COL[k]); e.path.setAttribute('stroke-width', on ? (drawing ? 1.6 : 2) : quiet ? 0.8 : weight(e));
       if (drawing) e.path.style.opacity = quiet ? 0.35 : '';
-      if (e.cord) { e.cord.style.opacity = quiet ? 0.28 : ''; e.cord.classList.toggle('on', !!on); }
-      if (thread && e.st === 'del') { e.path.setAttribute('stroke', COL.x); e.path.setAttribute('stroke-width', 2.4); e.path.setAttribute('stroke-linecap', 'round'); e.path.style.opacity = quiet ? 0.25 : 0.75; }
       e.path.setAttribute(e.rev ? 'marker-start' : 'marker-end', `url(#vz-${k}-${s.uid})`);
     };
-    const cords = thread ? svg('g', { class: 'vz-cords', filter: `url(#vz-chalk-${s.uid})` }) : null;
-    if (thread) {
-      let seed = 2166136261; for (const ch of s.name || 'x') seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619);
-      const rnd = () => { seed = Math.imul(seed ^ (seed >>> 15), 2246822507) + 0x6d2b79f5 | 0; return ((seed ^ (seed >>> 13)) >>> 0) / 4294967296; };
-      const keep = s.nodes.map((nd) => nd.box).filter(Boolean).map((b) => [b.x - b.w / 2 - 16, b.y - 16, b.x + b.w / 2 + 16, b.y + b.h + 16])
-        .concat(s.edges.filter((e) => e.pill).map((e) => [e.pill.x - 40, e.pill.y - 8, e.pill.x + 40, e.pill.y + 28]))
-        .concat(L.decor.filter((d) => d.kind === 'group').map((d) => [d.x - 6, d.y - 6, d.x + d.w + 6, d.y + d.h + 6]));
-      const C = ['#e3b441', '#c9483c', '#7fb9c6', '#e9dcc0', '#b5a3e0'], conf = svg('g', { opacity: 0.55, 'aria-hidden': 'true', class: 'vz-confetti' });
-      const n = Math.round(L.w * L.h / 8400);
-      for (let i = 0; i < n; i++) {
-        const x = 6 + rnd() * (L.w - 12), y = 6 + rnd() * (L.h - 12), r = 1.4 + rnd() * 2.2, a = rnd() * 6.283, c = C[i % C.length];
-        if (keep.some(([x0, y0, x1, y1]) => x > x0 && x < x1 && y > y0 && y < y1)) continue;
-        conf.append(svg('path', { d: `M${(x - Math.cos(a) * r).toFixed(1)} ${(y - Math.sin(a) * r).toFixed(1)}L${(x + Math.cos(a) * r).toFixed(1)} ${(y + Math.sin(a) * r).toFixed(1)}`, stroke: c, 'stroke-width': 1.6, 'stroke-linecap': 'round' }));
-      }
-      g.append(conf);
-    }
-    if (cords) g.append(cords);
-    const occ = thread ? new Map() : null, all = thread ? new Map() : null; let eid = 0;
-    if (thread) s.edges.forEach((e, i) => { if (base(e) === 'x') return; const p = flat(e.d); if (p.length < 2) return; for (const [x, y] of resample(p, 1.5)) { const c = Math.round(x / 3) + ',' + Math.round(y / 3); (all.get(c) || all.set(c, new Set()).get(c)).add(i + 1); } });
     for (const e of s.edges) {
-      const k = thread ? base(e) : '';
-      if (thread && k !== 'x') { e.cord = cord(e.d, ...TW[k], e.async ? 0.75 : 1, occ, s.edges.indexOf(e) + 1, all); cords.append(e.cord); }
-      e.path = svg('path', { d: e.d, fill: 'none', class: (e.st ? 's-' + e.st : '') + (e.cord ? ' vz-core' : ''), 'stroke-dasharray': thread ? (e.st === 'del' ? '0.1 6' : '') : e.async ? '4 3' : e.st === 'del' ? '2 3' : e.out === 'drop' ? '3 4' : '' });
+      e.path = svg('path', { d: e.d, fill: 'none', class: e.st ? 's-' + e.st : '', 'stroke-dasharray': e.async ? '4 3' : e.st === 'del' ? '2 3' : e.out === 'drop' ? '3 4' : '' });
       e.hit = svg('path', { d: e.d, fill: 'none', stroke: 'transparent', 'stroke-width': 10, class: `vz-hit ${e.st ? 's-' + e.st : ''}` });
       e.hit.addEventListener('click', () => pickEdge(e));
       e.hit.addEventListener('mouseenter', () => hoverEdge(e)); e.hit.addEventListener('mouseleave', () => hoverEdge(null));
@@ -1580,7 +1412,6 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
           const a = anim(e.path, [{ strokeDasharray: dash, strokeDashoffset: e.rev ? -len : len }, { strokeDasharray: dash, strokeDashoffset: 0 }], { duration: PER, delay: d, easing: 'linear' });
           a.onfinish = () => paint(e, !!lit && lit.has(e));
         } else anim(e.path, [{ opacity: 0.1 }, { opacity: 1 }], { duration: 320, delay: d });
-        if (e.cord) anim(e.cord, [{ opacity: 0 }, { opacity: 1 }], { duration: PER, delay: d });
         if (e.pillEl) anim(e.pillEl, [{ opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1 }], { duration: 260, delay: d + (j >= 0 ? PER * 0.6 : 120) });
       }
     }
@@ -2493,7 +2324,16 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
   }
   // Boxes and edge labels sit on an opaque ground so edges pass behind them. The ground is the first painted
   // background above the view; with none (a transparent frame), it follows the theme's foreground: light text, dark ground.
+  // Without host theme variables the default palette follows the host: a light page (or, on a bare page, a light OS
+  // scheme) switches it to light colours via .vz-lt. Host variables (T3) win; drawing and paper paint their own sheet.
+  const lum = (c) => { const m = String(c).match(/\d+(\.\d+)?/g); return m ? +m[0] * 0.3 + +m[1] * 0.59 + +m[2] * 0.11 : 0; };
   function ground(root) {
+    const tokens = !!getComputedStyle(root).getPropertyValue('--foreground').trim();
+    if (root.classList.contains('vz-solo')) root.classList.toggle('vz-lt', !matchMedia('(prefers-color-scheme: dark)').matches);
+    else if (!tokens) {
+      let bg = ''; for (let e = root.parentElement; e && e.nodeType === 1; e = e.parentElement) { const c = getComputedStyle(e).backgroundColor; if (c && !/rgba\(.*,\s*0\)$/.test(c) && c !== 'transparent') { bg = c; break; } }
+      root.classList.toggle('vz-lt', !!bg && lum(bg) > 128);
+    }
     let col = '';
     for (let e = root; e && e.nodeType === 1; e = e.parentElement) {
       const c = getComputedStyle(e).backgroundColor;
