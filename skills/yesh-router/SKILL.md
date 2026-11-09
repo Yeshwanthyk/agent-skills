@@ -58,6 +58,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 **Coordinate**
 - swarm / race / fan out / best of N: parallel coverage or grafting candidates → [swarm](../swarm/SKILL.md)
 - big bespoke task: substantial work no playbook fits → [figure-it-out](playbooks/figure-it-out.md)
+- *On request:* agent-inbox / the vault, named by the user: capture, log, catch up on, or triage a work project there; without the name, catch-up stays with resume and recap → [agent-inbox](../agent-inbox/SKILL.md)
 - program / own this migration: dependent units or several owners → [orchestrate](playbooks/orchestrate.md)
 - ship / commit / push / merge / deploy / clean up: take finished work to where it runs → [ship](playbooks/ship.md)
 - decision trail / going to bed / review later: alongside the main method, never instead → [decision trail](references/decision-trail.md)

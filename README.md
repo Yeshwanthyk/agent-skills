@@ -54,6 +54,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 
 | Skill | Use it to |
 | --- | --- |
+| [`agent-inbox`](./skills/agent-inbox) | Track work projects in an Obsidian vault when asked: capture, log a session, catch up, triage. |
 | [`architect`](./skills/architect) | Pick a target architecture from the real contracts, call paths, and state ownership. |
 | [`benchmark-checklist`](./skills/benchmark-checklist) | Check a performance number before you report it or act on it. |
 | [`blast-radius`](./skills/blast-radius) | Find what a change could break beyond what grep shows. |
