@@ -891,46 +891,96 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       cursor = bottom + LANEGAP + (banded ? 8 : 0);
     }
     // Ports: a box's forward edges leave its right side and enter the next box's left, spread in neighbour order.
+    // Two boxes that overlap in height get one shared port height first, so the line between them runs straight.
     const fwd = (e) => s.byId[e.to].rank > s.byId[e.from].rank;
-    const port = new Map();
+    const PSEP = 14, port = new Map(), pkey = (id, e) => id + '|' + e.from + '>' + e.to;
+    const colOf = (r) => s.nodes.filter((nd) => nd.rank === r).map((nd) => nd.box);
+    const clearAt = (r, y) => !colOf(r).some((c) => y > c.y - 6 && y < c.y + c.h + 6);
+    const pinned = new Map(), sideYs = new Map(), sideOf = (id, out) => id + (out ? '>' : '<');
+    const cands = [];
+    // Where an edge sits among its box's ports on one side: the ports before it and after it need room too.
+    const room = (id, e, out) => {
+      const b = s.byId[id].box, other = out ? 'to' : 'from', cy = (x) => { const o = s.byId[x[other]].box; return o.y + o.h / 2; };
+      const list = s.edges.filter((x) => x.from !== x.to && fwd(x) && (out ? x.from : x.to) === id).sort((p, q) => cy(p) - cy(q)), j = list.indexOf(e);
+      return [b.y + 8 + PSEP * j, b.y + b.h - 8 - PSEP * (list.length - 1 - j)];
+    };
+    for (const e of s.edges) {
+      if (e.from === e.to || !fwd(e)) continue;
+      const [la, ha] = room(e.from, e, true), [lb, hb] = room(e.to, e, false), lo = Math.max(la, lb), hi = Math.min(ha, hb);
+      if (lo > hi) continue;
+      const mid = (lo + hi) / 2, ys = [];
+      for (let y = lo; y <= hi; y += 2) ys.push(y);
+      ys.sort((p, q) => Math.abs(p - mid) - Math.abs(q - mid));
+      const y = ys.find((y) => { for (let r = s.byId[e.from].rank + 1; r < s.byId[e.to].rank; r++) if (!clearAt(r, y)) return false; return true; });
+      if (y != null) cands.push({ e, y: Math.round(y), d: Math.abs(y - mid) });
+    }
+    for (const { e, y } of cands.sort((p, q) => p.d - q.d)) {
+      const sa = sideOf(e.from, true), sb = sideOf(e.to, false);
+      if ([sa, sb].some((k) => (sideYs.get(k) || []).some((v) => Math.abs(v - y) < PSEP))) continue;
+      for (const k of [sa, sb]) sideYs.set(k, [...(sideYs.get(k) || []), y]);
+      pinned.set(e, y);
+    }
     for (const nd of s.nodes) {
       const b = nd.box;
       for (const [list, other] of [[s.edges.filter((e) => e.from === nd.id && fwd(e)), 'to'], [s.edges.filter((e) => e.to === nd.id && fwd(e)), 'from']]) {
-        const sorted = list.slice().sort((p, q) => s.byId[p[other]].box.y - s.byId[q[other]].box.y), m = sorted.length;
-        const step = m > 1 ? Math.min(10, (b.h - 12) / (m - 1)) : 0;
-        sorted.forEach((e, j) => port.set(e[other === 'to' ? 'from' : 'to'] + '|' + e.from + '>' + e.to, b.y + b.h / 2 + (j - (m - 1) / 2) * step));
+        const cy = (e) => { const o = s.byId[e[other]].box; return o.y + o.h / 2; };
+        const sorted = list.slice().sort((p, q) => cy(p) - cy(q)), m = sorted.length;
+        const step = m > 1 ? Math.min(16, (b.h - 16) / (m - 1)) : 0, ys = sorted.map((e, j) => b.y + b.h / 2 + (j - (m - 1) / 2) * step);
+        // Free ports between two pinned ones share the room between them, kept in order and clear of the pins.
+        for (let j = 0; j < m;) {
+          if (pinned.has(sorted[j])) { ys[j] = pinned.get(sorted[j]); j++; continue; }
+          let k = j; while (k < m && !pinned.has(sorted[k])) k++;
+          const lo = j > 0 ? pinned.get(sorted[j - 1]) + PSEP : b.y + 8, hi = k < m ? pinned.get(sorted[k]) - PSEP : b.y + b.h - 8, n = k - j;
+          const st = n > 1 ? Math.max(0, Math.min(Math.max(step, PSEP), (hi - lo) / (n - 1))) : 0, span = st * (n - 1);
+          const c0 = Math.min(Math.max(lo, (ys[j] + ys[k - 1]) / 2 - span / 2), Math.max(lo, hi - span));
+          for (let t = 0; t < n; t++) ys[j + t] = Math.round(c0 + t * st);
+          j = k;
+        }
+        sorted.forEach((e, j) => port.set(pkey(nd.id, e), ys[j]));
       }
     }
     let maxY = cursor;
-    const jogN = new Map();
+    const fwdRoutes = [], gapJogs = new Map();
     for (const e of s.edges) {
       const a = s.byId[e.from].box, b = s.byId[e.to].box;
       if (e.from === e.to) { e.d = selfLoop(a); continue; }
       if (fwd(e)) {
         const x1 = a.x + a.w / 2, x2 = b.x - b.w / 2, y1 = port.get(e.from + '|' + e.from + '>' + e.to), y2 = port.get(e.to + '|' + e.from + '>' + e.to);
         // An edge that skips columns runs straight through each one it crosses, in a gap between that column's boxes.
+        // It keeps one height across all of them when it can (its own port's, then its target's), so it jogs once.
         const pts = [[x1, y1]], ra = s.byId[e.from].rank, rb = s.byId[e.to].rank;
-        for (let r = ra + 1; r < rb; r++) {
-          const want = y1 + (y2 - y1) * (colX[r] + colW[r] / 2 - x1) / (x2 - x1);
-          const col = s.nodes.filter((nd) => nd.rank === r).map((nd) => nd.box).sort((p, q) => p.y - q.y);
-          const gaps = [col.length ? col[0].y - 8 : want, ...col.map((c, j) => (j + 1 < col.length ? (c.y + c.h + col[j + 1].y) / 2 : c.y + c.h + 8))];
-          const hit = col.some((c) => want > c.y - 4 && want < c.y + c.h + 4);
-          const y = hit ? gaps.reduce((m, g) => (Math.abs(g - want) < Math.abs(m - want) ? g : m)) : want;
+        const colBoxes = (r) => s.nodes.filter((nd) => nd.rank === r).map((nd) => nd.box).sort((p, q) => p.y - q.y);
+        const clear = (r, y) => !colBoxes(r).some((c) => y > c.y - 6 && y < c.y + c.h + 6);
+        const mids = []; for (let r = ra + 1; r < rb; r++) mids.push(r);
+        const flat = [y1, y2].find((y) => mids.every((r) => clear(r, y)));
+        for (const r of mids) {
+          let y = flat;
+          if (y == null) {
+            const want = y1 + (y2 - y1) * (colX[r] + colW[r] / 2 - x1) / (x2 - x1), col = colBoxes(r);
+            const gaps = [col.length ? col[0].y - 8 : want, ...col.map((c, j) => (j + 1 < col.length ? (c.y + c.h + col[j + 1].y) / 2 : c.y + c.h + 8))];
+            y = clear(r, want) ? want : gaps.reduce((m, g) => (Math.abs(g - want) < Math.abs(m - want) ? g : m));
+          }
           pts.push([colX[r] - 6, y], [colX[r] + colW[r] + 6, y]);
         }
         pts.push([x2, y2]);
-        let d = `M${x1},${y1}`;
-        for (let j = 1; j < pts.length; j++) {
-          const [px, py] = pts[j - 1], [qx, qy] = pts[j];
-          if (j % 2 === 0 && j < pts.length - 1) { d += ` L${qx},${qy}`; continue; }
-          if (Math.abs(qy - py) < 6) { d += ` L${qx},${qy}`; continue; }
-          // Across, one vertical jog in the gap, across again; jogs in the same gap take their own track.
-          const key = Math.round(px), k = (jogN.get(key) || 0); jogN.set(key, k + 1);
-          const mx = Math.min(qx - 8, Math.max(px + 8, (px + qx) / 2 + ((k % 5) - 2) * 6)), sy = Math.sign(qy - py);
-          const r = Math.max(0, Math.min(6, Math.abs(qy - py) / 2, mx - px, qx - mx));
-          d += ` L${mx - r},${py} Q${mx},${py} ${mx},${py + sy * r} L${mx},${qy - sy * r} Q${mx},${qy} ${mx + r},${qy} L${qx},${qy}`;
+        // A step of a few pixels reads as a wobble: slide the port to the line's height instead, if the box spans it
+        // and no other port on that side sits there.
+        const snap = (nd, box, side, i, y) => {
+          const key = nd + '|' + e.from + '>' + e.to, near = [...port].some(([k, v]) => k !== key && k.startsWith(nd + '|') && (k.split('|')[1].split('>')[side] === nd) && Math.abs(v - y) < 7);
+          if (Math.abs(pts[i][1] - y) < 12 && y > box.y + 6 && y < box.y + box.h - 6 && !near) { pts[i][1] = y; port.set(key, y); }
+        };
+        snap(e.from, a, 0, 0, pts[1][1]);
+        snap(e.to, b, 1, pts.length - 1, pts[pts.length - 2][1]);
+        // Each odd segment crosses the gap after column ra + (j - 1) / 2; a step there gets a track in a second pass.
+        const jogs = [];
+        for (let j = 1; j < pts.length; j += 2) {
+          const py = pts[j - 1][1], qy = pts[j][1];
+          if (Math.abs(qy - py) < 1) { pts[j][1] = py; continue; }
+          const gr = ra + (j - 1) / 2, g = { py, qy, mx: 0 };
+          if (!gapJogs.has(gr)) gapJogs.set(gr, []);
+          gapJogs.get(gr).push(g); jogs[j] = g;
         }
-        e.d = d;
+        fwdRoutes.push({ e, pts, jogs });
       } else if (b.x === a.x && b.y > a.y) {
         e.d = `M${a.x},${a.y + a.h}` + vjog(a.x, b.x, a.y + a.h, b.y, (a.y + a.h + b.y) / 2);
       } else {
@@ -938,6 +988,26 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
         const yb = Math.max(a.y + a.h, b.y + b.h) + 30; maxY = Math.max(maxY, yb);
         e.d = `M${a.x},${a.y + a.h} C${a.x},${yb} ${b.x},${yb} ${b.x},${b.y + b.h}`;
       }
+    }
+    // Tracks: in each gap, lines going up take the left tracks (the higher port further left) and lines going down
+    // the right ones (the higher port further right), so a fan-out never crosses itself.
+    for (const [gr, list] of gapJogs) {
+      const up = list.filter((g) => g.qy < g.py).sort((p, q) => p.py - q.py || p.qy - q.qy);
+      const down = list.filter((g) => g.qy > g.py).sort((p, q) => q.py - p.py || q.qy - p.qy);
+      const order = [...up, ...down], n = order.length, L = colX[gr] + colW[gr], R = colX[gr + 1] ?? L + COLGAP;
+      const step = n > 1 ? Math.min(8, (R - L - 28) / (n - 1)) : 0;
+      order.forEach((g, k) => (g.mx = Math.round((L + R) / 2 + (k - (n - 1) / 2) * step)));
+    }
+    for (const { e, pts, jogs } of fwdRoutes) {
+      let d = `M${pts[0][0]},${pts[0][1]}`;
+      for (let j = 1; j < pts.length; j++) {
+        const [px, py] = pts[j - 1], [qx, qy] = pts[j], g = jogs[j];
+        if (!g) { d += ` L${qx},${qy}`; continue; }
+        // Across, one vertical step on the gap's track, across again, with corners no rounder than the step allows.
+        const mx = g.mx, sy = Math.sign(qy - py), r = Math.max(0, Math.min(6, Math.abs(qy - py) / 2, mx - px, qx - mx));
+        d += ` L${mx - r},${py} Q${mx},${py} ${mx},${py + sy * r} L${mx},${qy - sy * r} Q${mx},${qy} ${mx + r},${qy} L${qx},${qy}`;
+      }
+      e.d = d;
     }
     const w = R ? colX[R - 1] + colW[R - 1] + 30 : 200;
     for (const d of decor) if (d.kind === 'lane') d.w = w - 10;
