@@ -15,7 +15,7 @@ Every visual is a `text/viz` block that [`assets/viz.js`](../assets/viz.js) rend
 title Which edits re-run the archive check   # optional header lines, anywhere outside a tree or cover
 sub   example/docs @1a2b3c4
 base  src/                                   # prefix for every @ref; shown once, copied with the path
-theme drawing                                # optional: drawing, thread or paper (see below); default otherwise
+theme drawing                                # optional: drawing or paper (see below); default otherwise
 
 == graph Archive triggers                    # each == section is a tab (== flow is the same thing)
 check: Archive check [result] @archive/run.ts:7 # new ArchiveRun
@@ -105,9 +105,9 @@ group end
 
 `theme drawing` draws the page as a dark technical drawing: lettered caps, thin ink lines, square boxes that invert while a story passes through them. It is opt-in; without it nothing changes. Colour is kept for meaning only: green bar `+` added, dashed coral `-` removed, coral `!` failing, dashed amber `=|` filtered out. Plain ways through stay ink, and a line's weight is how many paths use it.
 
-`theme thread` draws cream paper cards on a teal sheet, with arrows as twisted two-colour cords: gold for paths that get through, red for failures, a dotted line for a removed arrow. A trunk several arrows share is drawn as one cord. Labels are paper tags. Use it for a change review or a flow a reader should enjoy reading; layout, replay and controls are the default ones.
+`theme paper` is a clean light page: white panels on a light grey sheet, sans titles, soft-shadowed boxes, blue for the highlight. Use it for a page that will be printed, or one that sits on a light background. Every view and chart supports it.
 
-`theme paper` draws ink on a cream grid sheet: serif titles, boxes with a hard offset shadow, and red for the highlight. Use it for a page that will be printed, or one that sits on a light background. Every view and chart supports it.
+Without a `theme` line the page follows its host: inside T3 it takes T3's colours; elsewhere it turns light on a light page (or, on a bare page, when the OS is in light mode) and stays dark otherwise. `drawing` and `paper` paint their own sheet and look the same everywhere.
 
 On top of the default replay, `theme drawing` adds: story chips grouped by where each story starts (click one to play it), an overview caption that counts how the stories end, the packet carrying its payload as a label, numbered hops in `ranked` and `states`, and a stamp in the caption naming the box the story ends in. It plays every story once when it first shows, then returns to the overview; touching any control stops that. Under reduced motion it shows still frames.
 
