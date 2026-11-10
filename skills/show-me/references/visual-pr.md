@@ -70,7 +70,16 @@ Examples illustrate notation, not facts to reuse. Ground every actual node, path
 
 ### No diagram languages
 
-GitHub runs no script in a PR body, so every view is text. Trees, pseudocode, types, and diffs go in code fences with lines under 80 characters; a sequence is a numbered markdown list and a transition table is a markdown table, per [visual forms](visual-forms.md). Do not use Mermaid or any other diagram language. When a flow needs a picture, render it with [viz](../../viz/SKILL.md) as an HTML artifact or screenshot and link it from the body, beside the text view.
+GitHub runs no script in a PR body, so every view is text. Trees, pseudocode, types, and diffs go in code fences with lines under 80 characters; a sequence is a numbered markdown list and a transition table is a markdown table, per [visual forms](visual-forms.md). Do not use Mermaid or any other diagram language. When a flow needs a picture, embed a viz image beside the text view (see [Images](#images)). For decision logic, the text tree plus the image is the view: leave out the code excerpt that repeats it.
+
+### Images
+
+`gh` here uploads images with `--attach`; never ask the user to drag one in. Make the image, then attach it:
+
+1. Draw it with [viz](../../viz/SKILL.md), built for a PR: `theme paper` (light), no `title` or `sub`, no story paths. For a decision tree use `view: states`, give each branch its own result box instead of merging leaves, and keep labels to yes/no so no edge numbers or crossings appear.
+2. Build with `viz.py html`, then screenshot only the graph's `<svg>` at 2x with a light colour scheme (playwright-core with `executablePath` pointing at Google Chrome works). Look at the PNG before using it.
+3. Copy the PNG next to the body file, reference it as `![<caption>](./<name>.png)`, and from that folder run `gh pr edit <n> -R <owner/repo> --body-file <body> --attach "./<name>.png#<caption>"`. The same flag works on `gh pr create`.
+4. Read the body back and confirm the reference became a `github.com/user-attachments` URL.
 
 For complex visual UI changes, a focused HTML comparison may supplement the PR. Match the actual product, use representative labels and data, and cover desktop and mobile. The PR body still needs a readable structural outline; a local HTML path alone is insufficient.
 
@@ -88,7 +97,9 @@ Classify merge danger. A two-way door is fully undone by a revert. A one-way doo
 
 Save the body as `pr-description.md` in the existing task-artifact directory, or a temporary Markdown file when none exists. Inspect the saved content. Use the host's PR tools to create or update the intended PR; GitHub accepts `gh pr create --body-file <path>` and `gh pr edit <number> --body-file <path>`. Follow repository requirements for base, title, and draft state.
 
-Read the published body back. Confirm the comparison is correct, the structural view and required sections survived, and verification claims match the checks. If publishing is blocked, retain the prepared description and report the exact blocker. Never report a draft file as a successfully published PR.
+`--body-file` replaces the whole body. Before a refresh, copy any block a tool maintains, such as the Git Town stack list that starts at `<!-- branch-stack -->`, from the live body (`gh pr view <n> --json body -q .body`) to the end of the new body, after the footer, so it survives.
+
+Read the published body back. Confirm the comparison is correct, the structural view, required sections, footer, stack block and any attached image survived, and verification claims match the checks. If publishing is blocked, retain the prepared description and report the exact blocker. Never report a draft file as a successfully published PR.
 
 ## 5. Hand back the result
 
