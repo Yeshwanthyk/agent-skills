@@ -74,12 +74,24 @@ GitHub runs no script in a PR body, so every view is text. Trees, pseudocode, ty
 
 ### Images
 
-`gh` here uploads images with `--attach`; never ask the user to drag one in. Make the image, then attach it:
+Images sit beside the text views and never replace them. A PR that changes a schema or adds a type gets the images listed in [the body template](pr-description-template.md): a schema-diff card and a data-model graph under What changes, then a type card with a JSON example, and a flow card, for each type.
 
-1. Draw it with [viz](../../viz/SKILL.md), built for a PR: `theme paper` (light), no `title` or `sub`, no story paths. For a decision tree use `view: states`, give each branch its own result box instead of merging leaves, and keep labels to yes/no so no edge numbers or crossings appear.
-2. Build with `viz.py html`, then screenshot only the graph's `<svg>` at 2x with a light colour scheme (playwright-core with `executablePath` pointing at Google Chrome works). Look at the PNG before using it.
-3. Copy the PNG next to the body file, reference it as `![<caption>](./<name>.png)`, and from that folder run `gh pr edit <n> -R <owner/repo> --body-file <body> --attach "./<name>.png#<caption>"`. The same flag works on `gh pr create`.
-4. Read the body back and confirm the reference became a `github.com/user-attachments` URL.
+Every image follows these rules. The build scripts below enforce the ones marked *checked*.
+
+- **One style, light, static.** Every card uses [`pr-cards.css`](../assets/pr-cards.css) and nothing else (*checked*: a card with `<script>`, `<style>`, `style=`, `<link>` or a remote URL fails). Graphs use viz's paper theme.
+- **The picture only.** No title bar, tabs, "full size" button, "how to read it" or "hover a box" footer, story list, or inspector (*checked*: the build fails when the image's text carries any of them). A screenshot of a viz page is not a PR image.
+- **Green means added on the PR's base branch.** Marks compare the head with `baseRefName` (usually `master`), never with an earlier round of this PR. The schema card computes its marks from the base and head field lists, so you never mark a row by hand (*checked*: `base_ref` is required and printed in the legend).
+- **Every fact on an image comes from the code.** Read the base fields with `git show <base>:<model file>` and the head fields at the head SHA. Build a JSON example from a dump of the real factory, such as `build_rule_spec().model_dump(mode="json")` run in the repository's shell, and say which factory in the caption. A card fills `<pre data-json="dump.json">` from that file, so the JSON is never retyped. Check each note against a migration or a line of code.
+
+Build each image into the task-artifact folder, then look at every PNG before using it:
+
+- **Schema diff:** `python3 <show-me>/scripts/pr_cards.py schema schema.json -o schema-diff.png`. The script's docstring shows the `schema.json` format: per table, `base` and `head` fields, a `null` side for a new or deleted table, and optional `notes`.
+- **Type card, JSON example, flow card:** write an HTML fragment with the classes in `pr-cards.css` (`.card .t .l .i1 .ty .tag` for a type tree, `table.flow` for field-to-column rows), then run `python3 <show-me>/scripts/pr_cards.py card type.html -o type.png`.
+- **Data-model graph or decision tree:** write a viz `== graph` with `view: states` (labelled edges, no hop numbers) and `# note` lines on boxes, then run `python3 <viz>/scripts/viz.py png graph.viz -o data-model.png`. It drops any title, sets the paper theme, and crops to the drawing. For a decision tree, give each branch its own result box and keep labels to yes or no.
+
+`<show-me>` and `<viz>` are those skills' directories. Both scripts drive the local Chrome over its debugging port with Node 22 or later, and need no npm packages.
+
+Publishing attaches the images. Do it yourself and never ask the user to drag an image in. Reference each image as `![<caption>](./<name>.png)` in the body file, then from that folder run `gh pr edit <n> -R <owner/repo> --body-file <body> --attach "./<name>.png#<caption>"`, with one `--attach` per image. The same flag works on `gh pr create`. `gh` uploads each file and rewrites its reference to a `github.com/user-attachments` URL. Never link an image from a CDN or an HTML page.
 
 For complex visual UI changes, a focused HTML comparison may supplement the PR. Match the actual product, use representative labels and data, and cover desktop and mobile. The PR body still needs a readable structural outline; a local HTML path alone is insufficient.
 
@@ -87,11 +99,15 @@ For complex visual UI changes, a focused HTML comparison may supplement the PR. 
 
 Read [the body template](pr-description-template.md) and fill its relevant sections. Preserve repository-required headings, checklists, and useful existing author content; map the template's information into that structure instead of duplicating it.
 
-The purpose is exactly one sentence. Reviewer caveats use one to three bullets, or `None.` when there are none. The outline contains at least one structural visual; a filename inventory alone is insufficient. Omit irrelevant visual categories and avoid a prose changelog alongside an equivalent diagram. Use plain language and include only real issue, plan, or artifact links.
+Follow the template's shape and order: Why, Reviewers, Risk, What changes, a sub-section per type, Checks, then the footer. Omit a section's parts that do not apply, such as images for a PR with no schema or type change, but keep the headings in that order. Use plain language and only real issue, plan, or artifact links. Link code at the head SHA, never a branch name.
 
-Record checks that actually ran, their results, and relevant missing checks. Show evidence as before and after: the same test, command, or screen on the base and on this branch. For a visual change, screenshots are the strongest evidence when the environment can produce them; otherwise use executed output, such as the test that failed and now passes. Visual explanation is not evidence that the implementation works.
+Reviewers takes at most four bullets, one point per bullet: where to start reading, how a migration runs, an assumption the change depends on, a gap left on purpose. Write `None.` when there is nothing to flag.
 
-Classify merge danger. A two-way door is fully undone by a revert. A one-way door is not: a migration, deleted or rewritten data, a published API or schema, a sent message, or another external side effect. For the blast radius, name what breaks if the change is wrong, such as consumers, jobs, stored data, layout, or a platform, and use [blast-radius](../../blast-radius/SKILL.md) when the answer is not obvious from the diff. Keep the description limited to the template and repository-required information.
+Risk holds two lists. **Door** says whether a revert undoes the merge. A two-way door is undone by a revert. A one-way door is not, so list each irreversible operation as its own bullet, such as a dropped constraint, a dropped table, deleted or rewritten data, a published API, or a sent message. **Blast radius** names what breaks if the change is wrong, one item per bullet: the app that changes, each cross-app import by symbol, and who reads the changed tables or endpoints. Use [blast-radius](../../blast-radius/SKILL.md) when the diff does not answer it.
+
+Checks lists only commands that ran, exactly as run, with their results, then what is not verified yet. Where a change has observable behavior, show the same check on the base and on this branch. Images and trees explain the change. They are not evidence that it works.
+
+End the body with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`, then any tool-maintained block below it. Commits end with `Co-Authored-By: Claude <noreply@anthropic.com>`.
 
 ## 4. Save, publish, and confirm
 
@@ -99,7 +115,7 @@ Save the body as `pr-description.md` in the existing task-artifact directory, or
 
 `--body-file` replaces the whole body. Before a refresh, copy any block a tool maintains, such as the Git Town stack list that starts at `<!-- branch-stack -->`, from the live body (`gh pr view <n> --json body -q .body`) to the end of the new body, after the footer, so it survives.
 
-Read the published body back. Confirm the comparison is correct, the structural view, required sections, footer, stack block and any attached image survived, and verification claims match the checks. If publishing is blocked, retain the prepared description and report the exact blocker. Never report a draft file as a successfully published PR.
+Read the published body back. Confirm the comparison is correct, the structural view, required sections, footer, stack block and every attached image survived (each image reference is a `github.com/user-attachments` URL), and verification claims match the checks. If publishing is blocked, retain the prepared description and report the exact blocker. Never report a draft file as a successfully published PR.
 
 ## 5. Hand back the result
 

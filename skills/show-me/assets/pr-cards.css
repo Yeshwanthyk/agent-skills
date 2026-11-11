@@ -1,0 +1,48 @@
+/* The one style for PR images: light, static, GitHub's light palette. pr_cards.py inlines this file; cards add no CSS of their own. */
+:root{--ink:#1f2328;--mute:#59636e;--line:#d1d9e0;--card:#fff;--sheet:#f6f8fa;--add:#dafbe1;--addi:#1a7f37;--rem:#ffebe9;--remi:#cf222e;--chg:#fff8c5;--chgi:#9a6700;--blue:#0969da;--str:#0a3069;--key:#0550ae}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--sheet);color-scheme:light}
+.sheet{display:inline-block;min-width:100%;padding:24px;background:var(--sheet);color:var(--ink);font:15px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.grid.one{grid-template-columns:1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+
+/* schema diff: one card per table */
+.hd{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700}
+.hd.gone{color:var(--remi)}.hd.gone .nm{text-decoration:line-through}
+.hd.new{color:var(--addi)}
+.pill{display:inline-block;font-weight:400;font-size:12.5px;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:1px 9px;white-space:nowrap;text-decoration:none}
+.pill.del{color:var(--remi);border-color:#ff8182;background:var(--rem);font-weight:700}
+.pill.add{color:var(--addi);border-color:#8fd19e;background:var(--add);font-weight:700}
+.row{display:flex;justify-content:space-between;gap:16px;padding:7px 16px}
+.row .n{white-space:nowrap}.row .d{color:var(--mute);font-size:13px;text-align:right}
+.row.base{color:var(--mute)}.row.base .n{white-space:normal}
+.row.add{background:var(--add)}.row.add .n::before{content:"+ ";color:var(--addi);font-weight:700}
+.row.rem{background:var(--rem)}.row.rem .n{text-decoration:line-through}.row.rem .n::before{content:"− ";color:var(--remi);font-weight:700}
+.row.chg{background:var(--chg)}.row.chg .n::before{content:"~ ";color:var(--chgi);font-weight:700}
+.legend{margin-top:12px;font:13px system-ui,sans-serif;color:var(--mute)}
+.legend b{font-weight:400;margin-right:14px}
+.legend .a{color:var(--addi)}.legend .r{color:var(--remi)}.legend .c{color:var(--chgi)}
+
+/* type card: an indented field tree */
+.t{padding:16px 20px}
+.t .l{padding:3px 0}.t .i1{padding-left:28px}.t .i2{padding-left:56px}.t .i3{padding-left:84px}
+.ty{color:var(--blue)}.b{font-weight:700}
+.tag{display:inline-block;white-space:nowrap;font-size:12.5px;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:0 8px;margin-left:6px}
+.tag.blue{color:var(--blue);border-color:#9cc3f5}
+.tag.new{color:var(--addi);border-color:#8fd19e;background:var(--add)}
+.gap{height:14px}
+.t ul{margin:4px 0 0;padding-left:18px}
+
+/* JSON example, filled from a file by pr_cards.py */
+pre{margin:0;padding:16px 20px;font:13.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre}
+.k{color:var(--key)}.s{color:var(--str)}.v{color:var(--blue)}
+.cap{font:13px system-ui,sans-serif;color:var(--mute);margin-top:8px}
+
+/* flow: one row per field, columns joined by arrows */
+table.flow{width:100%;border-collapse:collapse;font-size:14px}
+table.flow th{font:600 13px system-ui,sans-serif;color:var(--mute);text-align:left;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--sheet)}
+table.flow td{padding:11px 16px;border-bottom:1px solid var(--line)}
+table.flow tr:last-child td{border-bottom:0}
+table.flow td.arrow,table.flow th.arrow{color:var(--mute);width:28px;text-align:center;padding:0}
+.m{color:var(--mute);font-size:13px}
