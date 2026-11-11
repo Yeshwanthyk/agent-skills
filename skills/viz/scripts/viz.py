@@ -3,7 +3,7 @@
 
   viz.py html IN.viz [-o OUT.html] [--open]   check, then build a standalone page with viz.js inlined
                                               (default OUT: /tmp/viz/<name>.html)
-  viz.py png IN.viz -o OUT.png [--width N]   static image of one graph for a PR or doc: paper theme, no title, tabs,
+  viz.py png IN.viz -o OUT.png [--width N]   static image of one view for a PR or doc: paper theme, no title, tabs,
                                               controls, legend, inspector or story list; prints the PNG path
   viz.py shot PAGE.html -o OUT.png [--select CSS] [--width N]
                                               same screenshot for any static page (default element: .sheet)
@@ -52,7 +52,21 @@ SHOT = os.path.join(HERE, "shot.mjs")
 CHROME_WORDS = ("how to read it", "hover a box", "full size", "click:", "stories in this graph", "esc clears")
 # Static page: one light sheet, the drawing at 100% (the renderer's fit-to-screen zoom is for live pages).
 PNG_CSS = ("html,body{margin:0;background:#fff}body{padding:24px;display:inline-block}"
-           ".vz-stage{zoom:1!important}.vz-flow{overflow:visible!important}")
+           ".vz-stage{zoom:1!important}.vz-flow,.vz-cx{overflow:visible!important}"
+           ".vz-tree{overflow:visible!important;max-height:none!important}.vz-car{visibility:hidden}")
+CHART_KINDS = ("timing", "gantt", "hist", "retries", "causes", "board", "stock", "waits")
+
+
+def drawing(header, text):
+    """The element holding the picture alone for a section header; None for a kind png does not export."""
+    kind = header[3:].split()[0] if len(header) > 3 else ""
+    if kind == "graph":
+        return ".vz-cx" if re.search(r"^view:\s*sankey\b", text, re.M) else ".vz-flow"
+    if kind in ("tree", "diff"):
+        return ".vz-tree"
+    if kind == "waits":
+        return ".vz-flow"  # drawn as a graph
+    return ".vz-cx" if kind in CHART_KINDS else None
 
 
 def static_source(text):
@@ -88,8 +102,11 @@ def cmd_png(args):
     with open(src) as f:
         text = static_source(f.read())
     sections = [l for l in text.splitlines() if l.startswith("== ")]
-    if len(sections) != 1 or not sections[0].startswith("== graph"):
-        sys.exit(f"png: wants exactly one == graph section, found {len(sections)} sections (one image per graph)")
+    if len(sections) != 1:
+        sys.exit(f"png: wants exactly one == section, found {len(sections)} (one image per view)")
+    selector = drawing(sections[0], text)
+    if not selector:
+        sys.exit(f"png: cannot export {sections[0]!r}; graphs, trees, diffs and charts only")
     tmp = os.path.join("/tmp/viz", os.path.splitext(os.path.basename(out))[0] + ".static")
     os.makedirs(tmp, exist_ok=True)
     with open(os.path.join(tmp, "in.viz"), "w") as f:
@@ -101,7 +118,7 @@ def cmd_png(args):
     page_path = os.path.join(tmp, "page.html")
     with open(page_path, "w") as f:
         f.write(doc)
-    print(shoot(page_path, out, ".vz-flow", width))
+    print(shoot(page_path, out, selector, width))
 
 
 def cmd_shot(args):

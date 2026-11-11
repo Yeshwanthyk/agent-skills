@@ -36,6 +36,8 @@ Fill each section, then delete the bracketed guidance. Where the repository has 
 
 ## What changes
 
+[The images depend on what the PR does; see the table in [Images](visual-pr.md#images). Below is the set for a schema change. A latency fix gets a gantt here instead, a refactor a call diff, and so on.]
+
 ![<what the schema card shows>](./schema-diff.png)
 
 ![<what the data-model graph shows>](./data-model.png)

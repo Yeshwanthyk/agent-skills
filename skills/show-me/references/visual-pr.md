@@ -74,7 +74,27 @@ GitHub runs no script in a PR body, so every view is text. Trees, pseudocode, ty
 
 ### Images
 
-Images sit beside the text views and never replace them. A PR that changes a schema or adds a type gets the images listed in [the body template](pr-description-template.md): a schema-diff card and a data-model graph under What changes, then a type card with a JSON example, and a flow card, for each type.
+Images sit beside the text views and never replace them. Pick them by what the PR does, one image per question a reviewer asks. A PR that does several of these gets the image for each part, and a PR that does none gets no image.
+
+| The PR changes | Image | Built with |
+|---|---|---|
+| Tables or fields | schema-diff card, then a data-model graph | `pr_cards.py schema`; `== graph` with `view: states` |
+| A type, payload, or config shape | type card, JSON example from the real factory or fixture, flow card from field to the column or call that uses it | `pr_cards.py card` |
+| An API endpoint | request and response card from a real test fixture; a `view: seq` when it calls other services | `pr_cards.py card`; `== graph` |
+| Decision logic | decision tree | `== graph` with `view: states` |
+| How work moves between components or queues | flow, or sequence when the order and waits are the point | `== graph` with `view: flow` or `view: seq` |
+| A status field or job lifecycle | state machine | `== graph` with `view: states` |
+| A call tree (refactor, extracted function) | call diff | `viz.py calldiff <base> HEAD`, then `== diff` |
+| Latency | where the time goes, old run under new | `== gantt` with `was`; `== hist` with `was:` for the tail |
+| Concurrency, a race, or locking | overlap of the workers; who waits on whom | `== timing`; `== waits` |
+| Retry or backoff policy | attempts over time to the give-up point | `== retries` |
+| A traffic split, rollout, or funnel | volume by path | `== graph` with `view: sankey` |
+| Queue depth, lag, or a pool | the quantity over time against its limits | `== stock` |
+| A backfill or sharded job | shards by stage | `== board` |
+| An incident fix | causes ruled in and out | `== causes` |
+| Docs, copy, or a dependency bump | none | |
+
+[viz](../../viz/SKILL.md) says what each view shows. The schema and type cards go where [the body template](pr-description-template.md) puts them; every other image goes under What changes, beside the text view it draws.
 
 Every image follows these rules. The build scripts below enforce the ones marked *checked*.
 
@@ -87,7 +107,7 @@ Build each image into the task-artifact folder, then look at every PNG before us
 
 - **Schema diff:** `python3 <show-me>/scripts/pr_cards.py schema schema.json -o schema-diff.png`. The script's docstring shows the `schema.json` format: per table, `base` and `head` fields, a `null` side for a new or deleted table, and optional `notes`.
 - **Type card, JSON example, flow card:** write an HTML fragment with the classes in `pr-cards.css` (`.card .t .l .i1 .ty .tag` for a type tree, `table.flow` for field-to-column rows), then run `python3 <show-me>/scripts/pr_cards.py card type.html -o type.png`.
-- **Data-model graph or decision tree:** write a viz `== graph` with `view: states` (labelled edges, no hop numbers) and `# note` lines on boxes, then run `python3 <viz>/scripts/viz.py png graph.viz -o data-model.png`. It drops any title, sets the paper theme, and crops to the drawing. For a decision tree, give each branch its own result box and keep labels to yes or no.
+- **Every viz image:** write one section (a `== graph`, `== diff`, or chart) to a `.viz` file, then run `python3 <viz>/scripts/viz.py png <name>.viz -o <name>.png`. It drops any title, sets the paper theme, and crops to the drawing. Every number on a chart comes from a trace, log, query, or the code, like any other fact. For a data-model graph, use `view: states` (labelled edges, no hop numbers) and `# note` lines on boxes. For a decision tree, give each branch its own result box and keep labels to yes or no.
 
 `<show-me>` and `<viz>` are those skills' directories. Both scripts drive the local Chrome over its debugging port with Node 22 or later, and need no npm packages.
 
@@ -99,7 +119,7 @@ For complex visual UI changes, a focused HTML comparison may supplement the PR. 
 
 Read [the body template](pr-description-template.md) and fill its relevant sections. Preserve repository-required headings, checklists, and useful existing author content; map the template's information into that structure instead of duplicating it.
 
-Follow the template's shape and order: Why, Reviewers, Risk, What changes, a sub-section per type, Checks, then the footer. Omit a section's parts that do not apply, such as images for a PR with no schema or type change, but keep the headings in that order. Use plain language and only real issue, plan, or artifact links. Link code at the head SHA, never a branch name.
+Follow the template's shape and order: Why, Reviewers, Risk, What changes, a sub-section per type, Checks, then the footer. Omit a section's parts that do not apply, such as the schema and type images for a PR that changes neither, but keep the headings in that order. Use plain language and only real issue, plan, or artifact links. Link code at the head SHA, never a branch name.
 
 Reviewers takes at most four bullets, one point per bullet: where to start reading, how a migration runs, an assumption the change depends on, a gap left on purpose. Write `None.` when there is nothing to flag.
 
