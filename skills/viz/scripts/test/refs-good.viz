@@ -1,0 +1,20 @@
+title Real parser citations
+sub fixture @1a2b3c4
+base skills/viz/assets/
+
+== graph Parser
+split: splitTail @viz.js:238-244
+  does: `function splitTail(s)` extracts the tail
+  reads: `let note = "", ref = "";`
+parse: parse @viz.js:250
+  writes: `const doc = { title: "", sub: "", base: "", theme: "", sections: [], errors: [] };`
+  ref: viz.js:249-251 document setup
+whole: Status @viz.js
+  note: `"?": "unk"` marks uncertainty
+
+split -> parse: Tail into parser @viz.js:240-244
+  does: `return {rest:s.trim(),ref,note};`
+parse -> whole
+
+== tree Parser entry
+Viz.parse @viz.js:249

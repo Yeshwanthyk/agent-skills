@@ -1,0 +1,7 @@
+title Broken parser citations
+base skills/viz/assets/
+
+== graph Broken
+bad_line: Out of bounds @viz.js:999999
+?missing: Already uncertain @missing-file-for-refs.py:1
+bad_line -> missing
