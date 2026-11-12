@@ -6,6 +6,7 @@
   viz.py t3 IN.viz [--inline]                 the html_render page: CDN script, or the renderer inlined
   viz.py inline PAGE.html                     fill <script data-viz></script> in an existing page with viz.js (rerun to update)
   viz.py check IN.viz                         parse with node and print errors (exit 1 on any)
+  viz.py check --refs [--root DIR] IN.viz     also check citations and backtick fragments (warnings exit 0)
   viz.py calldiff [calldiff diff args...]     run `calldiff diff --format json` and print a compact `== diff` section
   viz.py calltree [calldiff tree args...]     same for `calldiff tree`
 """
@@ -60,6 +61,29 @@ process.exit(d.errors.length ? 1 : 0);
 '''
 
 
+REFS_JS = r'''
+global.window = {}; global.document = { readyState: 'loading', addEventListener() {} }; global.matchMedia = () => ({ matches: false });
+require(process.argv[1]);
+const d = window.Viz.parse(require('fs').readFileSync(process.argv[2], 'utf8'));
+const refs = [];
+function collect(o, kind, section, id) {
+  for (const ref of [...new Set([o.ref, ...(o.refs || []).map((r) => r[0])].filter(Boolean))])
+    refs.push({ kind, section, id, n: o.n, st: o.st, ref, details: Object.values(o.info || {}) });
+}
+for (const s of d.sections) {
+  if (s.kind === 'graph') {
+    for (const n of s.nodes) collect(n, 'node', s.name, n.id);
+    for (const e of s.edges) collect(e, 'edge', s.name, `${e.from} -> ${e.to}`);
+  } else if (s.kind === 'tree') {
+    const walk = (n) => { collect(n, 'node', s.name, n.label); for (const k of n.kids) walk(k); };
+    for (const n of s.root.kids) walk(n);
+  }
+}
+console.log(JSON.stringify({ base: d.base, errors: d.errors, refs }));
+process.exit(d.errors.length ? 1 : 0);
+'''
+
+
 def cmd_inline(args):
     with open(args[0]) as f, open(VIZ_JS) as js:
         text, code = f.read(), js.read()
@@ -75,8 +99,81 @@ def check(src):
     return subprocess.run(["node", "-e", CHECK_JS, VIZ_JS, src]).returncode
 
 
+def check_refs(src, root):
+    res = subprocess.run(["node", "-e", REFS_JS, VIZ_JS, src], capture_output=True, text=True)
+    if res.stderr:
+        sys.stderr.write(res.stderr)
+    if not res.stdout:
+        return res.returncode or 1
+    doc = json.loads(res.stdout)
+    for error in doc["errors"]:
+        print(error)
+    errors, warnings = len(doc["errors"]), 0
+    uncertain = set()
+
+    # Port of thimble's deterministic evidence check (safety-research/thimble,
+    # Apache-2.0): quote/whitespace-insensitive holds and SHIFT_MAX = 5.
+    def normalized(text):
+        return re.sub(r'["`‘’“”]', "'", re.sub(r"\s+", "", text))
+
+    for ref in doc["refs"]:
+        label = f'{ref["kind"]} {ref["id"]} ({ref["section"]})'
+        match = re.fullmatch(r"(.+?)(?::(\d+)(?:-(\d+))?)?", ref["ref"])
+        path, start, end = match.groups()
+        path = os.path.realpath(os.path.join(root, doc["base"] + path))
+        failed = False
+        try:
+            if os.path.commonpath([path, os.path.realpath(root)]) != os.path.realpath(root):
+                raise PermissionError("outside --root")
+            with open(path, newline="") as f:
+                lines = f.read().replace("\r\n", "\n").split("\n")
+                if lines and lines[-1] == "":
+                    lines.pop()
+        except (OSError, UnicodeError) as error:
+            reason = "file missing" if isinstance(error, FileNotFoundError) else "outside --root" if isinstance(error, PermissionError) and str(error) == "outside --root" else "cannot read file"
+            print(f'error: {label}: @{ref["ref"]}: {reason}: {path}')
+            errors += 1
+            failed = True
+        else:
+            start, end = (int(start), int(end or start)) if start else (None, None)
+            if start is not None and (start < 1 or end < start or end > len(lines)):
+                reason = f"line {end} beyond file length {len(lines)}" if end > len(lines) else "invalid line range"
+                print(f'error: {label}: @{ref["ref"]}: {reason}')
+                errors += 1
+                failed = True
+            else:
+                cited = lines if start is None else lines[max(0, start - 1 - 5):min(len(lines), end + 5)]
+                haystack = normalized("\n".join(cited))
+                for detail in ref["details"]:
+                    for fragment in re.findall(r"`([^`]+)`", detail):
+                        if normalized(fragment) not in haystack:
+                            print(f'warning: {label}: @{ref["ref"]}: missing fragment `{fragment}`')
+                            warnings += 1
+                            failed = True
+        key = (ref["section"], ref["id"], ref["n"])
+        if failed and ref["kind"] == "node" and ref["st"] != "unk" and key not in uncertain:
+            print(f'warning: {label}: should be ?')
+            uncertain.add(key)
+    print(f'refs: {len(doc["refs"])} checked, {errors} errors, {warnings} fragment warnings')
+    return 1 if errors or res.returncode else 0
+
+
 def cmd_check(args):
-    sys.exit(check(args[0]))
+    if not [a for a in args if not a.startswith("--")]:
+        sys.exit("usage: viz.py check <file.viz> [--refs [--root DIR]]")
+    if "--refs" not in args:
+        sys.exit(check(args[0]))
+    args = [a for a in args if a != "--refs"]
+    root = os.getcwd()
+    if "--root" in args:
+        i = args.index("--root")
+        if i + 1 >= len(args):
+            sys.exit("check --refs: --root needs a directory")
+        root = args[i + 1]
+        del args[i:i + 2]
+    if len(args) != 1 or args[0].startswith("--"):
+        sys.exit("usage: viz.py check --refs [--root DIR] IN.viz")
+    sys.exit(check_refs(args[0], root))
 
 
 def common_base(paths):

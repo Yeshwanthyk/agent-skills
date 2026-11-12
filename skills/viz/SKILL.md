@@ -63,6 +63,8 @@ Ground everything in evidence. Each node gets an `@path:line` and detail lines f
 
 If the preview console shows the script failed to load, fall back to the page below (Anywhere else) and give the user its path. Never inline viz.js into a T3 render: it is about 55k tokens per call.
 
+**Rex** (`REX_SESSION` is set and `rexer` is on PATH): save the data to `/tmp/viz/<name>.viz` and run `rexer viz /tmp/viz/<name>.viz`. It opens the visual in a split beside your pane. Read [terminal](references/terminal.md) for what draws there and how the user drives it.
+
 **Anywhere else**: save the data to `/tmp/viz/<name>.viz`, then run `python3 <viz>/scripts/viz.py html /tmp/viz/<name>.viz --open`. It reports parse errors, writes `/tmp/viz/<name>.html` with the renderer inlined, and opens it in the browser. In pi with glimpse installed, open that file there instead ([pi](../yesh-router/references/hosts/pi.md)). Report the path.
 
 **Inside a saved page that must stay self-contained** (a page the user keeps or shares): write `text/viz` blocks where the views belong, end the body with `<script data-viz></script>`, and run `viz.py inline page.html`. Rerun it after updating viz.js. Give a story caption, table row or glossary term `data-viz-id="<node id or path name>"` and hovering it lights that part of every graph on the page, with no page script.

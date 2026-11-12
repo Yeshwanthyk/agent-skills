@@ -1,0 +1,10 @@
+{
+  "name": "viz-term",
+  "private": true,
+  "type": "module",
+  "description": "Terminal renderer for viz graph sections (OpenTUI, Bun)",
+  "dependencies": {
+    "@opentui/core": "0.8.4",
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}

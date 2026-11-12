@@ -541,8 +541,10 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
   // Every layout sets nd.box {x: centre, y: top, w, h}, e.d (an SVG path), optionally e.pill {x, y}, and returns
   // {w, h, decor}: column headers, lane bands, lifelines and time ticks drawn behind the boxes.
   const FS = 12.5, PFS = 11, LINE = 17, SUBL = 15, PX = 9, PY = 6, WRAP = 28, PILL = 20, GAP = 26, VGAP = 26, FGAP = 14;
-  let charW = 0;
+  let charW = 0, headlessCharW = 7.6;
   function cw() {
+    // CHECK_JS and terminal callers have no canvas/style APIs. Never seed the browser cache here.
+    if (typeof document === 'undefined' || typeof getComputedStyle !== 'function' || typeof document.createElement !== 'function') return headlessCharW;
     if (charW) return charW;
     const fam = getComputedStyle(document.documentElement).getPropertyValue('--font-mono').trim() || '"IBM Plex Mono","Berkeley Mono",ui-monospace,SFMono-Regular,Menlo,monospace';
     const c = document.createElement('canvas').getContext('2d');
@@ -1075,6 +1077,38 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
   }
 
   const LAYOUT = { flow: layoutFlow, states: layoutFlow, ranked: layoutRanked, stack: layoutStack, seq: layoutSeq };
+  // Headless geometry uses the same layouts as renderGraph. Like rendering, this populates s's boxes/paths.
+  function layout(s, opts = {}) {
+    if (s.kind !== 'graph' || !(LAYOUT[s.view] || s.view === 'sankey')) return null;
+    const previous = headlessCharW;
+    headlessCharW = opts.charW ?? 7.6;
+    try {
+      const size = (v) => (Number.isFinite(v) ? Math.max(0, v) : 0);
+      if (s.view === 'sankey') {
+        const L = layoutSankey(s);
+        // Sankey nodes are bars: x is the bar's left edge, y its top. Boxes use the shared convention (x = centre,
+        // y = top), so x is shifted by half the bar width.
+        return {
+          w: size(L.w), h: size(L.h), decor: [],
+          boxes: L.nodes.filter(Boolean).map((N) => ({ id: N.id, label: N.label, kind: 'sankey', x: N.x + N.w / 2, y: N.y, w: N.w, h: N.h, value: N.value })),
+          edges: L.bands.map((b) => ({ from: b.from, to: b.to, label: b.label, d: b.d, value: b.value })),
+        };
+      }
+      const { w, h, decor } = LAYOUT[s.view](s);
+      // Plain data only: internal items point back at their edge (.e), which makes the result circular.
+      return {
+        w: size(w), h: size(h),
+        decor: decor.map(({ e, ...item }) => item),
+        boxes: s.nodes.map((nd) => {
+          const { x, y, w, h } = nd.box;
+          return { id: nd.id, label: nd.label, kind: nd.kind, x, y, w, h };
+        }),
+        edges: s.edges.map((e) => ({ from: e.from, to: e.to, label: e.label, d: e.d, rev: !!e.rev, pill: e.pill && { x: e.pill.x, y: e.pill.y, w: e.pill.w, h: e.pill.h } })),
+      };
+    } finally {
+      headlessCharW = previous;
+    }
+  }
   // A status prefix on a chart item picks its colour: + ok, ! fails, * or ~ in progress, ? unread.
   const PRE = { '+': 'ok', '!': 'fail', '*': 'warn', '~': 'warn', '?': 'unk' };
   const toned = (v) => (PRE[v[0]] ? { tone: PRE[v[0]], text: v.slice(1).trim() } : { tone: '', text: v });
@@ -2082,9 +2116,10 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     set(vs.indexOf(Math.max(...vs)));
   }
 
-  // view: sankey: the graph's paths, drawn as bands whose width is how much flows (`weight:` under a path, or
-  // under an edge). A band is green when everything along it gets through, coral when it all fails.
-  function renderSankey(s, doc, mount) {
+  // Headless sankey geometry. Like the graph layouts it populates s (p.w, e.w, e.zIn) and returns
+  // internals the renderer draws from: nodes are index-aligned with s.nodes (null when a node carries no flow),
+  // bands are in draw order and hold their edge in `e`.
+  function layoutSankey(s) {
     const anyW = s.paths.some((p) => p.weight != null);
     for (const p of s.paths) p.w = p.weight ?? (anyW ? 0 : 1);
     for (const e of s.edges) e.w = e.info.weight != null ? parseFloat(e.info.weight) || 0 : e.paths.reduce((a, p) => a + p.w, 0);
@@ -2108,16 +2143,28 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       let y = 14; for (const i of c) { y0[i] = y; hgt[i] = Math.max(3, val[i] * K); y += hgt[i] + GAP; }
     });
     const H = Math.ceil(Math.max(...s.nodes.map((_, i) => (y0[i] ?? 0) + (hgt[i] ?? 0)))) + 20;
-    const { g, ro, detail } = shell(s, mount, W, H);
     const xOf = (i) => layer[i] * SPC, oOut = new Array(n).fill(0), oIn = new Array(n).fill(0);
     const sorted = [...es].sort((a, b) => y0[idx[a.from]] - y0[idx[b.from]] || y0[idx[a.to]] - y0[idx[b.to]]);
+    for (const e of [...es].sort((a, b) => y0[idx[a.to]] - y0[idx[b.to]] || y0[idx[a.from]] - y0[idx[b.from]])) { e.zIn = oIn[idx[e.to]]; oIn[idx[e.to]] += e.w * K; }
+    const bands = sorted.map((e) => {
+      const u = idx[e.from], v = idx[e.to], th = e.w * K, a0 = y0[u] + oOut[u], b0 = y0[v] + e.zIn; oOut[u] += th;
+      const xa = xOf(u) + NW, xb = xOf(v), m = (xa + xb) / 2;
+      return { e, from: e.from, to: e.to, value: e.w, label: e.label, th, y0: a0, y1: b0, d: `M${xa},${a0}C${m},${a0} ${m},${b0} ${xb},${b0}L${xb},${b0 + th}C${m},${b0 + th} ${m},${a0 + th} ${xa},${a0 + th}Z` };
+    });
+    const nodes = s.nodes.map((nd, i) => (y0[i] == null ? null : { i, id: nd.id, label: nd.label, text: lab(i), x: xOf(i), y: y0[i], w: NW, h: hgt[i], value: val[i] }));
+    return { w: W, h: H, es, val, nodes, bands, cols };
+  }
+
+  // view: sankey: the graph's paths, drawn as bands whose width is how much flows (`weight:` under a path, or
+  // under an edge). A band is green when everything along it gets through, coral when it all fails.
+  function renderSankey(s, doc, mount) {
+    const L = layoutSankey(s), { es, val, cols } = L;
+    const { g, ro, detail } = shell(s, mount, L.w, L.h);
     const toneOf = (e) => (!e.paths.length ? '' : e.paths.every((p) => p.out === 'pass') ? 'ok' : e.paths.every((p) => p.out === 'fail') ? 'fail' : e.paths.every((p) => p.out === 'drop') ? 'warn' : '');
     const bandG = svg('g', {}); g.append(bandG);
-    for (const e of [...es].sort((a, b) => y0[idx[a.to]] - y0[idx[b.to]] || y0[idx[a.from]] - y0[idx[b.from]])) { e.zIn = oIn[idx[e.to]]; oIn[idx[e.to]] += e.w * K; }
-    for (const e of sorted) {
-      const u = idx[e.from], v = idx[e.to], th = e.w * K, a0 = y0[u] + oOut[u], b0 = y0[v] + e.zIn; oOut[u] += th;
-      const xa = xOf(u) + NW, xb = xOf(v), m = (xa + xb) / 2, t = toneOf(e), c = t ? TONE[t] : 'var(--vz-fg)';
-      e.band = svg('path', { d: `M${xa},${a0}C${m},${a0} ${m},${b0} ${xb},${b0}L${xb},${b0 + th}C${m},${b0 + th} ${m},${a0 + th} ${xa},${a0 + th}Z`, class: 'vz-band', style: `fill:color-mix(in srgb,${c} ${t === 'fail' ? 55 : t ? 26 : 16}%,transparent)${t === 'fail' ? `;stroke:${c}` : ''}` });
+    for (const { e, d } of L.bands) {
+      const t = toneOf(e), c = t ? TONE[t] : 'var(--vz-fg)';
+      e.band = svg('path', { d, class: 'vz-band', style: `fill:color-mix(in srgb,${c} ${t === 'fail' ? 55 : t ? 26 : 16}%,transparent)${t === 'fail' ? `;stroke:${c}` : ''}` });
       e.band.addEventListener('mouseenter', () => light(new Set([e]), e)); e.band.addEventListener('mouseleave', () => light(null));
       e.band.addEventListener('click', () => tell(detail, h('b', {}, `${s.byId[e.from].label} → ${s.byId[e.to].label}`), kfmt(e.w), e.label, ...e.paths.map((p) => (p.named ? p.name : p.ids.join(' › ')) + ` ${kfmt(p.w)}`), e.ref ? refC(doc, e.ref) : null));
       bandG.append(e.band);
@@ -2125,11 +2172,12 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
     const total = cols[0].reduce((a, i) => a + val[i], 0) || 1, sum = (o) => s.paths.filter((p) => p.out === o).reduce((a, p) => a + p.w, 0);
     const ends = (i) => s.paths.filter((p) => p.ids[p.ids.length - 1] === s.nodes[i].id);
     s.nodes.forEach((nd, i) => {
-      if (y0[i] == null) return;
-      const en = ends(i), bad = nd.st === 'fail' || (en.length && en.every((p) => p.out === 'fail')) ? 'var(--vz-coral)' : en.length && en.every((p) => p.out === 'drop' || p.out === 'fail') ? 'var(--vz-amber)' : '', x = xOf(i);
+      const N = L.nodes[i];
+      if (!N) return;
+      const en = ends(i), bad = nd.st === 'fail' || (en.length && en.every((p) => p.out === 'fail')) ? 'var(--vz-coral)' : en.length && en.every((p) => p.out === 'drop' || p.out === 'fail') ? 'var(--vz-amber)' : '', x = N.x;
       const el = svg('g', { class: 'vz-crow', 'data-viz-id': nd.id });
-      el.append(svg('rect', { x, y: y0[i], width: NW, height: hgt[i], style: `fill:${bad || 'var(--vz-fg)'}` }),
-        tx(x + NW + 6, y0[i] + hgt[i] / 2 + 4, lab(i), 'vz-tx vz-sl', bad ? { style: `fill:${bad}` } : {}));
+      el.append(svg('rect', { x, y: N.y, width: N.w, height: N.h, style: `fill:${bad || 'var(--vz-fg)'}` }),
+        tx(x + N.w + 6, N.y + N.h / 2 + 4, N.text, 'vz-tx vz-sl', bad ? { style: `fill:${bad}` } : {}));
       const mine = new Set(es.filter((e) => e.from === nd.id || e.to === nd.id));
       el.addEventListener('mouseenter', () => light(mine)); el.addEventListener('mouseleave', () => light(null));
       el.addEventListener('click', () => tell(detail, h('b', {}, nd.label), `${kfmt(val[i])} · ${fmt(+((100 * val[i]) / total).toFixed(1))}% of the inflow`, nd.ref ? refC(doc, nd.ref) : null, nd.note, ...DETAIL_KEYS.map((k) => nd.info[k] && `${k}: ${nd.info[k]}`)));
@@ -2449,6 +2497,6 @@ color:var(--vz-dim);font-size:10.5px;white-space:nowrap;transition:opacity .2s,b
       render(host, sc.textContent);
     }
   }
-  window.Viz = { render, parse, boot };
+  window.Viz = { render, parse, boot, layout };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
