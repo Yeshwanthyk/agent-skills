@@ -1,33 +1,80 @@
 # PR body template
 
-Replace placeholders and remove guidance before publication. Retain the repository's required structure when it differs. Optional related links belong above the first section; omit that line when none are known.
+Fill each section, then delete the bracketed guidance. Where the repository has its own template, map these sections into its headings instead of adding a second set. A worked example of this shape is core-backend #36059.
 
-## Purpose
+## Why
 
-[One sentence identifying the problem and the outcome enabled by this change.]
+[One or two sentences: what this PR does and the outcome it enables. Name the product or system once in full before using its short name.]
 
-## Reviewer notes
+**Stack:** [Where this PR sits: what it leaves for the PR stacked on it, and what an earlier PR already did. Name each PR by number. Omit this line for a PR with no stack.]
 
-- [One to three caveats about rollout, compatibility, migrations, intentional gaps, or non-obvious decisions; otherwise `None.`]
+## Reviewers
 
-**Door:** [One-way or two-way: whether a revert fully undoes the merge. Name what makes it one-way, such as a migration, deleted data, a published contract, or an external side effect.]
-**Blast radius:** [Who or what breaks if this is wrong: consumers, jobs, data, layout, platforms. Name the boundary, not a severity adjective.]
+[At most four bullets, one point each, in this order when they apply:]
 
-## Implementation map
+- [Where to start reading: the file or symbol first, then the rest in order.]
+- [How a migration runs: concurrent index, `NOT VALID` then `VALIDATE`, a backfill.]
+- [An assumption the change depends on, and why it holds today.]
+- [A gap left on purpose, and which PR or component covers it.]
 
-[Brief explanation beside a structural visual showing what changes. Choose the relevant schema, contract, type, component, responsibility, or execution view.]
+## Risk
 
-```diff
- [essential existing context]
--[previous structure or behavior]
-+[replacement structure or behavior]
+**Door: [one-way or two-way].**
+
+[For a one-way door, one bullet per operation a revert cannot undo. For a two-way door, write "A revert undoes all of it." and no list.]
+
+- [Migration 0002 drops the `<name>` constraint.]
+- [Migration 0005 drops the `<name>` table.]
+
+**Blast radius:**
+
+[One bullet per item. Name the boundary, never a severity word.]
+
+- [Which app or service changes.]
+- [Each import that crosses an app boundary, by symbol: `NAME` from `module.path`.]
+- [Who reads or writes the changed tables, endpoints, or messages. "No other app reads these tables yet" is an answer.]
+
+## What changes
+
+[The images depend on what the PR does; see the table in [Images](visual-pr.md#images). Below is the set for a schema change. A latency fix gets a gantt here instead, a refactor a call diff, and so on.]
+
+![<what the schema card shows>](./schema-diff.png)
+
+![<what the data-model graph shows>](./data-model.png)
+
+```text
+[Text tree of the changed structure. Mark each node new, changed, deprecated, or deleted, with the migration or PR that does it.]
 ```
 
-[For predominantly new structures, use a complete language-tagged block or a text tree instead. Write a flow as a numbered markdown list and states as a transition table, outside any fence. Add a second view only for distinct information. Omit categories that do not help explain this PR. Never use Mermaid or another diagram language; GitHub shows text views only.]
+### [One sub-section per new or changed type, headed with what the type does]
+
+![<what the type card and JSON example show>](./<type>.png)
+
+![<how the type's fields flow into the columns or calls that use them>](./<type>-flow.png)
+
+[One or two sentences on what the type is for, with its file linked at the head SHA.]
+
+```text
+[Text tree of the type's fields, with their constraints.]
+```
+
+[A reading table when several values combine into one meaning, one row per case:]
+
+| [field] | [field] | Meaning |
+|---|---|---|
+| [value] | [value] | [what it means] |
+
+[One sentence saying what to notice, with a link to the lines at the head SHA, then a short excerpt:]
+
+```python
+[10 to 25 lines of the code that makes the point]
+```
 
 ## Checks
 
-- **Before:** [Observed behavior on the base: a failing test, error output, or a screenshot for a visual change.]
-  **After:** [The same observation on this branch.]
-- [Other executed checks and observed results.]
-- [Relevant unexecuted check and why, when applicable.]
+- [Each command that ran, exactly as run, with its result: "35 tests pass", "clean".]
+- [What this PR has not verified yet, said plainly: "The migrations haven't run forward and back on a scratch database yet."]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+[A branch-stack block a tool maintains (`<!-- branch-stack -->`) goes here, below the footer.]

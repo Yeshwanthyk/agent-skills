@@ -3,6 +3,10 @@
 
   viz.py html IN.viz [-o OUT.html] [--open]   check, then build a standalone page with viz.js inlined
                                               (default OUT: /tmp/viz/<name>.html)
+  viz.py png IN.viz -o OUT.png [--width N]   static image of one view for a PR or doc: paper theme, no title, tabs,
+                                              controls, legend, inspector or story list; prints the PNG path
+  viz.py shot PAGE.html -o OUT.png [--select CSS] [--width N]
+                                              same screenshot for any static page (default element: .sheet)
   viz.py t3 IN.viz [--inline]                 the html_render page: CDN script, or the renderer inlined
   viz.py inline PAGE.html                     fill <script data-viz></script> in an existing page with viz.js (rerun to update)
   viz.py check IN.viz                         parse with node and print errors (exit 1 on any)
@@ -43,6 +47,87 @@ def cmd_html(args):
     print(out)
     if "--open" in args:
         webbrowser.open("file://" + os.path.abspath(out))
+
+
+SHOT = os.path.join(HERE, "shot.mjs")
+CHROME_WORDS = ("how to read it", "hover a box", "full size", "click:", "stories in this graph", "esc clears")
+# Static page: one light sheet, the drawing at 100% (the renderer's fit-to-screen zoom is for live pages).
+PNG_CSS = ("html,body{margin:0;background:#fff}body{padding:24px;display:inline-block}"
+           ".vz-stage{zoom:1!important}.vz-flow,.vz-cx{overflow:visible!important}"
+           ".vz-tree{overflow:visible!important;max-height:none!important}.vz-car{visibility:hidden}")
+CHART_KINDS = ("timing", "gantt", "hist", "retries", "causes", "board", "stock", "waits")
+
+
+def drawing(header, text):
+    """The element holding the picture alone for a section header; None for a kind png does not export."""
+    kind = header[3:].split()[0] if len(header) > 3 else ""
+    if kind == "graph":
+        return ".vz-cx" if re.search(r"^view:\s*sankey\b", text, re.M) else ".vz-flow"
+    if kind in ("tree", "diff"):
+        return ".vz-tree"
+    if kind == "waits":
+        return ".vz-flow"  # drawn as a graph
+    return ".vz-cx" if kind in CHART_KINDS else None
+
+
+def static_source(text):
+    """Drop page metadata (title, sub, theme) above the first section and set theme paper."""
+    out, top = ["theme paper"], True
+    for line in text.splitlines():
+        if line.startswith("=="):
+            top = False
+        if top and re.match(r"^(title|sub|theme)\s", line):
+            continue
+        out.append(line)
+    return "\n".join(out) + "\n"
+
+
+def shoot(page_path, out, selector, width):
+    """Screenshot one element with shot.mjs; fail when the image would carry viewer chrome."""
+    r = subprocess.run(["node", SHOT, page_path, out, selector, str(width)], capture_output=True, text=True)
+    if r.returncode:
+        sys.exit(r.stderr.strip() or "shot failed")
+    seen = [w for w in CHROME_WORDS if w in r.stdout.lower()]
+    if seen:
+        os.remove(out)
+        sys.exit(f"{out}: viewer chrome in the image ({', '.join(seen)}); not written")
+    return out
+
+
+def cmd_png(args):
+    src = args[0]
+    if "-o" not in args:
+        sys.exit("png: -o OUT.png is required")
+    out = os.path.abspath(args[args.index("-o") + 1])
+    width = int(args[args.index("--width") + 1]) if "--width" in args else 1600
+    with open(src) as f:
+        text = static_source(f.read())
+    sections = [l for l in text.splitlines() if l.startswith("== ")]
+    if len(sections) != 1:
+        sys.exit(f"png: wants exactly one == section, found {len(sections)} (one image per view)")
+    selector = drawing(sections[0], text)
+    if not selector:
+        sys.exit(f"png: cannot export {sections[0]!r}; graphs, trees, diffs and charts only")
+    tmp = os.path.join("/tmp/viz", os.path.splitext(os.path.basename(out))[0] + ".static")
+    os.makedirs(tmp, exist_ok=True)
+    with open(os.path.join(tmp, "in.viz"), "w") as f:
+        f.write(text)
+    if check(os.path.join(tmp, "in.viz")):
+        sys.exit(1)
+    with open(VIZ_JS) as js:
+        doc = page(text, f"<script>{js.read()}</script>", standalone=False).replace("<style></style>", f"<style>{PNG_CSS}</style>")
+    page_path = os.path.join(tmp, "page.html")
+    with open(page_path, "w") as f:
+        f.write(doc)
+    print(shoot(page_path, out, selector, width))
+
+
+def cmd_shot(args):
+    if "-o" not in args:
+        sys.exit("shot: -o OUT.png is required")
+    sel = args[args.index("--select") + 1] if "--select" in args else ".sheet"
+    width = int(args[args.index("--width") + 1]) if "--width" in args else 1200
+    print(shoot(args[0], os.path.abspath(args[args.index("-o") + 1]), sel, width))
 
 
 def cmd_t3(args):
@@ -242,6 +327,10 @@ def main():
         cmd_inline(args)
     elif cmd == "check":
         cmd_check(args)
+    elif cmd == "shot":
+        cmd_shot(args)
+    elif cmd == "png":
+        cmd_png(args)
     elif cmd == "t3":
         cmd_t3(args)
     elif cmd in ("calldiff", "calltree"):
