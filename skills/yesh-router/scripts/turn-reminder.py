@@ -10,7 +10,8 @@ import json, sys
 
 REMINDER = ("powerball: if this message is a new ask (a task, bug, status, PR, research), "
             "open the matching method file, then start with `Method:` and `Plan: … · ends:`; "
-            "otherwise continue the current Plan.")
+            "otherwise continue the current Plan. Before ending, close every ask in the message: "
+            "done with evidence, or not done and why.")
 SKIP = ("<task-notification", "This session is being continued", "<command-")
 
 try:

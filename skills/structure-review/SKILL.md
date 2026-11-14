@@ -25,4 +25,6 @@ Report findings in order of consequence. Each finding needs a code location, a c
 
 Preserve boundaries that serve a real contract. Do not propose a rewrite, abstraction, or style change solely to satisfy a principle. No findings is a valid result; a review need not inventory every sound area.
 
+**Slop gate.** When the agent-inbox vault (`$AGENT_INBOX`, default `~/agent-inbox`) has `repos/<repo>/slop-gate.md` for this repository, run `harrow audit . --new-since <base>`, then check the diff against each entry there and the code entries in the vault's `mistakes.md`. Report pass or fail per entry with `file:line`; a fail is fixed before the push or kept on the user's say-so.
+
 For a deeper design dispute or source attribution, consult [references.md](references.md).

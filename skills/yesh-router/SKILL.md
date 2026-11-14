@@ -18,6 +18,7 @@ This mode is on while the host sends this file, or after the user loads `/yesh-r
 - **Settled implementation.** Read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it changes the work or its proof.
 - **Before any spawn.** Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the [routing table](references/routing.md). Four or more children, any writer other than a lint fix, or a long run: show the review and end the turn.
 - **Before saying done.** Prove it on the real surface the user will use, the one `ends:` names; for UI work, show what that surface shows (screenshot or URL), not a test log.
+- **Known mistakes.** The agent-inbox vault (`$AGENT_INBOX`, default `~/agent-inbox`) keeps `mistakes.md`: what the user keeps correcting, in any repo. Check each reply against it before ending the turn. When the user corrects the same thing twice in a session, append an entry there, or in `repos/<repo>/slop-gate.md` when it is tied to one repository. Before a push, run [structure-review](../structure-review/SKILL.md), which runs that repository's slop gate.
 - **After compaction or a context gap.** Recover the method, current step, and outstanding proof from the last `Method:` and `Plan:` lines, then reread the main method file before its next step; locate sessions under the [session-records contract](references/session-records.md).
 
 ## Triggers
