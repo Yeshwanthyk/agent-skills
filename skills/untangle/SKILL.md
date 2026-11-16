@@ -26,6 +26,8 @@ Change nothing yet. Write each problem with its `file:line` into `untangle-log.m
 - **Needless links:** pieces tied together that change for different reasons. Examples: callers that reach into internals; stable code importing more volatile code; a general function with a parameter only one caller understands; a shallow module whose interface moves with its internals.
 - **Surplus:** pieces with no reason of their own to change. Examples: pass-through wrappers; extension points or config for things that never vary; dead code.
 
+Keep correctness and maintainability separate in the log and final verdict. A passing behavior suite does not close a structural problem. For nested callbacks, observers, handlers or continuations, apply [callback-family review](../structure-review/callback-families.md): log the enclosing operation and cooperating callbacks as one family, including extracted helpers. Compare ownership, writers, phases and synchronous reentry against a genuinely simpler alternative before choosing the fix.
+
 Also log every **special case**: an `if` for one value, a parameter for one caller, a swallowed exception, a retry or sleep, a disabled test. Each one marks a requirement the design never accounted for.
 
 Git history is evidence. Files that change together in commits (`git log --name-only`) point to hidden links. A script that prints what imports what shows needless links; rerun it as you go. On a large codebase, strip function bodies to a skeleton, or have read-only subagents summarize parts, so the whole thing fits in context.
@@ -56,7 +58,7 @@ If the user chose **Tests**, do them last, because tests are the safety net for 
 Have read-only subagents search fresh for hidden links, needless links, surplus and special cases. Pick their models from [routing.md](../yesh-router/references/routing.md). Four or more children need the user's approval first ([delegation](../yesh-router/references/delegation.md)). Fix what they confirm, then search again. Stop when a pass turns up nothing worth fixing.
 
 You're done when all of these hold:
-- As few special cases are left as possible. The count is the best measure of progress; report it before and after.
+- As few special cases are left as possible. Report the count before and after as context, alongside the coordination removed; a smaller count alone does not prove a better design.
 - A typical change lands in one place.
 - No import points to something more volatile than the importer.
 - Behavior matches the start, apart from bugs the refactor fixed. Prove it with the tests and one real run at the end ([prove-it-works](../yesh-router/references/principles/prove-it-works.md)).

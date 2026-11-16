@@ -1,0 +1,17 @@
+[[case]]
+id = "callback-family-tangled"
+fixture = "callbacks"
+tier = "task"
+activation = "router"
+prompt = "Review tangled.py for correctness and maintainability. Work yourself with no children. Run its tests, but do not edit code. Give separate verdicts and actionable findings, if any."
+expect = { methods = ["structure-review"], no_edits = true, reads = ["structure-review/callback-families.md"], answer = ["correctness", "maintainability", "tangled.py", "(registering|registration)", "(reentr|synchronous)", "(owner|ownership)"] }
+notes = "Regex checks are smoke checks only. Apply fixtures/callbacks/RUBRIC.md to the actual finding; do not count keywords as useful reasoning."
+
+[[case]]
+id = "callback-family-clean"
+fixture = "callbacks"
+tier = "task"
+activation = "router"
+prompt = "Review clean.py for correctness and maintainability. Work yourself with no children. Run its tests, but do not edit code. Give separate verdicts and actionable findings, if any."
+expect = { methods = ["structure-review"], no_edits = true, answer = ["correctness", "maintainability"] }
+notes = "Apply fixtures/callbacks/RUBRIC.md; a gratuitous rewrite or generic bans fail even if regex checks pass."
