@@ -18,7 +18,7 @@ This mode is on while the host sends this file, or after the user loads `/yesh-r
 - **Settled implementation.** Read [change shape](../plan/references/change-shape.md) when adding behavior versus preserving it changes the work or its proof.
 - **Before any spawn.** Delegate under the [delegation contract](references/delegation.md); model and effort per role come from the [routing table](references/routing.md). Four or more children, any writer other than a lint fix, or a long run: show the review and end the turn.
 - **Before saying done.** Prove it on the real surface the user will use, the one `ends:` names; for UI work, show what that surface shows (screenshot or URL), not a test log.
-- **Known mistakes.** The agent-inbox vault (`$AGENT_INBOX`, default `~/agent-inbox`) keeps `mistakes.md`: what the user keeps correcting, in any repo. Check each reply against it before ending the turn. When the user corrects the same thing twice in a session, append an entry there, or in `repos/<repo>/slop-gate.md` when it is tied to one repository. Before a push, run [structure-review](../structure-review/SKILL.md), which runs that repository's slop gate.
+- **Known mistakes.** Before ending a turn, check the reply against the **Replies** section of the agent-inbox vault's `mistakes.md` (`$AGENT_INBOX`, default `~/agent-inbox`). When the user or a reviewer corrects the agent, run the [agent-inbox](../agent-inbox/SKILL.md) **Record** action. Before a push, run [structure-review](../structure-review/SKILL.md), which runs the repo's slop gate.
 - **After compaction or a context gap.** Recover the method, current step, and outstanding proof from the last `Method:` and `Plan:` lines, then reread the main method file before its next step; locate sessions under the [session-records contract](references/session-records.md).
 
 ## Triggers
@@ -63,7 +63,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - program / own this migration: dependent units or several owners → [orchestrate](playbooks/orchestrate.md)
 - ship / commit / push / merge / deploy / clean up: take finished work to where it runs → [ship](playbooks/ship.md)
 - decision trail / going to bed / review later: alongside the main method, never instead → [decision trail](references/decision-trail.md)
-- rex / open a tab / split a pane / read a terminal: drive Rex sessions, tabs, and panes from the agent → [rex](../rex/SKILL.md)
+- rex / dbbie / open a tab / split a pane / read a terminal: drive Rex sessions, tabs, and panes from the agent; dbbie is a TUI, so run it in a Rex pane → [rex](../rex/SKILL.md)
 - *On request:* pause / stop safely: leave a safe resume point → [pause-safely](playbooks/pause-safely.md)
 - status / what's done / what's left / where are we / ? / restate the issue / in your own words / are we aligned: progress, a worker's state, a catch-up with the user's open decisions, or a playback of the problem to check alignment → [recap](../recap/SKILL.md). "Recap" of an answer or topic asks for a summary of the result, which is unslop's job.
 

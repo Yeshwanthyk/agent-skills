@@ -31,6 +31,6 @@ Keep tool evidence separate from reviewer judgment. Record the command, analyzed
 
 Preserve boundaries that serve a real contract. Do not propose a rewrite, abstraction, or style change solely to satisfy a principle. No findings is a valid result; a review need not inventory every sound area.
 
-**Slop gate.** When the agent-inbox vault (`$AGENT_INBOX`, default `~/agent-inbox`) has `repos/<repo>/slop-gate.md` for this repository, run `harrow audit . --base <base>`, then check the diff against each entry there and the code entries in the vault's `mistakes.md`. Report pass or fail per entry with `file:line`; a fail is fixed before the push or kept on the user's say-so.
+**Slop gate.** When the agent-inbox vault (`$AGENT_INBOX`, default `~/agent-inbox`) has `repos/<repo>/slop-gate.md` for this repository, run `harrow audit . --base <base>`, then follow that file's steps: it checks the diff against its own entries and the **Code** section of the vault's `mistakes.md`.
 
 For a deeper design dispute or source attribution, consult [references.md](references.md).

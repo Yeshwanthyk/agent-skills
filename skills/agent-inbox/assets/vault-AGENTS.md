@@ -1,6 +1,6 @@
 # agent-inbox
 
-Work tracking for projects. Agents write here only when the user asks.
+Work tracking for projects. Agents write here only when the user asks, except `candidates.md` and the gate logs, which the agent-inbox skill's **Record** action appends to on its own.
 
 ## Where agents may write
 
@@ -11,6 +11,9 @@ Work tracking for projects. Agents write here only when the user asks.
 | `projects/<p>/sessions/` | New dated session notes only. |
 | `projects/<p>/overview.md`, `decisions.md` | Changed only by a triage move the user approved. |
 | `archive/` | Off limits. Finished projects; the user moves them here. |
+| `candidates.md` | Append one row per correction sighting. |
+| `mistakes.md`, `repos/<repo>/slop-gate.md` | Named checks, one home each. Changed only by **Record** (promote at 4 sightings) or **Audit** (merge, move, retire). |
+| `repos/<repo>/slop-gate-log.md` | Append one row per gate fail or waiver. |
 
 Personal notes, reading, and clips do not belong here.
 
