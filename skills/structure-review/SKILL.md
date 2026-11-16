@@ -10,6 +10,10 @@ Assess whether the structure supports the intended behavior without unnecessary 
 
 Trace enough of the production path and its checks to understand the affected boundary. Inspect failures or adjacent paths when they can change the conclusion.
 
+Give **correctness** and **maintainability** separate verdicts. For each, state findings or “no findings in the inspected scope,” with its evidence and limits. Passing tests supports the exercised behavior; it does not establish a simple design. A maintenance finding needs a concrete change scenario or coordination cost, even when no runtime defect is known.
+
+When behavior spans nested callbacks, observers, handlers, or continuations, read [callback families](callback-families.md) and assess the family together before judging its individual functions.
+
 Use the relevant shared principles to examine a real design choice:
 
 - [Simplicity](../yesh-router/references/principles/simplicity.md): does a layer hide useful complexity or merely pass it on?
@@ -21,7 +25,9 @@ Use the relevant shared principles to examine a real design choice:
 
 Read only the notes that help assess the change. Consider other quality concerns when the code and task make them relevant.
 
-Report findings in order of consequence. Each finding needs a code location, a concrete failure or maintenance cost, the smallest useful correction, and a check that would establish it. Distinguish observed problems from plausible risks. Name the condition for revisiting a deferred issue.
+Report findings in order of consequence. Each finding needs a code location, a concrete failure or maintenance cost, the smallest useful correction, and a check that would establish it. Distinguish observed problems from plausible risks. Name the condition for revisiting a deferred issue. A tool warning gets a disposition: actionable finding, justified retention, or unresolved investigation; a passing test alone cannot dismiss a maintenance warning.
+
+Keep tool evidence separate from reviewer judgment. Record the command, analyzed scope, omitted/skipped detectors and known blind spots. Low per-function complexity can split one family's burden across nested functions. An empty state report is not an ownership proof, and dead-code checks are not a general unreachable-code proof.
 
 Preserve boundaries that serve a real contract. Do not propose a rewrite, abstraction, or style change solely to satisfy a principle. No findings is a valid result; a review need not inventory every sound area.
 
