@@ -1,0 +1,22 @@
+# Billing v2 rollout
+sub: staging deploy, invented example
+mode: Investigate
+
+## Result
+[[Done]] Migration ran on **staging** in 4m. **See:** the staging deploy log
+[[Passed 212/215]] Unit and API suites
+[[Failed: 3 tests]] Checkout e2e, from a stale card fixture. **Next:** refreshing the fixture and rerunning
+[[Unverified]] p99 back under 200ms after the index. **Check:** the billing p99 panel, last 30 minutes
+[[Inferred]] The retry storm came from the old client. **See:** three deploy logs; I did not reproduce it
+
+## Before prod
+[[Needs you]] Approve the prod deploy. **Do:** press Approve in Argo; that unblocks the rollout
+[[Decision]] Backfill the 41 empty rows, or make the column optional? I'd backfill. **Next:** I'll prepare a dry run meanwhile
+[[Irreversible]] The backfill rewrites `orders.region`. **Undo:** none; I export the rows first
+[[Shared]] The new lint rule lands in the shared hook. **See:** every repo picks it up on its next commit
+
+## Shape
+billing-api
+├── migration ✓
+├── checkout e2e ✗ → fixture refresh
+└── prod deploy → waiting on approval

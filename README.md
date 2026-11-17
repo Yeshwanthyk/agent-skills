@@ -60,6 +60,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`blast-radius`](./skills/blast-radius) | Find what a change could break beyond what grep shows. |
 | [`correct`](./skills/correct) | Stop a mistake agents keep repeating in a repo, with types, checks, or tests. |
 | [`diagnose`](./skills/diagnose) | Reproduce a bug, find the cause, and prove the smallest fix. |
+| [`emphasis`](./skills/emphasis) | Lay out a status as a big-type board: colored pills, each with its action, asks pinned on top. |
 | [`formal-verification-skill`](./skills/formal-verification-skill) | Build or fix a project skill that formally verifies one high-risk property and reruns on every change. |
 | [`how`](./skills/how) | Explain how code works and why it was built that way. |
 | [`interrogate`](./skills/interrogate) | Run independent adversarial reviews and merge them into one judgment. |

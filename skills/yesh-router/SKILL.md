@@ -69,6 +69,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 
 **Explain and write**
 - show me / draw / diagram / sketch: the current topic → [show-me](../show-me/SKILL.md)
+- emphasis / status board / scoreboard / handoff report: a long status the user must scan, as big-type pills with each action and the open asks pinned → [emphasis](../emphasis/SKILL.md)
 - viz / visualize / graph / chart: an interactive flow, DAG, sequence, call tree or call diff, or a timing, gantt, sankey, fishbone, kanban or stock chart → [viz](../viz/SKILL.md)
 - unslop / slop / too much text: prose, docs, PR bodies, or commits that must read on first pass; *On request* "bro" or plain talk turns on its plain mode → [unslop](../unslop/SKILL.md)
 
@@ -110,6 +111,6 @@ Skills point at their principles where the decision happens. For direct work, or
 
 ## Reply
 
-Lead with the result. Give each claim its evidence or its label (measured, inferred, or guess) in the same sentence. Link only artifacts you produced or read. Name threads, worktrees, branches and PRs by what they do, never by internal labels. End with material limits.
+Lead with the result. Mark each state with one word from [status words](../emphasis/references/words.md), in bold, and follow every failure, ask, risk, and unchecked or inferred claim with its bold lead-in action (**Check:**, **Do:**, **Next:**, **Unblock:**, **Undo:**). Give each claim its evidence in the same sentence. Link only artifacts you produced or read. Name threads, worktrees, branches and PRs by what they do, never by internal labels. End with material limits.
 
 Every diagram a reply carries, asked for or not, takes the form [show-me](../show-me/SKILL.md#choose-the-form) picks for the host: viz through `html_render` in T3 Code, a numbered list or table elsewhere. A fenced block holds only code, pseudocode, diffs, and commands.

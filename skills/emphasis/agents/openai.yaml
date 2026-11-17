@@ -1,0 +1,6 @@
+interface:
+  display_name: "Emphasis"
+  short_description: "A big-type status board: colored pills, actions, score line, pinned asks"
+  default_prompt: "Use $emphasis to lay out this status as a board."
+policy:
+  allow_implicit_invocation: true
