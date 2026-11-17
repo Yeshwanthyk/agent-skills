@@ -8,12 +8,6 @@ prompt = "profiles/bench.prof.txt is a profile I captured from bench.py. Tell me
 expect = { methods = ["diagnose"], no_edits = true }
 
 [[case]]
-id = "cov-interrogate"
-activation = "router"
-prompt = "I'm about to ship storage-level dedupe keyed by event id for carrier webhooks. Get independent reviewers to poke holes in that design before I commit to it."
-expect = { methods = ["interrogate"], no_edits = true }
-
-[[case]]
 id = "cov-figure-it-out"
 activation = "router"
 prompt = "Big one: replace the dict-based orders throughout this repo with a typed Order model, keeping every behaviour identical. Work out how to approach it."
@@ -106,8 +100,3 @@ activation = "router"
 prompt = "Commit this, open a PR, merge it and deploy."
 expect = { methods = ["ship"] }
 
-[[case]]
-id = "cov-second-opinion"
-activation = "router"
-prompt = "Get a second opinion from another model on this webhook dedupe design before I build it: dedupe keyed by event id at the storage layer."
-expect = { methods = ["interrogate"], no_edits = true }

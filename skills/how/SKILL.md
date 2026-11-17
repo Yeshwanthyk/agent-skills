@@ -1,6 +1,6 @@
 ---
 name: how
-description: 'Explain how code works or why it was built this way: execution paths, ownership, inventories, comparisons, design critique, or decision history from commits, PRs, issues, and docs.'
+description: 'Explain how code works or why it was built this way: execution paths, ownership, inventories, comparisons, design critique, decision history from commits, PRs, issues, and docs, or teaching a subsystem in plain layers with diagrams that build up.'
 ---
 
 # How
@@ -14,6 +14,7 @@ Explain the system that exists now, or the record of how it got that way. Build 
 - **Trace** follows one trigger through calls, events, state changes, and effects.
 - **Inventory** enumerates a surface from a named registry, route table, factory, export set, or other source of truth.
 - **Contrast** compares two live paths using the same dimensions.
+- **Teach** is for understanding to keep ("teach me", "help me really understand", "I'm new to this"): run the views the question needs, then explain per [Teach](#teach).
 - **History** answers "why is it built this way" or "why was this decided": the requirements, incidents, tradeoffs, rejected alternatives, regressions, or thresholds that shaped it. Follow [History](#history) instead of Investigate. When the question asks both how it works and why, run Investigate first, then History.
 
 State the interpretation, scope, and completeness boundary when the request could be read more than one way. Keep the work direct for a narrow subject. Delegate independent exploration only when it will reduce risk or time; if you delegate, give each worker a distinct slice and reconcile its artifacts against the code.
@@ -43,6 +44,16 @@ Code establishes what exists, not why. Take rationale only from records: commits
 
    Intent comes from what someone wrote, never from code style, a test's existence, or a correlated date. Keep evidence about a neighboring feature labeled as such. Spot-check citations against the underlying artifact before relying on them; when judging an investigator's findings, read [prove-it-works](../yesh-router/references/principles/prove-it-works.md). Use the [synthesizer brief](references/history/synthesizer-prompt.md) when combining delegated findings or producing a substantial written read.
 
+## Teach
+
+The goal is understanding the person keeps. Change no code.
+
+1. **Decide what should land.** Pick the two or three things they should walk away understanding, from why they ask (about to change it, reviewing, debugging, new to it) and what they already know. Put the depth where their question is.
+2. **Gather.** Mechanics come from Investigate in the view the question needs (Trace for one flow, Map for a subsystem); reasons come from History, kept narrow to the decision in front of them unless the reasons are the point. When both are broad, run History in a background worker while you trace. Reword findings freely, but keep History's confidence labels.
+3. **Explain in layers.** Open with a plain definition, the way a senior engineer would say it out loud, with its common name. Tie it to this case ("here, we use it to …"), then build: how it works, the reasons, the edge cases, each as the problem it solves and the concrete mechanism. Walking through what happens as the person does the thing often lands it best. A list of functions is reference, not teaching. Give the smallest complete answer first, then stop and let them steer; with no live person, deliver the layers and end with the offer to go deeper.
+4. **Show it building up.** For three or more moving parts, draw a short series where each diagram redraws the last and adds one part (A → B, then with C, then the return edge), in the form show-me's [Choose the form](../show-me/SKILL.md#choose-the-form) picks. States to click through, a process over time, or timing and volume go to [viz](../viz/SKILL.md). Offer a heavier artifact before building it unless asked.
+5. **Voice.** Write through [unslop](../unslop/SKILL.md): plain spoken English, one name per concept, short sentences, the mechanism instead of a metaphor. Don't flag parts as key or tricky, and don't quiz them.
+
 ## Critique
 
 Explain the current design before judging it. Review boundaries, ownership, data model, evolution, complexity, and consistency. When judging complexity or whether an abstraction earns its place, read [simplicity](../yesh-router/references/principles/simplicity.md). Keep findings tied to concrete evidence and consequence. Classify them as action, consideration, observation, or unsupported; an empty critique is valid. Propose a rewrite only for an evidenced problem.
@@ -63,4 +74,4 @@ For History, lead with the answer and its confidence. Include the question and c
 
 ## Completion
 
-The explanation is complete when it answers the selected view within its stated boundary, names the relevant owners and contracts, traces the material effects and failures, and makes evidence limits clear. A critique is complete when its findings have been checked against the implementation and the verdict distinguishes supported concerns from open questions. A history is complete when the target and boundary are clear, the relevant sources have been searched or their absence is explained, each material claim has a calibrated label and a checkable citation, and unresolved history remains visible. Stop when this evidence exists; stay within the question's system and boundary.
+The explanation is complete when it answers the selected view within its stated boundary, names the relevant owners and contracts, traces the material effects and failures, and makes evidence limits clear. A critique is complete when its findings have been checked against the implementation and the verdict distinguishes supported concerns from open questions. A teaching answer is complete when the question is answered in the layers asked for, every claim traces to code you read or History's findings, and the threads worth chasing next are named. A history is complete when the target and boundary are clear, the relevant sources have been searched or their absence is explained, each material claim has a calibrated label and a checkable citation, and unresolved history remains visible. Stop when this evidence exists; stay within the question's system and boundary.

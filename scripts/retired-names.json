@@ -52,5 +52,9 @@
   { "name": "deep-dive-explainer", "was": "skills/deep-dive-explainer/", "now": "skills/show-me/references/html.md",
     "why": "3 sessions in 30 days. Its source rules moved to research/references/sources.md; long reads go to show-me's HTML branch." },
   { "name": "motion-explainer", "was": "skills/motion-explainer/", "now": null,
-    "why": "5 sessions in 30 days, 0 in 14. Narrated MP4 output has no replacement; bring it back if a video ask shows up." }
+    "why": "5 sessions in 30 days, 0 in 14. Narrated MP4 output has no replacement; bring it back if a video ask shows up." },
+  { "name": "teach", "was": "skills/teach/", "now": "skills/how/SKILL.md#teach",
+    "why": "Your call: 3 of 339 sessions in 30 days, and it already ran how for mechanics and history, so it became how's Teach view." },
+  { "name": "interrogate", "was": "skills/interrogate/", "now": null,
+    "why": "Your call: removed; 1 of 339 sessions in 30 days." }
 ]

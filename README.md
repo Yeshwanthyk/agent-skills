@@ -62,8 +62,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`diagnose`](./skills/diagnose) | Reproduce a bug, find the cause, and prove the smallest fix. |
 | [`emphasis`](./skills/emphasis) | Lay out a status as a big-type board: colored pills, each with its action, asks pinned on top. |
 | [`formal-verification-skill`](./skills/formal-verification-skill) | Build or fix a project skill that formally verifies one high-risk property and reruns on every change. |
-| [`how`](./skills/how) | Explain how code works and why it was built that way. |
-| [`interrogate`](./skills/interrogate) | Run independent adversarial reviews and merge them into one judgment. |
+| [`how`](./skills/how) | Explain how code works and why it was built that way, or teach it in plain layers. |
 | [`invariants`](./skills/invariants) | Model state in Quint, TLA+, or Lean, then break the invariants with property tests or fuzzing. |
 | [`meat-review`](./skills/meat-review) | Review a diff, branch, or PR as a short annotated reading. |
 | [`plan`](./skills/plan) | Turn a settled approach into ordered chunks with risks and proof. |
@@ -74,7 +73,6 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`sharpen`](./skills/sharpen) | Tighten a task before starting it, then do it. |
 | [`show-me`](./skills/show-me) | Explain a topic with diagrams and focused HTML. Also writes visual PR descriptions. |
 | [`structure-review`](./skills/structure-review) | Audit code structure and propose fixes backed by evidence. |
-| [`teach`](./skills/teach) | Teach a subsystem or change in plain layers, built on `how`, with diagrams that build up. |
 | [`swarm`](./skills/swarm) | Run parallel agents for coverage, a solution race, or a best-of pick. |
 | [`untangle`](./skills/untangle) | Refactor an area so what changes together sits together, and special cases fold into the design. |
 | [`unslop`](./skills/unslop) | Clean up prose, docs, PR bodies, and commits. |
