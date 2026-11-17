@@ -111,6 +111,6 @@ Skills point at their principles where the decision happens. For direct work, or
 
 ## Reply
 
-Lead with the result. Mark each state with one word from [status words](../emphasis/references/words.md), in bold, and follow every failure, ask, risk, and unchecked or inferred claim with its bold lead-in action (**Check:**, **Do:**, **Next:**, **Unblock:**, **Undo:**). Give each claim its evidence in the same sentence. Link only artifacts you produced or read. Name threads, worktrees, branches and PRs by what they do, never by internal labels. End with material limits.
+Lead with the result; when the user asked a question, the first line answers it as asked. Mark each state with one word from [status words](../emphasis/references/words.md), in bold, and follow every failure, ask, risk, and unchecked or inferred claim with its bold lead-in action (**Check:**, **Do:**, **Next:**, **Unblock:**, **Undo:**). Give each claim its evidence in the same sentence. Link only artifacts you produced or read. Name threads, worktrees, branches and PRs by what they do, never by internal labels. End with material limits, then, when work stays open, **Next:** what you do next or what waits on the user.
 
 Every diagram a reply carries, asked for or not, takes the form [show-me](../show-me/SKILL.md#choose-the-form) picks for the host: viz through `html_render` in T3 Code, a numbered list or table elsewhere. A fenced block holds only code, pseudocode, diffs, and commands.
