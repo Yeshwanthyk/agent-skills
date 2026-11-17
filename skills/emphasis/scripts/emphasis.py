@@ -8,10 +8,11 @@
 The pill words come from the VOCAB block in ../assets/emphasis.js, the single source.
 """
 import argparse
+import html
 import json
 import re
-import subprocess
 import sys
+import webbrowser
 from pathlib import Path
 
 SKILL = Path(__file__).resolve().parent.parent
@@ -74,7 +75,7 @@ def build(text, title, t3=False):
     safe = text.replace("</script", "<\\/script")
     return (
         f'<!doctype html><html{" class=em-t3" if t3 else ""}><meta charset="utf-8"><meta name="viewport" content="width=device-width">'
-        f"<title>{title}</title><body>\n<script type=\"text/emphasis\">\n{safe}\n</script>\n<script>{js}</script>\n"
+        f"<title>{html.escape(title)}</title><body>\n<script type=\"text/emphasis\">\n{safe}\n</script>\n<script>{js}</script>\n"
     )
 
 
@@ -104,7 +105,7 @@ def main():
     out.write_text(build(text, m.group(1) if m else path.stem, a.t3))
     print(out)
     if a.open:
-        subprocess.run(["open", str(out)], check=False)
+        webbrowser.open(out.resolve().as_uri())
 
 
 if __name__ == "__main__":
