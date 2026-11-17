@@ -32,18 +32,26 @@ usage: cowt <command> [options]
                           move a worktree to trash and prune it; -f allows uncommitted changes
   gc                      delete trashed worktrees
   status                  show trigger, config, and what a seed would clone
+  subvol [path]           Linux btrfs: turn this checkout's seeded directories into subvolumes,
+                          so seeds snapshot them (0.1s) instead of copying file by file; rerun
+                          after a tool deletes and recreates one (npm ci); nothing may write there meanwhile
   shell-init zsh|bash     function that cds after create and remove
 
 config: .cowt at the repo root (git-config format, may be committed) and .git/cowt (local only)
   [copy]
       name = node_modules     # directory name, cloned wherever it appears (depth 4); default
       path = .env             # path or glob relative to the root
+      cargo = false           # skip target/ beside each Cargo.lock (cloned by default)
+      cargowait = 5           # seconds to wait for a running cargo build (default 5)
   [hook]
       precreate = pnpm run check
+      drift = pnpm install --frozen-lockfile   # when a lockfile matches no checkout
       postcreate = pnpm install --frozen-lockfile --offline
       preremove = docker compose -p "wt-$COWT_NAME" down -v
       postremove = echo done
-hooks get COWT_SOURCE, COWT_DESTINATION, COWT_NAME, COWT_BRANCH; their output goes to stderr.
+hooks get COWT_SOURCE, COWT_DESTINATION, COWT_NAME, COWT_BRANCH (drift and postcreate also COWT_DRIFT);
+clones come from the checkout with the same lockfile (a btrfs subvolume, then the freshest first);
+hook output goes to stderr.
 EOF
 }
 
@@ -56,7 +64,8 @@ main_root() { git -C "$1" worktree list --porcelain | sed -n '1s/^worktree //p';
 is_linked() { [ "$(git_dir "$1")" != "$(common_dir "$1")" ]; }
 
 cfg_all() { # cfg_all <main root> <key>: values from .cowt then .git/cowt, one per line
-  for f in "$1/.cowt" "$(common_dir "$1")/cowt"; do
+  if [ "$1" = "${CFG_ROOT-}" ]; then cd_=$CFG_COMMON; else cd_=$(common_dir "$1"); fi
+  for f in "$1/.cowt" "$cd_/cowt"; do
     [ -f "$f" ] && git config -f "$f" --get-all "$2"
   done
   return 0
@@ -75,26 +84,136 @@ clone() { # clone <src> <dst>: copy-on-write, never a full copy
     /usr/bin/python3 -I -c 'import ctypes,sys
 if ctypes.CDLL("libc.dylib").clonefile(sys.argv[1].encode(), sys.argv[2].encode(), 0): sys.exit(1)' "$1" "$2" 2>/dev/null ||
       { [ ! -e "$2" ] && /bin/cp -c -R "$1" "$2"; }
+  elif is_subvol "$1" && btrfs subvolume snapshot "$1" "$2" >/dev/null 2>&1; then
+    : # a btrfs subvolume snapshots in one call: 0.12s for 77k files, against 1.7s for cp --reflink
+  elif [ -d "$1" ] && [ ! -L "$1" ]; then
+    mkdir "$2" && reflink_tree "$1" "$2"
   else
     cp -R -P --reflink=always "$1" "$2"
   fi
 }
 
-seed_list() { # seed_list <main>: relative paths to clone, one per line
-  main=$1
-  names=$(cfg_all "$main" copy.name)
-  paths=$(cfg_all "$main" copy.path)
-  [ -z "$names$paths" ] && names=node_modules
-  printf '%s\n' "$names" | while IFS= read -r n; do
-    [ -n "$n" ] || continue
-    find "$main" -maxdepth 4 \( -name .git -o -name .worktrees -o -name .cowt-trash \) -prune \
-      -o -type d -name "$n" -prune -print 2>/dev/null | sed "s|^$main/||"
-  done
-  printf '%s\n' "$paths" | while IFS= read -r p; do
+reflink_tree() { # reflink_tree <src dir> <existing dst dir>: reflink each top-level entry in parallel
+  # btrfs and XFS reflink file by file; 8 workers cut 77k files from 1.7s to 1.15s (16 were slower)
+  find "$1" -mindepth 1 -maxdepth 1 -print0 | xargs -0 -r -P 8 -n 4 cp -R -P --reflink=always -t "$2"
+}
+
+is_subvol() { # is_subvol <dir>: the root of a btrfs subvolume (inode 256), which one snapshot clones
+  [ "$(uname)" = Linux ] && [ "$(stat -f -c %T "$1" 2>/dev/null)" = btrfs ] &&
+    [ "$(stat -c %i "$1" 2>/dev/null)" = 256 ] && command -v btrfs >/dev/null 2>&1
+}
+
+TAB=$(printf '\t')
+
+scan_config() { # scan_config <main>: set SCAN_NAMES and SCAN_CARGO once, for every dir_items call
+  SCAN_NAMES=$(cfg_all "$1" copy.name)
+  [ -z "$SCAN_NAMES$(cfg_all "$1" copy.path)" ] && SCAN_NAMES=node_modules
+  SCAN_CARGO=1; [ "$(cfg_all "$1" copy.cargo | tail -n 1)" = false ] && SCAN_CARGO=0
+  return 0
+}
+
+dir_items() { # dir_items <checkout>, after scan_config: "kind<TAB>rel" for each directory it could donate
+  # one walk: print each named directory (and stop there), skip other node_modules and target/
+  # trees, and print each Cargo.lock. A Cargo target/ beside a Cargo.lock is safe to clone: registry
+  # and git units keep their hashes and stay Fresh, while the worktree's own crates rebuild because
+  # checkout gives their sources a newer mtime than the cloned fingerprints.
+  dir=$1; shift
+  for n in $SCAN_NAMES; do set -- "$@" -name "$n" -o; done
+  [ $# -gt 0 ] || set -- -false -o
+  find "$dir" -maxdepth 4 \( -name .git -o -name .worktrees -o -name .cowt-trash \) -prune \
+    -o -type d \( "$@" -false \) -print -prune \
+    -o -type d \( -name node_modules -o -name target \) -prune \
+    -o -type f -name Cargo.lock -print 2>/dev/null | while IFS= read -r f; do
+    case $f in
+      */Cargo.lock) [ "$SCAN_CARGO" = 1 ] && [ -d "${f%/Cargo.lock}/target" ] && printf 'cargo\t%s\n' "${f%/Cargo.lock}/target" ;;
+      *) printf 'name\t%s\n' "$f" ;;
+    esac
+  done | sed "s|$TAB$dir/|$TAB|"
+}
+
+path_items() { # path_items <main>: copy.path entries that exist in the main checkout
+  cfg_all "$1" copy.path | while IFS= read -r p; do
     [ -n "$p" ] || continue
-    (cd "$main" && for f in $p; do [ -e "$f" ] && printf '%s\n' "$f"; done)
+    (cd "$1" && for f in $p; do [ -e "$f" ] && printf '%s\n' "$f"; done)
   done
 }
+
+seed_list() { # seed_list <main>: what a seed would clone from the main checkout, one per line
+  scan_config "$1"
+  dir_items "$1" | cut -f2
+  path_items "$1"
+}
+
+checkouts() { # checkouts <main> <except>: main first, then every other existing worktree
+  git -C "$1" worktree list --porcelain | sed -n 's/^worktree //p' | while IFS= read -r c; do
+    [ "$c" != "$2" ] && [ -d "$c" ] && printf '%s\n' "$c"
+  done
+}
+
+# PICK_PY <wait seconds> <worktree> <main> <clone 0|1>, candidates in $COWT_CANDS (newline separated).
+# Reads "kind<TAB>rel" lines; prints "kind rel status lockfile donor cloned|-" per line, where status
+# is match, drift, nolock, path, or busy (donor "-": a running cargo build held it in every checkout).
+# Donor order: checkouts whose lockfile equals the new worktree's (a btrfs subvolume first, then the
+# freshest build); then main; then the rest, freshest first. A Cargo target/ held by a running build
+# is waited for up to <wait> seconds. With clone=1 (macOS) each pick is cloned right after its busy
+# check with one clonefile(2), so python starts once per seed.
+PICK_PY='import fcntl,glob,os,sys,time
+wait, wt, main, do_clone = sys.argv[1:5]
+def pick(kind, rel):
+  cands = [c for c in os.environ.get("COWT_CANDS", "").split("\n") if c and os.path.isdir(os.path.join(c, rel))]
+  names = ["Cargo.lock"] if kind == "cargo" else ["pnpm-lock.yaml", "package-lock.json", "yarn.lock", "bun.lock",
+      "bun.lockb", "npm-shrinkwrap.json", "uv.lock", "poetry.lock", "Pipfile.lock", "Gemfile.lock"]
+  lock, d = "", os.path.dirname(rel)
+  while not lock:
+      lock = next((os.path.join(d, n) for n in names if os.path.isfile(os.path.join(wt, d, n))), "")
+      if not d: break
+      d = os.path.dirname(d)
+  def read(p):
+      try:
+          with open(p, "rb") as f: return f.read()
+      except OSError: return None
+  mine = read(os.path.join(wt, lock)) if lock else None
+  def stamp(c):
+      t = os.path.join(c, rel)
+      pats = ["/*/deps", "/*/.fingerprint"] if kind == "cargo" else ["/.modules.yaml", "/.package-lock.json", "/.yarn-state.yml", "/.yarn-integrity"]
+      ts = [os.stat(p).st_mtime for g in pats for p in glob.glob(t + g)]
+      return max(ts) if ts else os.stat(t).st_mtime
+  def busy(c):
+      if kind != "cargo": return False
+      t = os.path.join(c, rel)
+      for p in glob.glob(t + "/*/.cargo*lock") + glob.glob(t + "/*/*/.cargo*lock"):
+          try:
+              with open(p) as f: fcntl.flock(f, fcntl.LOCK_SH | fcntl.LOCK_NB)
+          except BlockingIOError: return True
+          except OSError: pass
+      return False
+  def snap(c):  # a btrfs subvolume root (inode 256) clones by snapshot, so it donates first
+      return sys.platform.startswith("linux") and os.stat(os.path.join(c, rel)).st_ino == 256
+  match = sorted([c for c in cands if mine is not None and read(os.path.join(c, lock)) == mine], key=lambda c: (not snap(c), -stamp(c)))
+  other = sorted([c for c in cands if c not in match], key=lambda c: (c != main, -stamp(c)))
+  status = "drift" if mine is not None else "nolock"
+  deadline = time.time() + float(wait)
+  for group, st in ((match, "match"), (other, status)):
+      while group:
+          got = next((c for c in group if not busy(c)), None)
+          if got:
+              return st + "\t" + (lock or "-") + "\t" + got
+          if time.time() >= deadline: break
+          time.sleep(0.2)
+  return "busy\t-\t-"
+cf = None
+if do_clone == "1":
+  import ctypes
+  cf = ctypes.CDLL("libc.dylib").clonefile
+for line in sys.stdin:
+  kind, rel = line.rstrip("\n").split("\t", 1)
+  r = "path\t-\t" + main if kind == "path" else pick(kind, rel)
+  donor, dst, done = r.rsplit("\t", 1)[1], os.path.join(wt, rel), "-"
+  if cf and donor != "-" and not os.path.lexists(dst):
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    if cf(os.path.join(donor, rel).encode(), dst.encode(), 0) == 0: done = "cloned"
+  print(kind + "\t" + rel + "\t" + r + "\t" + done, flush=True)
+'
 
 hook_env() { # hook_env <main> <worktree>
   export COWT_SOURCE="$1" COWT_DESTINATION="$2" COWT_NAME="${2##*/}"
@@ -112,28 +231,66 @@ run_hooks() { # run_hooks <phase> <main> <cwd>: stops at the first failing comma
 }
 
 seed() { # seed <worktree> [force]
-  wt=$(toplevel "$1") || die "$1: not a git worktree"
-  is_linked "$wt" || die "$wt is the main checkout, not a linked worktree"
+  # one rev-parse for the worktree root, its git dir, and the shared git dir
+  facts=$(git -C "$1" rev-parse --path-format=absolute --show-toplevel --git-dir --git-common-dir 2>/dev/null) ||
+    die "$1: not a git worktree"
+  { IFS= read -r wt; IFS= read -r gd; IFS= read -r CFG_COMMON; } <<FACTS
+$facts
+FACTS
+  [ "$gd" != "$CFG_COMMON" ] || die "$wt is the main checkout, not a linked worktree"
   main=$(main_root "$wt")
-  stamp="$(git_dir "$wt")/cowt-seeded"
+  CFG_ROOT=$main
+  stamp="$gd/cowt-seeded"
   if [ -e "$stamp" ] && [ "${2:-}" != force ]; then log "already seeded: $wt"; return 0; fi
-  n=0
-  list=$(seed_list "$main")
-  while IFS= read -r rel; do
+  COWT_CANDS=$(checkouts "$main" "$wt")
+  export COWT_CANDS
+  wait_s=$(cfg_all "$main" copy.cargowait | tail -n 1)
+  [ -n "$wait_s" ] || wait_s=5
+  # every directory any checkout could donate, then copy.path entries from main
+  scan_config "$main"
+  list=$(printf '%s\n' "$COWT_CANDS" | while IFS= read -r c; do dir_items "$c"; done | sort -u
+    path_items "$main" | sed "s/^/path$TAB/")
+  # skip what the worktree has or cannot hold, then pick every donor in one python run
+  todo=$(while IFS="$TAB" read -r kind rel; do
     [ -n "$rel" ] || continue
-    dst="$wt/$rel"
-    if [ -e "$dst" ]; then log "keep $rel: already present"; continue; fi
-    parent=$(dirname "$dst")
-    case $rel in */*) [ -d "$parent" ] || continue ;; esac
-    mkdir -p "$parent"
-    clone "$main/$rel" "$dst" || die "clone failed for $rel (needs APFS or a reflink filesystem)"
-    n=$((n + 1))
+    if [ -e "$wt/$rel" ]; then log "keep $rel: already present"; continue; fi
+    case $rel in (*/*) [ -d "$(dirname "$wt/$rel")" ] || continue ;; esac
+    printf '%s\t%s\n' "$kind" "$rel"
   done <<LIST
 $list
 LIST
+  )
+  picks='' do_clone=0
+  [ "$(uname)" = Darwin ] && do_clone=1
+  if [ -n "$todo" ]; then
+    picks=$(printf '%s\n' "$todo" | /usr/bin/python3 -I -c "$PICK_PY" "$wait_s" "$wt" "$main" "$do_clone" 2>/dev/null) ||
+      picks=$(printf '%s\n' "$todo" | while IFS="$TAB" read -r kind rel; do
+        printf '%s\t%s\tnolock\t-\t%s\t-\n' "$kind" "$rel" "$main"; done)
+  fi
+  n=0 drift=''
+  while IFS="$TAB" read -r kind rel st lockf donor how; do
+    [ -n "$rel" ] || continue
+    dst="$wt/$rel"
+    if [ "$how" != cloned ] && [ -e "$dst" ]; then log "keep $rel: already present"; continue; fi
+    case $st in
+      busy) log "skip $rel: a cargo build holds it in every checkout"; continue ;;
+      drift)
+        log "$rel: $lockf matches no checkout; cloned from $donor"
+        drift="${drift:+$drift
+}$rel" ;;
+    esac
+    [ "$donor" != "$main" ] && log "clone $rel from $donor"
+    [ "$how" = cloned ] || { mkdir -p "$(dirname "$dst")"; clone "$donor/$rel" "$dst"; } || die "clone failed for $rel (needs APFS or a reflink filesystem)"
+    n=$((n + 1))
+  done <<PICKS
+$picks
+PICKS
   : >"$stamp"
   log "seeded $wt ($n cloned)"
   hook_env "$main" "$wt"
+  COWT_DRIFT=$drift
+  export COWT_DRIFT
+  if [ -n "$drift" ]; then run_hooks drift "$main" "$wt" || return 1; fi
   run_hooks postcreate "$main" "$wt"
 }
 
@@ -323,9 +480,30 @@ cmd_status() {
   if [ -f "$f" ] && grep -qxF "$MARK_BEGIN" "$f"; then echo "trigger:  $f"; else echo "trigger:  none (run: cowt init)"; fi
   for c in "$main/.cowt" "$(common_dir "$main")/cowt"; do [ -f "$c" ] && echo "config:   $c"; done
   echo "clones:"
-  seed_list "$main" | sed 's/^/  /'
+  seed_list "$main" | while IFS= read -r rel; do
+    if is_subvol "$main/$rel"; then echo "  $rel (subvolume)"; else echo "  $rel"; fi
+  done
   for ph in precreate postcreate preremove postremove; do
     cfg_all "$main" "hook.$ph" | sed "s/^/$ph: /"
+  done
+}
+
+cmd_subvol() { # make this checkout's seeded directories btrfs subvolumes, so seeds snapshot them
+  root=$(toplevel "${1:-.}") || die "${1:-.}: not a git worktree"
+  [ "$(uname)" = Linux ] || die "subvol: Linux btrfs only (macOS already clones a directory in one call)"
+  command -v btrfs >/dev/null 2>&1 || die "subvol: needs btrfs-progs"
+  scan_config "$(main_root "$root")"
+  dir_items "$root" | cut -f2 | while IFS= read -r rel; do
+    d="$root/$rel"
+    if is_subvol "$d"; then log "$rel: already a subvolume"; continue; fi
+    [ "$(stat -f -c %T "$d")" = btrfs ] || { log "skip $rel: not on btrfs"; continue; }
+    new="$d.cowt-subvol" old="$d.cowt-old"
+    [ -e "$new" ] || [ -e "$old" ] && die "$rel: $new or $old exists from an interrupted run; remove it"
+    btrfs subvolume create "$new" >/dev/null || die "$rel: btrfs subvolume create failed"
+    reflink_tree "$d" "$new" || { rm -rf "$new"; die "$rel: copy into the subvolume failed; left as is"; }
+    mv "$d" "$old" && mv "$new" "$d" || die "$rel: swap failed; the original is at $old"
+    rm -rf "$old"
+    log "$rel: now a subvolume; new worktrees snapshot it"
   done
 }
 
@@ -364,6 +542,7 @@ case $cmd in
   remove | rm) cmd_remove "$@" ;;
   gc) cmd_gc ;;
   status) cmd_status ;;
+  subvol) cmd_subvol "$@" ;;
   shell-init) cmd_shell_init "$@" ;;
   hook) [ "${1:-}" = post-checkout ] && shift && on_post_checkout "$@"; exit 0 ;;
   -h | --help | help | '') usage ;;
