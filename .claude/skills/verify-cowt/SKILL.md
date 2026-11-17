@@ -26,11 +26,14 @@ Read-only. It FAILs on a cowt that isn't executable or doesn't parse (`sh -n`), 
 .claude/skills/verify-cowt/scripts/proof.sh --only SEED          # one feature, by behavior-ID prefix
 .claude/skills/verify-cowt/scripts/proof.sh --real ~/code/personal/scotty   # plus one real repo
 .claude/skills/verify-cowt/scripts/proof.sh --bin /path/to/candidate/cowt   # a candidate build
+.claude/skills/verify-cowt/scripts/bench-seed.sh REPO 7 /old/cowt /new/cowt  # seed time, builds alternated
 ```
+
+On Linux, set `TMPDIR` to a btrfs directory so the LINUX-* checks run; they SKIP elsewhere.
 
 It prints one `PASS <ID> <behavior>` or `FAIL <ID> <behavior>` line per behavior and ends with `score <pass>/<total>`. Exit 0 only when every selected check passes. Worktrees are created the way real tools create them: `git -c checkout.workers=N worktree add -b <branch> <path> HEAD` is exactly T3 Code's call, and `cowt create` is the CLI path. Behavior IDs and what each one drives are in the feature files.
 
-`--real REPO` adds a branch `verify-cowt-<pid>` and a worktree inside the scratch dir, seeds it with hooks off, prints `METRIC real_seed_seconds` and `METRIC real_disk_mb`, then removes the worktree and the branch and runs `gc`. It never runs the repo's own hooks or install. The baseline on scotty (1.4 GB, 80k-file node_modules) is about 1.5–2.5 s and under 50 MB.
+`--real REPO` adds a branch `verify-cowt-<pid>` and a worktree inside the scratch dir, seeds it with hooks off, prints `METRIC real_seed_seconds` and `METRIC real_disk_mb`, then removes the worktree and the branch and runs `gc`. For a Rust repo it also times the first `cargo build` in the seeded worktree and checks REAL-3; kache's workspace (13 members, 403 units) is a good target. It never runs the repo's own hooks or install. The baseline on scotty (1.4 GB, 80k-file node_modules) is about 1.5–2.5 s and under 50 MB.
 
 For hillclimbing, the score line is the metric: a candidate must keep every existing ID passing and add IDs for the new behavior. Write the new checks into `proof.sh` before the implementation, so they FAIL first.
 
