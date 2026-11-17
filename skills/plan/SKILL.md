@@ -16,7 +16,7 @@ Read the current implementation and relevant tests when changing an existing sys
 
 Start with what changes, who benefits, why the shape fits, and the tradeoffs that matter. Keep this orientation short.
 
-For staged delivery, replay, or metadata gates, apply [forward implementation first](../yesh-router/references/principles/forward-implementation-first.md) when selecting work and proof. Name the affected dependency cone and replay conditions rather than making administrative completion a prerequisite.
+For staged delivery, replay, or metadata gates, apply [sequence-verifiable-units](../yesh-router/references/principles/sequence-verifiable-units.md) when selecting work and proof. Name the affected dependency cone and replay conditions rather than making administrative completion a prerequisite.
 
 ## Build the packet
 

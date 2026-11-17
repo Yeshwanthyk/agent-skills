@@ -23,6 +23,7 @@ Use this reference when work is handed to another worker: a dispatched agent, a 
 
 - Run formatting and lint autofix as the tool's own command (`ruff format`, `ruff check --fix`, `eslint --fix`), never as a model rewrite. A worker fixes the errors that remain; it never adds an ignore or disable comment.
 - Before integrating a delegated edit, run [`scripts/gate-delegated-diff.sh`](../scripts/gate-delegated-diff.sh) `<base> <owned paths>` in its repository. It rejects added suppressions and files changed outside the owned paths. On rejection, send the worker the gate output or revert; do not accept a summary that says the gate passed.
+- Keep worker output out of the lead's context: ask for compact results (findings, paths, verdicts) and leave bulk such as logs, screenshots, and large documents in files the lead reads by section. Checkpoint a long run before its payloads crowd the context.
 - Keep concurrent writers on distinct targets. A review of implementation uses an agent that did not author it. The coordinator owns integration and checks consequential claims against artifacts.
 - Reconcile the result against the assignment's completion criteria, including any proof required by its method. Carry incomplete steps back into the active workflow rather than treating a worker's summary as completion of the whole task.
 - Account for each launched worker. Settle or cancel an old writer before replacing it. Retain unresolved session IDs and report their state. Permanent deletion of a durable session requires a user request.

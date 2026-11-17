@@ -2,6 +2,8 @@
 
 Use when a behavior change needs evidence before adoption.
 
+When the repo has an eval harness, use it rather than hand-running workers; in agent-skills that is `python3 -m eval.skilleval` (`list`, `lint`, `run`, `compare`, `report`), with cases in `eval/cases/*.toml`. Add a case for the behavior under test before running it.
+
 Define the tasks and observable success criteria before running the comparison; read [prove-it-works](../references/principles/prove-it-works.md) before choosing them. Select cases that could expose both the intended benefit and lost constraints. A focused task can use one independent run; claims about relative performance need comparable baseline and revised runs.
 
 Follow the [delegation contract](../references/delegation.md) for worker scope, independence, and result reconciliation. Give each worker a realistic user request, the relevant instructions, and minimal raw artifacts. Keep expected answers, suspected faults, and scoring criteria out of its brief. Use separate temporary workspaces and the same task conditions across variants. Disclose any unavoidable differences.

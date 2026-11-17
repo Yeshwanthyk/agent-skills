@@ -6,7 +6,7 @@ Use the shared [delegation contract](../references/delegation.md) for ownership,
 
 Coordinate through the current host harness's native subagent tools and supported dispatch, messaging, inspection, steering, waiting, and cancellation capabilities. Use the delegation contract for worker context, parent–child questions and results, runtime choice, and unavailable capabilities. Discover what this harness supports rather than building a parallel coordination mechanism.
 
-For staged output, cursor movement, or metadata-driven replay, apply [forward implementation first](../references/principles/forward-implementation-first.md) to publication ownership, dependency consumption, and relevant proof. Existing approval and review requirements still apply.
+For staged output, cursor movement, or metadata-driven replay, apply [sequence-verifiable-units](../references/principles/sequence-verifiable-units.md) to publication ownership, dependency consumption, and relevant proof. Existing approval and review requirements still apply.
 
 ## Coordinate
 
@@ -16,7 +16,7 @@ Keep a short checkpoint when work needs recovery across sessions. Reuse the repo
 
 Dispatch independent units together. Before briefing a worker that lacks the working context, read [handoffs](../references/principles/handoffs.md). Give dependent units the actual completed inputs, not merely an ordering label. When assigning writers, read [state-ownership](../references/principles/state-ownership.md); each mutable path has one active writer. When writers get their own worktrees, read [worktrees](../references/worktrees.md) before the first dispatch. Pilot an unfamiliar workflow before scaling it.
 
-Reconcile each completed unit against its artifacts; read [prove-it-works](../references/principles/prove-it-works.md) before judging a worker's evidence or integrating its result. When worker output is large enough to crowd your context, read [guard-the-context-window](../references/principles/guard-the-context-window.md). Review using the shared role defaults, integrate under one owner, and run the relevant integrated checks. A changed patch invalidates evidence that depended on its old behavior. Record failed and blocked units without counting them as delivered.
+Reconcile each completed unit against its artifacts; read [prove-it-works](../references/principles/prove-it-works.md) before judging a worker's evidence or integrating its result. When worker output is large enough to crowd your context, follow the [delegation contract](../references/delegation.md#ownership-and-results) for compact results. Review using the shared role defaults, integrate under one owner, and run the relevant integrated checks. A changed patch invalidates evidence that depended on its old behavior. Record failed and blocked units without counting them as delivered.
 
 On restart, reconcile the record with live work and [session evidence](../references/session-records.md). Settle or cancel an old writer before replacing it. Before retrying or replacing a unit that made persistent or external changes, read [recovery-and-idempotency](../references/principles/recovery-and-idempotency.md). Preserve unrelated work and partial results.
 

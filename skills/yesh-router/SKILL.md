@@ -92,16 +92,14 @@ Skills point at their principles where the decision happens. For direct work, or
 | Product, UX, or scope tradeoffs | [experience-first](references/principles/experience-first.md) |
 | Trusting, reporting, or acting on a measured number | [explain-the-number](references/principles/explain-the-number.md) |
 | Debugging, recurring incidents, or two fixes failing alike | [fix-root-causes](references/principles/fix-root-causes.md) |
-| Staged delivery or migrations; missing progress metadata | [forward-implementation-first](references/principles/forward-implementation-first.md) |
-| Work could overflow context; large payloads | [guard-the-context-window](references/principles/guard-the-context-window.md) |
 | Restart, replaced agent, or a receiver lacking context | [handoffs](references/principles/handoffs.md) |
 | Removing an API, format, or behavior; changing a persistent form | [migrate-callers](references/principles/migrate-callers.md) |
 | Stateful logic, heavy branching, repeated shape assumptions | [model-the-domain](references/principles/model-the-domain.md) |
 | Proving a claim, claiming done, judging evidence | [prove-it-works](references/principles/prove-it-works.md) |
 | Retries, persistent or external effects, restarts, migrations | [recovery-and-idempotency](references/principles/recovery-and-idempotency.md) |
 | A change that bolted on would distort the design | [redesign-from-first-principles](references/principles/redesign-from-first-principles.md) |
-| Sweeps, runs of similar edits, stacks, multi-step results | [sequence-verifiable-units](references/principles/sequence-verifiable-units.md) |
-| Adding or reshaping code, choosing an abstraction | [simplicity](references/principles/simplicity.md) |
+| Sweeps, stacks, staged delivery, replay or missing progress metadata | [sequence-verifiable-units](references/principles/sequence-verifiable-units.md) |
+| Adding or reshaping code, choosing an abstraction or pattern | [simplicity](references/principles/simplicity.md) |
 | Mutable state, lifecycles, caches, cleanup, concurrent writers | [state-ownership](references/principles/state-ownership.md) |
 | Choosing what a test or check asserts | [test-behavior](references/principles/test-behavior.md) |
 | Domain states, types, casts, repeated null checks | [type-system-discipline](references/principles/type-system-discipline.md) |

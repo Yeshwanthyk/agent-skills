@@ -20,7 +20,7 @@ Describe module responsibilities, dependency direction, state transitions, side 
 
 Record the selected shape, rejected alternatives, tradeoffs, risks, and open questions. Keep the rationale beside the sketch for larger changes.
 
-When the decision seam concerns sequencing staged delivery, replay, or progress-metadata gates, consult [forward implementation first](../yesh-router/references/principles/forward-implementation-first.md). Use it within the current design decision, not as another architecture phase.
+When the decision seam concerns sequencing staged delivery, replay, or progress-metadata gates, consult [sequence-verifiable-units](../yesh-router/references/principles/sequence-verifiable-units.md). Use it within the current design decision, not as another architecture phase.
 
 ## Implement or hand off
 

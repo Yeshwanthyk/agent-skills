@@ -6,6 +6,7 @@
 - Keep validation near the boundary that establishes the guarantee. Internal values can rely on that guarantee only while its lifetime and ownership remain valid.
 - Keep transport and storage details behind a domain boundary when that reduces coupling. Expose domain concepts, not the boundary's private representation.
 - Prefer compact pure business logic behind a thin framework, transport, or storage shell when that makes rules independently testable. Keep logic inline when extraction would only wrap a trivial operation or hide lifecycle and context the framework owns.
+- A client gate checks what the server enforces for that exact action. Gating a create button on the route's update permission lets through users the endpoint will reject, or blocks ones it allows.
 - Do not add an adapter solely to follow a layering rule.
 
 **Limits:** the types to choose once at the boundary are [type-system-discipline](type-system-discipline.md); how domain state is owned is [state-ownership](state-ownership.md).
