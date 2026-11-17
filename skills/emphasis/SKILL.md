@@ -26,7 +26,7 @@ mode: Investigate
 [[Decision]] Backfill the empty rows, or make the column optional? I'd backfill. **Next:** a dry run meanwhile
 ```
 
-- **Items.** One line each: `[[Word detail]]`, the subject, then the bold lead-in and its action. Each item draws as one row: pill, subject, then → and the action, dimmed. Keep the subject short enough to fit about one line.
+- **Items.** One line each: `[[Word detail]]`, the subject, then the bold lead-in and its action. Each item draws as an outlined pill in a 100px column, the subject beside it, and the action dimmed on the line below. Keep the subject short enough to fit about one line.
 - **Free for you.** The score line counts every result, failure and ask, failures first; **Needs you** and **Decision** items are drawn only in the "Waiting on you" box at the top. Write each item once, where it belongs; do not add your own "Waiting on you" section.
 - **Other lines.** `##` section labels, `- ` bullets, `├──`/`└──` tree rows, plain paragraphs, `**bold**`, `` `code` ``, and ✓ ✗ →. A pill inside a sentence works too.
 - **Ground it.** A number comes from a run, log or query you read; anything you did not check is **Unverified** with its **Check:**, not **Done**.
