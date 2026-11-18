@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Regression check for tlc_chart.py on variants of the gift card example. Needs Java 11+; downloads TLC once.
+"""Regression check for tla_chart.py on variants of the gift card example. Builds everystate once (git, cargo).
 
-  python3 test_tlc_chart.py
+  python3 test_tla_chart.py
 """
 import os
 import re
@@ -11,7 +11,7 @@ import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCRIPT = os.path.join(HERE, "tlc_chart.py")
+SCRIPT = os.path.join(HERE, "tla_chart.py")
 EXAMPLE = os.path.join(HERE, "..", "assets", "tla", "giftcard")
 
 
@@ -21,7 +21,7 @@ def run(folder, *args):
 
 
 def variant(edit_spec=None, edit_chart=None, cfg=None):
-    d = tempfile.mkdtemp(prefix="tlc-chart-test-")
+    d = tempfile.mkdtemp(prefix="tla-chart-test-")
     for f in os.listdir(EXAMPLE):
         shutil.copy(os.path.join(EXAMPLE, f), d)
     for name, edit in (("GiftCard.tla", edit_spec), ("chart.viz", edit_chart)):
@@ -61,7 +61,7 @@ def main():
     if code != 0:
         FAILS.append(f"example: exit {code}, want 0 (the fix is clean)")
 
-    # 2. Same trace on every run (one worker, fixed fingerprint seed).
+    # 2. Same trace on every run (breadth-first, one thread).
     _, again = run(d, "--viz", "chart.viz", "--fix", "GiftCardFixed.cfg")
     if re.findall(r"^    \d\..*$", again, re.M) != re.findall(r"^    \d\..*$", out, re.M):
         FAILS.append("determinism: the counterexample changed between two runs")
@@ -101,17 +101,33 @@ AllCredited == <>(\\A t \\in Tabs : ui[t] = "credited")
     _, out = run(d, "--viz", "chart.viz", "--fix", "GiftCardFixed.cfg", "--graph-limit", "3")
     expect("fallback", out, r"state graph skipped", r"^  twotabs: fixed", absent=[r"never takes this arrow"])
 
-    # 7. Missing Java, the macOS stub, and no network each exit 3 with the fix and the ask-first line.
-    bare = tempfile.mkdtemp(prefix="tlc-nojava-")
-    stub = tempfile.mkdtemp(prefix="tlc-stubjava-")
-    with open(os.path.join(stub, "java"), "w") as f:
-        f.write("#!/bin/sh\necho 'The operation couldn\'t be completed. Unable to locate a Java Runtime.' >&2\nexit 1\n")
-    os.chmod(os.path.join(stub, "java"), 0o755)
-    for label, env in (("no java", {"PATH": bare}), ("stub java", {"PATH": stub + os.pathsep + bare}),
-                       ("offline", {"XDG_CACHE_HOME": tempfile.mkdtemp(prefix="tlc-cache-"), "TLA2TOOLS": "",
-                                    "https_proxy": "http://127.0.0.1:9", "HTTPS_PROXY": "http://127.0.0.1:9"})):
-        e = {k: v for k, v in os.environ.items() if k != "TLA2TOOLS"}
-        e.update({k: v for k, v in env.items() if v})
+    # 7. Types: names from the spec, values from the reachable states, composite Next left out.
+    d = variant()
+    p = subprocess.run([sys.executable, SCRIPT, "types", "GiftCard.tla"], cwd=d, capture_output=True, text=True)
+    expect("types", p.stdout, r'^  card: "unused" \| "used";', r'^  credits: number;',
+           r'^  ui: Partial<Record<"t1" \| "t2", "checking" \| "credited" \| "form" \| "rejected">>;',
+           r'^  \| \{ action: "Press"; params\?: \["t1" \| "t2"\]', r'^  \| \{ action: "Done"; params\?: \[\]',
+           absent=[r'action: "Next"', r'action: "Init"'])
+
+    # 8. Conform: a double credit breaks the fixed model (20) and the current model's invariant (12).
+    with open(os.path.join(d, "double.jsonl"), "w") as f:
+        f.write('{"state":{"card":"unused","credits":0}}\n{"action":"Press","params":["t1"]}\n'
+                '{"action":"Press","params":["t2"]}\n{"action":"Answer","params":["t1"],"state":{"credits":1}}\n'
+                '{"action":"Answer","params":["t2"],"state":{"credits":2}}\n')
+    for cfg, want in (("GiftCardFixed.cfg", 20), ("GiftCard.cfg", 12)):
+        p = subprocess.run([sys.executable, SCRIPT, "conform", "double.jsonl", "GiftCard.tla", "--config", cfg],
+                           cwd=d, capture_output=True, text=True)
+        if p.returncode != want:
+            FAILS.append(f"conform {cfg}: exit {p.returncode}, want {want}\n{p.stdout}{p.stderr}")
+
+    # 9. No cargo, and no network, each exit 3 with the fix and the ask-first line (empty cache, no $EVERYSTATE).
+    bare = tempfile.mkdtemp(prefix="tla-nocargo-")
+    git = shutil.which("git")
+    os.symlink(git, os.path.join(bare, "git"))
+    for label, env in (("no cargo", {"PATH": bare}),
+                       ("offline", {"https_proxy": "http://127.0.0.1:9", "HTTPS_PROXY": "http://127.0.0.1:9"})):
+        e = {k: v for k, v in os.environ.items() if k != "EVERYSTATE"}
+        e.update(env, XDG_CACHE_HOME=tempfile.mkdtemp(prefix="tla-cache-"))
         p = subprocess.run([sys.executable, SCRIPT, "run", "GiftCard.tla"], cwd=EXAMPLE, capture_output=True, text=True, env=e)
         if p.returncode != 3:
             FAILS.append(f"{label}: exit {p.returncode}, want 3")

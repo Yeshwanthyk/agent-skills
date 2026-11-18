@@ -29,7 +29,7 @@ Answer(t) == /\ ui[t] = "checking"
                         /\ UNCHANGED <<card, credits>>
              /\ UNCHANGED seen
 
-\* Every tab has its answer. Without this step TLC reports the end as a deadlock.
+\* Every tab has its answer. Without this step the checker reports the end as a deadlock.
 Done == /\ \A t \in Tabs : ui[t] \in {"credited", "rejected"}
         /\ UNCHANGED vars
 

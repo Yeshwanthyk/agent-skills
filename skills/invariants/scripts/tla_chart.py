@@ -1,29 +1,36 @@
 #!/usr/bin/env python3
-"""Model-check a TLA+ spec with TLC and report the result on the flow's statechart.
+"""Model-check a TLA+ spec with everystate and report the result on the flow's statechart.
 
-  tlc_chart.py run SPEC.tla [--config C.cfg] [--chart ui] [--viz CHART.viz] [--fix FIXED.cfg]
-                            [-o OUT.viz] [--jar tla2tools.jar] [--timeout 300] [--graph-limit 20000]
-  tlc_chart.py log TRACE.txt [--chart ui]      read a TLC trace printed elsewhere (quint verify --backend tlc)
-  tlc_chart.py jar                             print the pinned tla2tools.jar path, downloading it once
+  tla_chart.py run SPEC.tla [--config C.cfg] [--chart ui] [--viz CHART.viz] [--fix FIXED.cfg]
+                            [-o OUT.viz] [--timeout 300] [--graph-limit 20000]
+  tla_chart.py conform TRACE.jsonl SPEC.tla [--config C.cfg] [everystate conform options]
+  tla_chart.py types SPEC.tla [--config C.cfg] [-o SPEC.types.ts]
+  tla_chart.py log TRACE.txt [--chart ui]      read a TLC-format trace printed elsewhere
+  tla_chart.py engine                          print the pinned everystate binary, building it once
 
 `run` checks every rule in the config (the current code): each INVARIANT, deadlock unless the config turns
 it off, and each PROPERTY. When a rule breaks it prints the shortest counterexample, drops that rule and
 reruns, so one bug does not hide the next. With --fix it checks the fixed config the same way.
 
-With --viz it compares the model with the chart drawn before modeling, on TLC's full state graph: whether
+With --viz it compares the model with the chart drawn before modeling, on the full state graph: whether
 each named story can happen along its drawn path, which steps the model takes that the chart has no arrow
 for, which arrows the model never takes, and which nodes it never reaches. It writes OUT.viz, the same
 chart with each story marked: plain = works, `!` path = counterexample or undrawn step, `+` = works only
 after the fix, `?` on the leaf = never reached along the drawn path.
 
-TLC runs with one worker and a fixed fingerprint seed, so a counterexample is the same on every run.
+`conform` checks a JSON-lines log of the real code against the spec (exit 0 conforms, 20 does not, 12 the
+spec allows the run but it breaks an invariant). `types` writes TypeScript types for those log lines and for
+each variable's values, derived from the spec's reachable states, so the compiler catches code-spec drift.
+
+everystate searches breadth-first on one thread, so a counterexample is the same on every run.
 Exit 0 when every rule of the final model holds, 1 when one breaks, 2 on an error or a rule left unchecked,
-3 when Java 11+ or the TLC jar is missing: it prints SETUP NEEDED with the install command for this OS.
+3 when the engine cannot be built (no cargo or git, or offline): it prints SETUP NEEDED with the fix.
 Conventions (chart variable, `state:` and `fails:` lines): ../references/model-checkers.md.
 """
 import argparse
 import collections
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -31,16 +38,14 @@ import subprocess
 import sys
 import tempfile
 import time
-import urllib.request
+import xml.etree.ElementTree as ET
 
-VERSION = "3"  # bump on a behavior change; a verify skill that copies this file records it
-TLA_VERSION = "1.7.4"
-TLA_SHA256 = "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88"
-TLA_URL = f"https://github.com/tlaplus/tlaplus/releases/download/v{TLA_VERSION}/tla2tools.jar"
-PINNED = ["-workers", "1", "-fp", "0"]  # one worker, one fingerprint seed: the same trace on every run
+VERSION = "4"  # bump on a behavior change; a verify skill that copies this file records it
+ES_REPO = "https://github.com/mattzcarey/everystate"
+ES_COMMIT = "c1544c8dc536fb3460badab96db354f1165700ed"  # git checks the tree against this hash
+ENGINE = f"everystate {ES_COMMIT[:7]}"
 HERE = os.path.dirname(os.path.abspath(__file__))
 VIZ_PY = os.path.join(HERE, "..", "..", "viz", "scripts", "viz.py")
-# tlc2.output.EC.ExitStatus
 EXIT = {0: "clean", 10: "assumption violated", 11: "deadlock", 12: "invariant violated",
         13: "temporal property violated", 14: "assertion failed", 75: "spec evaluation failed",
         76: "invariant evaluation failed", 77: "temporal evaluation failed", 150: "spec parse error",
@@ -55,9 +60,8 @@ DEADLOCK = "deadlock"
 # ---------- setup ----------
 
 SETUP_EXIT = 3
-JAVA_FIX = {"darwin": "brew install --cask temurin   (or the installer from https://adoptium.net)",
-            "win32": "winget install EclipseAdoptium.Temurin.21.JRE"}.get(
-    sys.platform, "sudo apt-get install -y default-jre-headless   (Fedora: sudo dnf install -y java-21-openjdk-headless)")
+RUST_FIX = "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   (or https://rustup.rs)"
+GIT_FIX = {"darwin": "xcode-select --install"}.get(sys.platform, "sudo apt-get install -y git")
 
 
 def setup_needed(what, fix):
@@ -66,47 +70,41 @@ def setup_needed(what, fix):
     sys.exit(SETUP_EXIT)
 
 
-def require_java():
-    """Exit 3 unless a Java 11+ runtime answers. macOS ships a /usr/bin/java stub that answers with an error."""
-    java = shutil.which("java")
-    if not java:
-        setup_needed("Java 11+ is not installed; TLC runs on Java.", JAVA_FIX)
-    try:
-        p = subprocess.run([java, "-version"], capture_output=True, text=True, timeout=60)
-        out = p.stdout + p.stderr
-    except (OSError, subprocess.TimeoutExpired) as e:
-        p, out = None, str(e)
-    m = re.search(r'version "(\d+)(?:\.(\d+))?', out)
-    if not p or p.returncode or not m:
-        setup_needed(f"`{java}` is on PATH but no Java runtime answers ({tail(out, 1) or 'no output'}).", JAVA_FIX)
-    major = int(m.group(1)) if m.group(1) != "1" else int(m.group(2) or 0)  # "1.8.0" is Java 8
-    if major < 11:
-        setup_needed(f"Java {major} found; TLC {TLA_VERSION} needs Java 11+.", JAVA_FIX)
+# ---------- engine ----------
+
+def engine_path():
+    """The pinned everystate binary: $EVERYSTATE, or a build of ES_COMMIT cached under ~/.cache/everystate."""
+    if os.environ.get("EVERYSTATE"):
+        return os.environ["EVERYSTATE"]
+    cache = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "everystate", ES_COMMIT[:12])
+    binary = os.path.join(cache, "everystate.exe" if sys.platform == "win32" else "everystate")
+    if os.path.exists(binary):
+        return binary
+    for tool, fix in (("git", GIT_FIX), ("cargo", RUST_FIX)):
+        if not shutil.which(tool):
+            setup_needed(f"`{tool}` is not installed; everystate {ES_COMMIT[:7]} is built from source once.", fix)
+    src = os.path.join(cache, "src")
+    shutil.rmtree(src, ignore_errors=True)
+    os.makedirs(src)
+    print(f"building everystate {ES_COMMIT[:7]} -> {binary} (once, about a minute)", file=sys.stderr)
+    for cmd in (["git", "init", "-q"], ["git", "fetch", "-q", "--depth", "1", ES_REPO, ES_COMMIT]):
+        p = subprocess.run(cmd, cwd=src, capture_output=True, text=True)
+        if p.returncode:
+            setup_needed(f"cannot fetch {ES_REPO} at {ES_COMMIT[:7]} ({tail(p.stderr, 1)}); offline, or GitHub is blocked.",
+                         f"rerun where there is network, or build that commit yourself and set EVERYSTATE=/path/to/everystate")
+    for cmd in (["git", "checkout", "-q", "FETCH_HEAD"], ["cargo", "build", "--release", "--locked", "--quiet"]):
+        p = subprocess.run(cmd, cwd=src, capture_output=True, text=True)
+        if p.returncode:
+            sys.exit(f"everystate build failed at `{' '.join(cmd)}`:\n{tail(p.stderr)}")
+    shutil.copy2(os.path.join(src, "target", "release", os.path.basename(binary)), binary + ".part")
+    os.replace(binary + ".part", binary)
+    shutil.rmtree(src, ignore_errors=True)
+    return binary
 
 
-# ---------- jar ----------
-
-def jar_path(override=None):
-    if override or os.environ.get("TLA2TOOLS"):
-        return override or os.environ["TLA2TOOLS"]
-    cache = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "tlaplus")
-    path = os.path.join(cache, f"tla2tools-{TLA_VERSION}.jar")
-    if not os.path.exists(path):
-        os.makedirs(cache, exist_ok=True)
-        print(f"downloading tla2tools {TLA_VERSION} -> {path}", file=sys.stderr)
-        try:
-            with urllib.request.urlopen(TLA_URL, timeout=120) as r:
-                data = r.read()
-        except OSError as e:
-            setup_needed(f"cannot download tla2tools.jar ({e}); offline, or GitHub is blocked.",
-                         f"download {TLA_URL} where there is network and save it as {path}, "
-                         "or set TLA2TOOLS=/path/to/tla2tools.jar")
-        if hashlib.sha256(data).hexdigest() != TLA_SHA256:
-            sys.exit(f"tla2tools.jar sha256 mismatch for {TLA_URL}")
-        with open(path + ".part", "wb") as f:
-            f.write(data)
-        os.replace(path + ".part", path)
-    return path
+def es_cmd(es, lib=None, main="tlc2.TLC"):
+    """everystate's command line; with lib, its TLC-compatible form, the only one that takes a module library."""
+    return [es, "java", f"-DTLA-Library={lib}", main] if lib else [es]
 
 
 # ---------- TLA+ values ----------
@@ -213,7 +211,7 @@ def canon(v):
     return show(v)
 
 
-# ---------- TLC output ----------
+# ---------- TLC-format output (everystate prints TLC's format) ----------
 
 STATE = re.compile(r"^State (\d+): (.*)$")
 BACK = re.compile(r"^(?:State \d+: )?Back to state:? (\d+)(?::\s*(.*))?")
@@ -280,19 +278,16 @@ def stats(out):
     return (f"{g.group(2)} distinct states" if g else "") + (f", depth {d.group(1)}" if d else "")
 
 
-def run_tlc(jar, spec, cfg, timeout, extra_lib=None, extra=()):
-    """(exit code or None on timeout, output, seconds)"""
-    meta = tempfile.mkdtemp(prefix="tlc-meta-")
+def run_es(es, spec, cfg, timeout, extra_lib=None, extra=()):
+    """(exit code or None on timeout, output, seconds). Runs in the spec's folder, where its modules are."""
     lib = os.path.dirname(os.path.abspath(spec))
-    cmd = ["java", "-XX:+UseParallelGC", f"-DTLA-Library={extra_lib or lib}", "-cp", jar, "tlc2.TLC",
-           "-config", cfg, *PINNED, "-metadir", meta, "-cleanup", *extra, os.path.basename(spec)]  # TLC 1.7.4 misses a config outside the folder of an absolute spec path
+    cmd = [*es_cmd(es, extra_lib), "-config", cfg, *extra, os.path.basename(spec)]
     t0 = time.time()
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, cwd=lib, timeout=timeout)
         code, out = p.returncode, p.stdout + p.stderr
     except subprocess.TimeoutExpired as e:
         code, out = None, (e.stdout or b"").decode(errors="replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
-    shutil.rmtree(meta, ignore_errors=True)
     return code, out, time.time() - t0
 
 
@@ -336,12 +331,12 @@ def write_cfg(sections, folder, name, invs=(), props=(), deadlock=False, extra=(
 
 # ---------- every rule ----------
 
-def check_rules(jar, spec, cfg, a):
-    """Each rule -> {'outcome': holds | broken | not checked, ...}. A broken rule is dropped and TLC reruns, so
+def check_rules(es, spec, cfg, a):
+    """Each rule -> {'outcome': holds | broken | not checked, ...}. A broken rule is dropped and the check reruns, so
     every rule gets a verdict. Invariants and deadlock share runs; each PROPERTY gets its own run."""
     sections = read_cfg(cfg)
     invs, props, dl = cfg_rules(sections)
-    tmp = tempfile.mkdtemp(prefix="tlc-rules-")
+    tmp = tempfile.mkdtemp(prefix="tla-rules-")
     verdicts, runs, space, stop = {}, 0, None, None
     pending, check_dl = list(invs), dl
     batches = [("safety", None)] + [("property", p) for p in props]
@@ -353,7 +348,7 @@ def check_rules(jar, spec, cfg, a):
             runs += 1
             c = write_cfg(sections, tmp, f"run{runs}", pending if kind == "safety" else (),
                           [prop] if prop else (), check_dl if kind == "safety" else False)
-            code, out, secs = run_tlc(jar, spec, c, a.timeout)
+            code, out, secs = run_es(es, spec, c, a.timeout)
             if code is None:
                 for n in names:
                     verdicts[n] = {"outcome": "not checked", "why": f"no result in {a.timeout}s (--timeout)"}
@@ -393,7 +388,7 @@ def report_rules(label, cfg, res):
     head = "every rule holds" if not broken and not unchecked else \
         ", ".join(x for x in (f"{len(broken)} broken" if broken else "", f"{len(unchecked)} not checked" if unchecked else "") if x)
     print(f"{label} ({os.path.basename(cfg)}): {head} · {res['space'] or 'state space not completed'} · "
-          f"TLC {TLA_VERSION}, {' '.join(PINNED)}")
+          f"{ENGINE}")
     for n in res["order"]:
         r = v[n]
         if r["outcome"] == "broken":
@@ -614,13 +609,13 @@ class Graph:
         return None
 
 
-def state_graph(jar, spec, cfg, a, preds):
-    """TLC's full state graph for cfg, with the states where each `state:` predicate holds; or (None, why)."""
+def state_graph(es, spec, cfg, a, preds):
+    """The full state graph for cfg, with the states where each `state:` predicate holds; or (None, why)."""
     sections = read_cfg(cfg)
-    tmp = tempfile.mkdtemp(prefix="tlc-graph-")
+    tmp = tempfile.mkdtemp(prefix="tla-graph-")
     try:
         c = write_cfg(sections, tmp, "graph")
-        code, out, _ = run_tlc(jar, spec, c, a.timeout, extra=["-dump", "dot,actionlabels", os.path.join(tmp, "graph")])
+        code, out, _ = run_es(es, spec, c, a.timeout, extra=["-dump", "dot,actionlabels", os.path.join(tmp, "graph")])
         dot = os.path.join(tmp, "graph.dot")
         if code != 0 or not os.path.exists(dot):
             return None, "no result in time" if code is None else f"{EXIT.get(code, code)}: {tail(out, 5)}"
@@ -631,14 +626,14 @@ def state_graph(jar, spec, cfg, a, preds):
         cv = chart_var(names, a.chart)
         marks = {nid: set() for nid in preds}
         if preds and nodes:
-            marks = mark_states(jar, spec, sections, tmp, a, preds, names, nodes)
+            marks = mark_states(es, spec, sections, tmp, a, preds, names, nodes)
         return Graph(nodes, init, edges, marks, cv), None
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
-def mark_states(jar, spec, sections, tmp, a, preds, names, nodes):
-    """Run TLC once with an invariant that prints each state where a chart predicate holds."""
+def mark_states(es, spec, sections, tmp, a, preds, names, nodes):
+    """Run once with an invariant that prints each state where a chart predicate holds."""
     name = os.path.splitext(os.path.basename(spec))[0]
     tag = "chartmark" + hashlib.sha1(spec.encode()).hexdigest()[:8]
     mod = f"ChartMark_{name}"
@@ -648,7 +643,7 @@ def mark_states(jar, spec, sections, tmp, a, preds, names, nodes):
         f.write(f"---- MODULE {mod} ----\nEXTENDS {name}, TLC\nChartMark ==\n{body}\n====\n")
     c = write_cfg(sections, tmp, mod, invs=["ChartMark"])
     lib = os.path.dirname(os.path.abspath(spec))
-    code, out, _ = run_tlc(jar, os.path.join(tmp, mod + ".tla"), c, a.timeout, extra_lib=lib)
+    code, out, _ = run_es(es, os.path.join(tmp, mod + ".tla"), c, a.timeout, extra_lib=lib)
     if code != 0:
         sys.exit(f"chart predicates failed to evaluate ({EXIT.get(code, code)}):\n{tail(out)}")
     by_value = {tuple(canon(v.get(n)) for n in names): fp for fp, v in nodes.items()}
@@ -732,16 +727,16 @@ def judge_stories(g, nodes, stories):
 
 # ---------- witness fallback, for a graph over --graph-limit ----------
 
-def witness(jar, spec, cfg, pred, a):
-    """TLC finds a behavior reaching a state where pred holds, by checking ~pred as an invariant."""
+def witness(es, spec, cfg, pred, a):
+    """Find a behavior reaching a state where pred holds, by checking ~pred as an invariant."""
     name = os.path.splitext(os.path.basename(spec))[0]
-    tmp = tempfile.mkdtemp(prefix="tlc-witness-")
+    tmp = tempfile.mkdtemp(prefix="tla-witness-")
     mod = f"Witness_{name}"
     with open(os.path.join(tmp, mod + ".tla"), "w") as f:
         f.write(f"---- MODULE {mod} ----\nEXTENDS {name}\nWitnessNotReached == ~({pred})\n====\n")
     c = write_cfg(read_cfg(cfg), tmp, mod, invs=["WitnessNotReached"])
     lib = os.path.dirname(os.path.abspath(spec))
-    code, out, _ = run_tlc(jar, os.path.join(tmp, mod + ".tla"), c, a.timeout, extra_lib=lib)
+    code, out, _ = run_es(es, os.path.join(tmp, mod + ".tla"), c, a.timeout, extra_lib=lib)
     shutil.rmtree(tmp, ignore_errors=True)
     if code == 12:
         return parse_trace(out)[0]
@@ -750,14 +745,14 @@ def witness(jar, spec, cfg, pred, a):
     sys.exit(f"witness check failed ({EXIT.get(code, code)}) for: {pred}\n{tail(out)}")
 
 
-def witness_stories(jar, spec, cfg, nodes, stories, a):
+def witness_stories(es, spec, cfg, nodes, stories, a):
     res = {}
     for st in stories:
         end = st["ids"][-1]
         if end not in nodes or nodes[end]["fails"]:
             continue
         pred = nodes[end]["state"] or f'\\E x \\in DOMAIN {a.chart} : {a.chart}[x] = "{end}"'
-        tr = witness(jar, spec, cfg, pred, a)
+        tr = witness(es, spec, cfg, pred, a)
         if tr is None:
             res[st["name"]] = ("unreached", None)
             continue
@@ -772,37 +767,36 @@ def witness_stories(jar, spec, cfg, nodes, stories, a):
 # ---------- commands ----------
 
 def cmd_run(a):
-    require_java()
-    jar = jar_path(a.jar)
+    es = engine_path()
     spec = os.path.abspath(a.spec)
     cfg = os.path.abspath(a.config or os.path.splitext(spec)[0] + ".cfg")
-    now = check_rules(jar, spec, cfg, a)
+    now = check_rules(es, spec, cfg, a)
     report_rules("current", cfg, now)
     after = None
     if a.fix:
         fcfg = os.path.abspath(a.fix)
-        after = check_rules(jar, spec, fcfg, a)
+        after = check_rules(es, spec, fcfg, a)
         report_rules("fixed", fcfg, after)
     if a.viz:
-        write_chart(a, jar, spec, cfg, now, after)
+        write_chart(a, es, spec, cfg, now, after)
     return final_code(after or now)
 
 
-def compare(a, jar, spec, cfg, nodes, stories, edges, starts):
+def compare(a, es, spec, cfg, nodes, stories, edges, starts):
     """Stories and the chart-versus-model diff for one config."""
     preds = {nid: n["state"] for nid, n in nodes.items() if n["state"]}
-    g, why = state_graph(jar, spec, cfg, a, preds)
+    g, why = state_graph(es, spec, cfg, a, preds)
     if g is None:
         print(f"  ({os.path.basename(cfg)}: state graph skipped, {why}; stories by witness, no arrow check)")
-        return witness_stories(jar, spec, cfg, nodes, stories, a), None
+        return witness_stories(es, spec, cfg, nodes, stories, a), None
     return judge_stories(g, nodes, stories), g
 
 
-def write_chart(a, jar, spec, cfg, now, after):
+def write_chart(a, es, spec, cfg, now, after):
     lines, nodes, stories, edges, starts = read_chart(a.viz)
     print("stories:")
-    r_now, g_now = compare(a, jar, spec, cfg, nodes, stories, edges, starts)
-    r_fix, g_fix = compare(a, jar, spec, os.path.abspath(a.fix), nodes, stories, edges, starts) if a.fix else (r_now, g_now)
+    r_now, g_now = compare(a, es, spec, cfg, nodes, stories, edges, starts)
+    r_fix, g_fix = compare(a, es, spec, os.path.abspath(a.fix), nodes, stories, edges, starts) if a.fix else (r_now, g_now)
     add = []
     for st in stories:
         if st["name"] not in r_now:
@@ -909,10 +903,125 @@ def cmd_log(a):
     return 1
 
 
+def cmd_conform(a, rest):
+    """everystate conform with the pinned engine; its exit code is the result."""
+    spec = os.path.abspath(a.spec)
+    cfg = os.path.abspath(a.config or os.path.splitext(spec)[0] + ".cfg")
+    cmd = [engine_path(), "conform", "-trace", os.path.abspath(a.trace), "-config", cfg, *rest, os.path.basename(spec)]
+    return subprocess.run(cmd, cwd=os.path.dirname(spec)).returncode
+
+
+# ---------- types ----------
+
+def spec_names(es, spec):
+    """(variables, [(action, arity)]) from everystate's SANY XML export: kind 3 is a variable, level 2 an action."""
+    p = subprocess.run([*es_cmd(es, os.path.dirname(spec), "tla2sany.xml.XMLExporter"), os.path.basename(spec)],
+                       capture_output=True, text=True, cwd=os.path.dirname(spec))
+    if p.returncode:
+        sys.exit(f"cannot read the spec's declarations:\n{tail(p.stdout + p.stderr)}")
+    root = os.path.splitext(os.path.basename(spec))[0]
+    variables, actions, own = [], [], set()
+    tree = ET.fromstring(p.stdout)
+    for e in tree.iter("ModuleNode"):  # only the root module's own declarations, not EXTENDS'
+        if e.findtext("uniquename") == root:
+            own = {r.findtext("UID") for r in e if r.tag.endswith("Ref")}
+    for entry in tree.iter("entry"):
+        if entry.findtext("UID") not in own:
+            continue
+        for e in entry:
+            if e.tag == "OpDeclNode" and e.findtext("kind") == "3":
+                variables.append(e.findtext("uniquename"))
+            elif e.tag == "UserDefinedOpKind" and e.findtext("level") == "2":
+                actions.append((e.findtext("uniquename"), int(e.findtext("arity") or 0)))
+    return variables, actions
+
+
+def next_names(spec, sections):
+    """Names that compose actions rather than being one: the cfg's NEXT and each [][N]_v in the spec."""
+    names = {v.split()[0] for k, v in sections if k == "NEXT" and v}
+    names |= set(re.findall(r"\[\]\[\s*(\w+)\s*\]_", open(spec).read()))
+    return names
+
+
+def model_values(sections):
+    """Model values the cfg declares (`Tabs = {t1, t2}`, `Nil = Nil`)."""
+    out = set()
+    for k, v in sections:
+        if k in ("CONSTANTS", "CONSTANT"):
+            for name, rhs in re.findall(r"(\w+)\s*(?:=|<-)\s*(\{[^}]*\}|\w+)", v):
+                items = re.findall(r"[A-Za-z_]\w*", rhs) if rhs.startswith("{") else ([rhs] if rhs == name else [])
+                out |= {x for x in items if x not in ("TRUE", "FALSE")}
+    return out
+
+
+def ts_type(values, mvs):
+    """One TypeScript type covering every value a variable takes in the reachable states."""
+    vals = list(values)
+    if not vals:
+        return "never"
+    if all(isinstance(v, bool) for v in vals):
+        return "boolean"
+    if all(isinstance(v, int) and not isinstance(v, bool) for v in vals):
+        return "number"
+    if all(isinstance(v, str) for v in vals):
+        return " | ".join(json.dumps(x) for x in sorted(set(vals)))
+    if all(isinstance(v, dict) for v in vals):
+        keys = sorted({k for v in vals for k in v}, key=str)
+        if all(isinstance(k, str) and k in mvs for k in keys):  # a function over model values: [t \in Tabs |-> ...]
+            inner = ts_type([x for v in vals for x in v.values()], mvs)
+            return f"Partial<Record<{' | '.join(json.dumps(k) for k in keys)}, {inner}>>"
+        fields = "; ".join(f"{json.dumps(str(k))}: {ts_type([v[k] for v in vals if k in v], mvs)}" for k in keys)
+        return "{ " + fields + " }"
+    if all(isinstance(v, (tuple, frozenset)) for v in vals):  # a sequence or a set: a JSON array either way
+        return f"Array<{ts_type([x for v in vals for x in v], mvs)}>"
+    return "unknown"
+
+
+def cmd_types(a):
+    es = engine_path()
+    spec = os.path.abspath(a.spec)
+    cfg = os.path.abspath(a.config or os.path.splitext(spec)[0] + ".cfg")
+    sections = read_cfg(cfg)
+    variables, actions = spec_names(es, spec)
+    actions = [(n, k) for n, k in actions if n not in next_names(spec, sections)]
+    tmp = tempfile.mkdtemp(prefix="tla-types-")
+    try:
+        c = write_cfg(sections, tmp, "types")
+        code, out, _ = run_es(es, spec, c, a.timeout, extra=["-dump", "dot,actionlabels", os.path.join(tmp, "graph")])
+        if code != 0 or not os.path.exists(os.path.join(tmp, "graph.dot")):
+            sys.exit(f"cannot enumerate the reachable states ({EXIT.get(code, code)}):\n{tail(out)}")
+        nodes, _, _ = read_dot(os.path.join(tmp, "graph.dot"))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    mvs = model_values(sections)
+    param = " | ".join(json.dumps(x) for x in sorted(mvs)) or "string | number"
+    name = os.path.basename(spec)
+    lines = [f"// Generated by tla_chart.py types from {name} and {os.path.basename(cfg)} ({ENGINE}). Do not edit:",
+             "// regenerate when the spec changes. Value types are the values each variable takes in the reachable",
+             "// states at the cfg's bounds. A Step is one line of an `everystate conform` trace.",
+             "export interface State {"]
+    lines += [f"  {v}: {ts_type([s[v] for s in nodes.values() if v in s], mvs)};" for v in variables]
+    lines += ["}", "export type Step ="]
+    lines += [f"  | {{ action: {json.dumps(n)}; params?: [{', '.join([param] * k)}]; state?: Partial<State> }}"
+              for n, k in actions] or ["  never"]
+    lines[-1] += ";"
+    lines += ["export type Action = Step[\"action\"];",
+              "/** The first line of a trace: the initial state, with no action. */",
+              "export type Initial = { action?: undefined; state: Partial<State> };", ""]
+    text = "\n".join(lines)
+    if a.o:
+        with open(a.o, "w") as f:
+            f.write(text)
+        print(f"types: {a.o} ({len(variables)} variables, {len(actions)} actions, {len(nodes)} states)", file=sys.stderr)
+    else:
+        sys.stdout.write(text)
+    return 0
+
+
 def main():
     sys.stdout.reconfigure(line_buffering=True)
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--version", action="version", version=f"tlc_chart {VERSION} (TLC {TLA_VERSION})")
+    ap.add_argument("--version", action="version", version=f"tla_chart {VERSION} ({ENGINE})")
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run")
     r.add_argument("spec")
@@ -921,19 +1030,32 @@ def main():
     r.add_argument("--viz", help="the statechart drawn before modeling")
     r.add_argument("--fix", help="config of the fixed model, same spec")
     r.add_argument("-o", help="output chart (default CHART.checked.viz)")
-    r.add_argument("--jar")
-    r.add_argument("--timeout", type=int, default=300, help="seconds per TLC run before its rules count as not checked")
+    r.add_argument("--timeout", type=int, default=300, help="seconds per check before its rules count as not checked")
     r.add_argument("--graph-limit", type=int, default=20000, help="largest state graph compared with the chart")
     lg = sub.add_parser("log")
     lg.add_argument("trace")
     lg.add_argument("--chart", default="ui")
-    sub.add_parser("jar")
-    a = ap.parse_args()
-    if a.cmd == "jar":
-        print(jar_path())
+    cf = sub.add_parser("conform", help="check a recorded run against the spec; other options go to everystate conform")
+    cf.add_argument("trace")
+    cf.add_argument("spec")
+    cf.add_argument("--config")
+    ty = sub.add_parser("types", help="TypeScript types for trace lines and variable values, from the spec")
+    ty.add_argument("spec")
+    ty.add_argument("--config")
+    ty.add_argument("-o", help="write here instead of stdout")
+    ty.add_argument("--timeout", type=int, default=300)
+    sub.add_parser("engine", help="print the pinned everystate binary, building it once")
+    a, rest = ap.parse_known_args()
+    if rest and a.cmd != "conform":
+        ap.error(f"unrecognized arguments: {' '.join(rest)}")
+    if a.cmd == "engine":
+        print(engine_path())
         return 0
+    if a.cmd == "conform":
+        return cmd_conform(a, rest)
+    if a.cmd == "types":
+        return cmd_types(a)
     return cmd_run(a) if a.cmd == "run" else cmd_log(a)
-
 
 if __name__ == "__main__":
     sys.exit(main())

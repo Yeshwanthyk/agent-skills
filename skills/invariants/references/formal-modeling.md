@@ -30,10 +30,8 @@ Pick the cheapest tool that answers the question. When the repo already uses one
 
 | Property shape | Tool | First command | The counterexample | On the statechart |
 | --- | --- | --- | --- | --- |
-| Bad ordering in a user-facing flow, a race, a retry, recovery | **TLA+ / TLC** ([model-checkers](model-checkers.md)) | `tlc_chart.py run Spec.tla --viz chart.viz` | Shortest trace, one numbered step per action: actor, action, node hop, changed variables | A `!` path along the hops, ending at the `fails:` harm node; the runner writes it |
-| The same, in a repo that has Quint, or for model-based tests | **Quint** ([model-checkers](model-checkers.md#quint)) | `quint run m.qnt --invariant inv`, then `quint verify … --backend tlc` | `[State n]` maps from a random trace (`run`), or a TLC trace (`--backend tlc`) | Pipe the TLC trace to `tlc_chart.py log -`; draw the `!` path from its steps |
-| A large or integer-heavy state space | **Apalache** | `quint verify m.qnt --invariant inv --max-steps N` | Every behavior up to N steps, symbolically; ITF JSON under `_apalache-out/` | As above, from the trace's states |
-| Progress: a request eventually completes, nothing waits forever | **TLC** with fairness (`PROPERTY` in the cfg) | `tlc_chart.py run Spec.tla` | A lasso: steps, then "back to state k" repeating | A `!` path ending at the node the user waits on, narrated as a loop |
+| Bad ordering in a user-facing flow, a race, a retry, recovery | **TLA+ / everystate** ([model-checkers](model-checkers.md)) | `tla_chart.py run Spec.tla --viz chart.viz` | Shortest trace, one numbered step per action: actor, action, node hop, changed variables | A `!` path along the hops, ending at the `fails:` harm node; the runner writes it |
+| Progress: a request eventually completes, nothing waits forever | **TLA+ / everystate** with fairness (`PROPERTY` in the cfg) | `tla_chart.py run Spec.tla` | A lasso: steps, then "back to state k" repeating | A `!` path ending at the node the user waits on, narrated as a loop |
 | A Rust transition function keeps the invariant for every state and event | **Kani** ([code-verifiers](code-verifiers.md)) | `cargo kani --harness step_keeps_invariant` | `VERIFICATION:- FAILED`, the failed assertion, and with `--concrete-playback=print` the concrete state and event as a unit test | One `!` edge: from the state's node, on the event, to the harm node |
 | A pure function or algorithm holds for every input and length, or an executable spec is needed as an oracle | **Lean 4** ([lean](lean.md)) | `lake build` | No trace: a goal that does not close | Nothing to draw; a clean check leaves the stories plain, with no bound |
 
@@ -49,9 +47,10 @@ A model and its proofs establish facts about the model. Property and fuzz tests 
 
 1. **Invariant as oracle.** Each named invariant becomes the assertion in the step 2 record. A stateful property test checks it against the real entry point after each transition, with the operation alphabet taken from the model's transitions.
 2. **Counterexample as regression.** Translate each counterexample trace into concrete operations and replay it on the real code. A replay that fails is the irrefutable proof of the defect and becomes a regression case in the ordinary suite. A trace that does not replay is a modeling gap: fix the model before trusting its other results.
-3. **Model as differential oracle.** When the model is executable (a Lean model compiled with `lake build`, or Quint traces exported as ITF), generate inputs or traces, run them through both model and code, and compare results at each step. This is the conformance check, and it catches model drift that proofs cannot.
-4. **One harness, several engines.** A code-level verifier harness that takes symbolic input can often also run as a property test and a fuzz target. See [code-verifiers.md](code-verifiers.md).
-5. **Disagreement is classified.** When generated tests and the model disagree, decide whether the model, the code, or the harness is wrong before changing any of them.
+3. **Model as differential oracle.** When the model is executable (a Lean model compiled with `lake build`), generate inputs or traces, run them through both model and code, and compare results at each step. This is the conformance check, and it catches model drift that proofs cannot. For TLA+, run it the other way: an integration test logs one JSON line per model step from the code, and `tla_chart.py conform run.jsonl Spec.tla` checks the run is a behavior of the spec (exit 0), names the first line it is not (20), or says the spec allows the run and the run breaks an invariant (12). A replayed counterexample (item 2) logged this way must exit 20 against the fixed cfg.
+4. **Spec as type source.** For TLA+, `tla_chart.py types Spec.tla -o <area>.types.ts` writes the actions, variables and reachable values as TypeScript. Type the logging call from item 3 and every switch over a modeled state against it, with a `never` default, so a renamed action, an unmodeled value, or an unhandled state fails the compile. Regenerate it in the same change as the spec. See [model-checkers](model-checkers.md#check-the-code-against-the-model).
+5. **One harness, several engines.** A code-level verifier harness that takes symbolic input can often also run as a property test and a fuzz target. See [code-verifiers.md](code-verifiers.md).
+6. **Disagreement is classified.** When generated tests and the model disagree, decide whether the model, the code, or the harness is wrong before changing any of them.
 
 ## Report on the statechart
 
@@ -64,7 +63,7 @@ When step 1 drew a statechart, report the results on that same chart, re-rendere
 
 Beyond the stories, the comparison reports where chart and model disagree. A step the model takes that the chart has no arrow for is something the code allows that the reader never agreed to. An arrow the model never takes is a story the code cannot produce, or code the model leaves out. Each is a finding, and goes in the hand-off with the story marks.
 
-For TLA+, [`tlc_chart.py`](../scripts/tlc_chart.py) writes all four marks and the disagreements from the chart and the spec's full state graph; [model-checkers](model-checkers.md#statechart-conventions) gives the conventions it reads. [`assets/tla/giftcard`](../assets/tla/giftcard) is a worked example. With another tool, write the marks by hand from its trace. The reader sees which flows work, which broke, and which the fix changed, without reading the spec.
+For TLA+, [`tla_chart.py`](../scripts/tla_chart.py) writes all four marks and the disagreements from the chart and the spec's full state graph; [model-checkers](model-checkers.md#statechart-conventions) gives the conventions it reads. [`assets/tla/giftcard`](../assets/tla/giftcard) is a worked example. With another tool, write the marks by hand from its trace. The reader sees which flows work, which broke, and which the fix changed, without reading the spec.
 
 ## Structured Machine Spec
 

@@ -63,7 +63,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`emphasis`](./skills/emphasis) | Lay out a status as a big-type board: colored pills, each with its action, asks pinned on top. |
 | [`formal-verification-skill`](./skills/formal-verification-skill) | Build or fix a project skill that formally verifies one high-risk property and reruns on every change. |
 | [`how`](./skills/how) | Explain how code works and why it was built that way, or teach it in plain layers. |
-| [`invariants`](./skills/invariants) | Model state in Quint, TLA+, or Lean, then break the invariants with property tests or fuzzing. |
+| [`invariants`](./skills/invariants) | Model state in TLA+ or Lean, then break the invariants with property tests or fuzzing. |
 | [`meat-review`](./skills/meat-review) | Review a diff, branch, or PR as a short annotated reading. |
 | [`plan`](./skills/plan) | Turn a settled approach into ordered chunks with risks and proof. |
 | [`recap`](./skills/recap) | Catch up on a chat: what's done, what's left, and what needs your call. |
@@ -91,7 +91,7 @@ None of these are required. A few skills call them when they are installed.
 | --- | --- |
 | [`gh`](https://cli.github.com/) | `show-me` PR workflow |
 | [`calldiff`](https://github.com/tanishqkancharla/calldiff) (Node 22+) | `show-me`, `viz`, `meat-review` |
-| [Quint](https://quint-lang.org/) (JDK 17+ for `quint verify`) or [TLA+](https://lamport.azurewebsites.net/tla/tla.html) | `invariants`, `formal-verification-skill` |
+| [`git`](https://git-scm.com/) and [Rust/cargo](https://rustup.rs/), which build [everystate](https://github.com/mattzcarey/everystate) for [TLA+](https://lamport.azurewebsites.net/tla/tla.html) checks; no Java | `invariants`, `formal-verification-skill` |
 | [Lean 4](https://lean-lang.org/) | `invariants`, `formal-verification-skill` |
 | [Kani](https://model-checking.github.io/kani/), [Verus](https://github.com/verus-lang/verus), [CBMC](https://www.cprover.org/cbmc/), or [Dafny](https://dafny.org/) | `invariants`, `formal-verification-skill` |
 
@@ -109,4 +109,4 @@ None of these are required. A few skills call them when they are installed.
 
 ## Credits
 
-`research` and `writing-for-agents` are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT). The `show-me` PR sections draw on its `pr` skill and on Dex Horthy's [humanlayer/skills](https://github.com/humanlayer/skills). The router and its playbooks draw on the [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack) (MIT), `formal-verification-skill` on its `create-formal-verification-skill` (0.15.27) and `maintain-formal-verification-skill` (0.15.36), and `tlc_chart.py`'s rule loop and state-graph check on its `statechart` (0.15.36). The staged-delivery rules in [sequence-verifiable-units](skills/yesh-router/references/principles/sequence-verifiable-units.md) draw on [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first).
+`research` and `writing-for-agents` are adapted from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT). The `show-me` PR sections draw on its `pr` skill and on Dex Horthy's [humanlayer/skills](https://github.com/humanlayer/skills). The router and its playbooks draw on the [Cursor pstack plugin](https://github.com/cursor/plugins/tree/main/pstack) (MIT), `formal-verification-skill` on its `create-formal-verification-skill` (0.15.27) and `maintain-formal-verification-skill` (0.15.36), and `tla_chart.py`'s rule loop and state-graph check on its `statechart` (0.15.36). The staged-delivery rules in [sequence-verifiable-units](skills/yesh-router/references/principles/sequence-verifiable-units.md) draw on [Vuk97/forward-implementation-first](https://github.com/Vuk97/forward-implementation-first).
