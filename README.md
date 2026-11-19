@@ -65,6 +65,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`how`](./skills/how) | Explain how code works and why it was built that way, or teach it in plain layers. |
 | [`invariants`](./skills/invariants) | Model state in TLA+ or Lean, then break the invariants with property tests or fuzzing. |
 | [`meat-review`](./skills/meat-review) | Review a diff, branch, or PR as a short annotated reading. |
+| [`notify`](./skills/notify) | Get a Mac alert (chime and dialog) when a check, deploy, or background job finishes. |
 | [`plan`](./skills/plan) | Turn a settled approach into ordered chunks with risks and proof. |
 | [`recap`](./skills/recap) | Catch up on a chat: what's done, what's left, and what needs your call. |
 | [`reflect`](./skills/reflect) | Pull reusable lessons out of a session. |
