@@ -46,7 +46,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - benchmark / numbers / speedup: any number you measured, before reporting or acting on it → [benchmark-checklist](../benchmark-checklist/SKILL.md)
 
 **Review and verify**
-- review this diff / commit / branch / PR, reading view, feedback on one: an abridged reading drawn from git → [meat-review](../meat-review/SKILL.md)
+- review this diff / commit / branch / PR, reading view, feedback on one: a flow-first walk of the change drawn from git → [meat-review](../meat-review/SKILL.md)
 - review structure / ownership / maintainability → [structure-review](../structure-review/SKILL.md)
 - untangle / decouple / refactor this area / too many special cases: restructure and fix, not just report → [untangle](../untangle/SKILL.md)
 - blast radius / what could this break: beyond the diff → [blast-radius](../blast-radius/SKILL.md)
