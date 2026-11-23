@@ -905,7 +905,7 @@ def pierre_scripts(paths):
 # that holds the current page.js, and the hash proves the local copy matches it; when they differ (page.js edited
 # since the last pin), the page inlines page.js instead. Re-pin with `meat_review.py pin <commit>` after merging.
 PAGE_CDN = "https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@{commit}/skills/meat-review/assets/page.js"
-PAGE_PIN = ("", "")  # (commit, sha256 of page.js at that commit)
+PAGE_PIN = ("c6c71bea19c35e8bdc7af40177fd029c2bff7c47", "ae81985e8dd0b51917acdd952a5f2469600c2b0f730220f7557fa8e58957b84f")  # (commit, sha256 of page.js at that commit)
 
 
 def range_page(f, k, kept, host):
