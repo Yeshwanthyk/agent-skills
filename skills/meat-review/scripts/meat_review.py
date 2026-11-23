@@ -5,6 +5,7 @@ The agent picks line ranges, folds and findings (references/rubric.md); this
 script numbers the diff for it, checks its answer against git, and draws the
 kept code from the real files, so shown code is never model output.
 
+  meat_review.py triage  [SCOPE]                           small digest (files, sizes, touched functions, seams) for the tier call
   meat_review.py prompt  [SCOPE] [--budget KB] [-o FILE]   rubric + numbered diff for the reader
   meat_review.py check   READING.json [SCOPE]              validate against the change (exit 1 on errors)
   meat_review.py render  READING.json [SCOPE] --md [--only ID] [--max-code N] [--max-calls N]
@@ -45,8 +46,9 @@ VIZ_CDN = "https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@ae0dcfc76376bca3
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 KINDS = ("core", "supporting", "tests", "config", "docs", "mechanical", "generated")
 SEVERITIES = ("risk", "question", "note")
-CARD_KINDS = ("markdown", "viz", "tree")
-INVARIANT_STATUS = ("holds", "broken", "unproven")
+TIERS = ("S", "M", "L")
+FILE_VERDICTS = ("look", "skim", "skip")
+MAX_TITLE_WORDS = 4
 MAX_FILE_BYTES = 1024 * 1024
 
 
@@ -292,6 +294,7 @@ def cmd_prompt(change, args):
         parts.append(f"{head}\n```\n{number_patch(f['patch']).rstrip(chr(10))}\n```")
     text = "\n".join(parts) + "\n"
     if args.o:
+        os.makedirs(os.path.dirname(os.path.abspath(args.o)), exist_ok=True)
         with open(args.o, "w") as fh:
             fh.write(text)
         print(f"wrote {args.o} ({len(text) // 1024} KB, {len(change.files)} files)")
@@ -314,14 +317,23 @@ def validate(change, reading):
     errors = []
     if not isinstance(reading.get("summary"), str):
         errors.append("summary must be a string")
-    for card in reading.get("outline", []) or []:
-        if card.get("kind", "markdown") not in CARD_KINDS:
-            errors.append(f"outline card {card.get('title')!r}: kind must be one of {', '.join(CARD_KINDS)}")
-    for n, inv in enumerate(reading.get("invariants", []) or [], 1):
-        if not isinstance(inv.get("rule"), str) or not inv["rule"].strip():
-            errors.append(f"invariant {n}: rule must be a sentence")
-        if inv.get("status", "holds") not in INVARIANT_STATUS:
-            errors.append(f"invariant {n}: status must be one of {', '.join(INVARIANT_STATUS)}")
+    tier = reading.get("tier", "M")
+    if tier not in TIERS:
+        errors.append(f"tier must be one of {', '.join(TIERS)}")
+    steps = reading.get("steps", []) or []
+    if tier != "S" and not steps:
+        errors.append(f"tier {tier} needs steps: one per core piece, in the order to read them")
+    if tier != "S" and not (isinstance(reading.get("flow"), str) and "==" in reading["flow"]):
+        errors.append(f"tier {tier} needs flow: viz source with an == graph section")
+    for n, st in enumerate(steps, 1):
+        title = st.get("title")
+        if not isinstance(title, str) or not title.strip():
+            errors.append(f"step {n}: title must be a few words")
+        elif len(title.split()) > MAX_TITLE_WORDS:
+            errors.append(f"step {n}: title {title!r} is over {MAX_TITLE_WORDS} words")
+        if tier != "S" and not (isinstance(st.get("check"), str) and st["check"].strip()):
+            errors.append(f"step {n}: check must say what the reader verifies here")
+    used = set()
     files = change.by_path()
     for item in reading.get("files", []) or []:
         f = files.get(item.get("path"))
@@ -330,8 +342,16 @@ def validate(change, reading):
             continue
         if item.get("kind") not in KINDS:
             errors.append(f"{item['path']}: kind must be one of {', '.join(KINDS)}")
+        if item.get("verdict", "look") not in FILE_VERDICTS:
+            errors.append(f"{item['path']}: verdict must be one of {', '.join(FILE_VERDICTS)}")
         for k in item.get("keep", []) or []:
             side = k.get("side", "new")
+            if steps:
+                st = k.get("step")
+                if not (isinstance(st, int) and 1 <= st <= len(steps)):
+                    errors.append(f"{item['path']}: keep {k.get('start')}-{k.get('end')} needs step 1-{len(steps)}")
+                else:
+                    used.add(st)
             limit = len(f["old_lines"] if side == "old" else f["new_lines"])
             s, e = k.get("start"), k.get("end")
             if not (isinstance(s, int) and isinstance(e, int) and 1 <= s <= e):
@@ -370,18 +390,71 @@ def validate(change, reading):
             errors.append(f"test {name!r}: line {t.get('line')} is outside 1-{len(f['new_lines'])}")
         if t.get("verdict") not in VERDICTS:
             errors.append(f"test {name!r}: verdict must be one of {', '.join(VERDICTS)}")
+    for n in range(1, len(steps) + 1):
+        if n not in used:
+            errors.append(f"step {n}: no kept range points at it (give a keep \"step\": {n})")
     return errors
 
 
+def check_flow(reading):
+    """Parse the flow with viz.py (an error fails the check), then check its @refs (advisory: a removed node's ref
+    points at the old file). Without node or the viz skill this is skipped with a note."""
+    flow = (reading.get("flow") or "").strip()
+    if not flow:
+        return []
+    if not (shutil.which("node") and os.path.exists(VIZ_PY)):
+        print("flow: not parsed (needs node and the viz skill next to this one)")
+        return []
+    os.makedirs("/tmp/meat-review", exist_ok=True)
+    path = "/tmp/meat-review/flow.viz"
+    with open(path, "w") as fh:
+        fh.write(flow + "\n")
+    res = subprocess.run([sys.executable, VIZ_PY, "check", path], capture_output=True, text=True)
+    if res.returncode != 0:
+        return [f"flow: {l}" for l in (res.stdout + res.stderr).strip().splitlines()] or ["flow: viz.py check failed"]
+    refs = subprocess.run([sys.executable, VIZ_PY, "check", "--refs", path], capture_output=True, text=True)
+    for line in (refs.stdout + refs.stderr).strip().splitlines():
+        print("flow " + line)
+    return []
+
+
+def cmd_triage(change):
+    """A small digest for the tier call: per file its status, size, the functions its hunks touch, and the seams it
+    crosses. The agent reads this, not the patches, to decide S, M or L before paying for a full reading."""
+    seams = [("schema/migration", r"migrat|schema|\.sql$|models?\.py$|prisma"), ("wire/API", r"\.proto$|openapi|graphql|/api/|/routes?[/.]|handlers?[/.]"),
+             ("auth/security", r"auth|perm|secret|token|crypt|session"), ("config/flags", r"flag|config|settings|\.env|\.ya?ml$|\.toml$"),
+             ("concurrency", r"queue|worker|lock|async|job|cron|retry"), ("deps", r"package\.json$|lock|go\.mod$|requirements|pyproject|Cargo\.toml$")]
+    total, hit = 0, {}
+    print(f"## Triage: {change.label} ({len(change.files)} files)")
+    for f in change.files:
+        n = f["added"] + f["removed"]
+        total += n
+        tags = [name for name, rx in seams if re.search(rx, f["path"], re.I)]
+        for t in tags:
+            hit.setdefault(t, []).append(f["path"])
+        ctx = []
+        for m in re.finditer(r"^@@[^@]*@@ ?(.*)$", f["patch"], re.M):
+            c = m[1].strip()[:60]
+            if c and c not in ctx:
+                ctx.append(c)
+        gen = " generated?" if not f["binary"] and looks_generated(f) else ""
+        print(f"- {f['status']} {f['path']} +{f['added']} -{f['removed']}{gen}" + (f" [{', '.join(tags)}]" if tags else "")
+              + (f"\n    touches: {'; '.join(ctx[:6])}" + (f" (+{len(ctx) - 6})" if len(ctx) > 6 else "") if ctx else ""))
+    moves = detect_moves(change)
+    print(f"\ntotal: {total} changed lines" + (f", {len(moves)} exact moves" if moves else ""))
+    print("seams: " + ("; ".join(f"{k} ({len(v)})" for k, v in hit.items()) if hit else "none matched by path (read the touches)"))
+
+
 def cmd_check(change, reading):
-    errors = validate(change, reading)
+    errors = validate(change, reading) + check_flow(reading)
     if errors:
         print("Reading does not match the change:\n  " + "\n  ".join(errors), file=sys.stderr)
         sys.exit(1)
     covered = {i["path"] for i in reading.get("files", [])}
     missing = [f["path"] for f in change.files if f["path"] not in covered]
     kept = sum(1 for i in reading.get("files", []) if i.get("keep"))
-    print(f"ok: {len(covered)} files classified, {kept} with kept ranges" + (f", not covered: {', '.join(missing)}" if missing else ""))
+    steps = reading.get("steps") or []
+    print(f"ok: tier {reading.get('tier', '?')}, {len(steps) or 'one implicit'} step{'' if len(steps) == 1 else 's'}, {len(covered)} files classified, {kept} with kept ranges" + (f", not covered: {', '.join(missing)}" if missing else ""))
     read, _, _ = ordered(change, reading)
     shown, total = visible_changed(change, read)
     pct = 100 * shown // total if total else 0
@@ -523,18 +596,49 @@ def hidden_label(b):
 
 
 def ordered(change, reading):
-    """Files in reading order with ids f1.., kept ranges f1.1.., plus skipped and uncovered."""
+    """Files in reading order with ids f1.., plus skimmed and uncovered. With steps, a file is read where its
+    first range's step comes; without them, in the order the reading lists it."""
     files = change.by_path()
     read, skimmed = [], []
     for item in reading.get("files", []):
         f = files.get(item["path"])
         if f:
             (read if item.get("keep") else skimmed).append((item, f))
+    if reading.get("steps"):
+        read.sort(key=lambda p: min(k.get("step", 1e9) for k in p[0]["keep"]))
     for n, (item, _) in enumerate(read, 1):
         item["_id"] = f"f{n}"
     covered = {i["path"] for i in reading.get("files", [])}
     uncovered = [f["path"] for f in change.files if f["path"] not in covered]
     return read, skimmed, uncovered
+
+
+def steps_of(reading, read):
+    """The walkthrough: each step with its kept ranges (item, f, keep), labelled s1.1, s1.2, ...
+    A reading without steps (tier S) gets one step per kept file."""
+    given = reading.get("steps") or []
+    if given:
+        out = [{"title": st["title"], "why": st.get("why", ""), "check": st.get("check", ""), "viz": st.get("viz", ""),
+                "ranges": [(item, f, k) for item, f in read for k in item["keep"] if k.get("step") == n]}
+               for n, st in enumerate(given, 1)]
+    else:
+        out = [{"title": f["path"].rsplit("/", 1)[-1], "why": item.get("reason", ""), "check": "", "viz": "",
+                "ranges": [(item, f, k) for k in item["keep"]]} for item, f in read]
+    for n, st in enumerate(out, 1):
+        st["n"], st["id"] = n, f"s{n}"
+        for i, (_, _, k) in enumerate(st["ranges"], 1):
+            k["_label"] = f"s{n}.{i}"
+    return out
+
+
+def step_of_finding(steps, x):
+    """The step a finding belongs to: the one whose range holds its line, else the first one showing its file."""
+    side, line = x.get("side", "new"), x.get("line", 0)
+    for st in steps:
+        for item, f, k in st["ranges"]:
+            if f["path"] == x["file"] and k.get("side", "new") == side and k["start"] <= line <= k["end"]:
+                return st["n"]
+    return next((st["n"] for st in steps for _, f, _ in st["ranges"] if f["path"] == x["file"]), 0)
 
 
 def visible_changed(change, read):
@@ -561,255 +665,73 @@ def findings_sorted(reading, read):
 
 
 SIGN = {"risk": "!", "question": "?", "note": "·"}
-HOLDS = {"holds": "✓ holds", "broken": "✗ broken", "unproven": "? unproven"}
-
-
-def invariants_md(invariants):
-    """The invariants as one markdown table: what must stay true, what holds it, how we know."""
-    cell = lambda t: str(t or "").replace("|", "\\|").replace("\n", " ")
-    rows = ["**What must stay true**", "", "| Must stay true | Held by | Evidence | |", "| --- | --- | --- | --- |"]
-    rows += [f"| {cell(i['rule'])} | {cell(i.get('held_by'))} | {cell(i.get('evidence'))} | {HOLDS[i.get('status', 'holds')]} |" for i in invariants]
-    return "\n".join(rows)
-
-
 # --- markdown (Claude Code, Codex, pi) -------------------------------------
 
-def tree_text(body):
-    return "\n".join(l for l in body.splitlines())
+def range_md(f, k):
+    body = [f"{b['row']['mark']} {b['row']['text']}" if "row" in b else f"  {hidden_label(b)}" for b in blocks(f, k)]
+    head = f"`{k['_label']}` **{f['path']}:{k['start']}-{k['end']}**" + (" (old)" if k.get("side") == "old" else "") + (f" — {k['note']}" if k.get("note") else "")
+    return head, body
+
+
+def finding_md(x):
+    where = f"{x['file'].rsplit('/', 1)[-1]}:{x['line']}" + (" (old)" if x.get("side") == "old" else "")
+    title = f"**{x['title']}** " if x.get("title") else ""
+    return f"- `{x['id']}` {SIGN.get(x.get('severity', 'note'), '·')} {x.get('severity', 'note')} `{where}` {title}{x['text']}"
 
 
 def cmd_render_md(change, reading, args):
     read, skimmed, uncovered = ordered(change, reading)
-    out = [f"**Reading** · `{change.ref or 'working changes'}` · {manifest(change, reading, read)}", "", reading.get("summary", "").strip(), ""]
-    if not args.only:
-        for card in reading.get("outline", []) or []:
-            out.append(f"**{card['title']}**")
-            kind = card.get("kind", "markdown")
-            out += ["```text" if kind != "markdown" else "", card["body"].rstrip(), "```" if kind != "markdown" else "", ""]
-        invariants = reading.get("invariants", []) or []
-        if invariants:
-            out += [invariants_md(invariants), ""]
-        found = findings_sorted(reading, read)
-        if found:
-            out.append("**Findings**")
-            for x in found:
-                where = f"{x['file']}:{x['line']}" + (" (old)" if x.get("side") == "old" else "")
-                title = f"**{x['title']}** " if x.get("title") else ""
-                out.append(f"- `{x['id']}` {SIGN.get(x.get('severity', 'note'), '·')} {x.get('area', 'bug')} `{where}` {title}{x['text']}")
+    steps = steps_of(reading, read)
+    found = findings_sorted(reading, read)
+    by_step = {}
+    for x in found:
+        by_step.setdefault(step_of_finding(steps, x), []).append(x)
+    out = [] if args.only else [f"**Reading** · `{change.ref or 'working changes'}` · tier {reading.get('tier', 'M')} · {manifest(change, reading, read)}", "",
+                                reading.get("summary", "").strip(), ""]
+    # As on the page: every step shows its first range, and the rest share what the budget has left.
+    budget, held = args.max_code or 120, []
+    budget -= sum(len(range_md(f, k)[1]) for st in steps for _, f, k in st["ranges"][:1])
+    for st in steps:
+        if args.only and args.only != st["id"] and not any(args.only == k["_label"] for _, _, k in st["ranges"]):
+            continue
+        if not args.only or args.only == st["id"]:
+            out.append(f"### {st['n']} of {len(steps)} · {st['title']}" if len(steps) > 1 else f"### {st['title']}")
+            if st["why"]:
+                out.append(st["why"])
+            if st["check"]:
+                out.append(f"**Check:** {st['check']}")
+            out += [finding_md(x) for x in by_step.get(st["n"], [])]
             out.append("")
-        tests = reading.get("tests", []) or []
-        if tests:
-            counts = {v: sum(1 for t in tests if t.get("verdict") == v) for v in VERDICTS}
-            out.append(f"**Tests** · {len(tests)} cases: {counts['real']} real, {counts['weak']} weak, {counts['fake']} fake")
-            mark = {"real": "✓", "weak": "~", "fake": "✗"}
-            for t in tests:
-                out.append(f"- {mark.get(t.get('verdict'), '?')} **{t.get('verdict')}** `{t['file'].split('/')[-1]}:{t['line']}` {t.get('name', '')} — {t.get('proves', '')}" + (f" · {t['why']}" if t.get("why") else ""))
-            out.append("")
-        calls = calls_viz(change, read)
-        if calls:
-            lines = [l for l in calls.splitlines() if not l.startswith(("base ", "== "))]
-            out += ["**Call changes** (calldiff; `+` added, `-` removed)", "```diff", *lines[:args.max_calls],
-                    *([f"… {len(lines) - args.max_calls} more lines (render --html shows all)"] if len(lines) > args.max_calls else []), "```", ""]
-        out.append("**Reading order**")
-        for item, f in read:
-            out.append(f"- `{item['_id']}` `{f['path']}` {item['kind']} · {item.get('reason', '')}")
-        for item, f in skimmed:
-            out.append(f"- `{f['path']}` {item['kind']} · {item.get('reason', '')} (nothing kept)")
-        for p in uncovered:
-            out.append(f"- `{p}` not covered")
-        out.append("")
-    budget = args.max_code
-    held = []
-    for item, f in read:
-        for n, k in enumerate(item["keep"], 1):
-            rid = f"{item['_id']}.{n}"
-            if args.only and args.only not in (item["_id"], rid):
+        for n, (item, f, k) in enumerate(st["ranges"]):
+            if args.only and args.only not in (st["id"], k["_label"]):
                 continue
-            body = []
-            for b in blocks(f, k):
-                if "row" in b:
-                    body.append(f"{b['row']['mark']} {b['row']['text']}")
-                else:
-                    body.append(f"  {hidden_label(b)}")
-            head = f"`{rid}` **{f['path']}:{k['start']}-{k['end']}**" + (f" — {k['note']}" if k.get("note") else "")
-            if budget is not None and len(body) > budget and not args.only:
-                held.append(f"- `{rid}` {f['path']}:{k['start']}-{k['end']}" + (f" — {k['note']}" if k.get("note") else ""))
-                continue
-            if budget is not None:
+            head, body = range_md(f, k)
+            if n and not args.only:
+                if len(body) > budget:
+                    held.append((k["_label"], f"- `{k['_label']}` {f['path']}:{k['start']}-{k['end']}" + (f" — {k['note']}" if k.get("note") else "")))
+                    continue
                 budget -= len(body)
             out += [head, "```diff", *body, "```", ""]
+    if args.only:
+        print("\n".join(out).rstrip())
+        return
+    if by_step.get(0):
+        out += ["**Other findings**", *[finding_md(x) for x in by_step[0]], ""]
+    tests = reading.get("tests", []) or []
+    if tests:
+        counts = {v: sum(1 for t in tests if t.get("verdict") == v) for v in VERDICTS}
+        out.append(f"**Tests** · {counts['real']} real, {counts['weak']} weak, {counts['fake']} fake")
+        out += [f"- {t['verdict']} `{t['file'].rsplit('/', 1)[-1]}:{t['line']}` {t.get('name', '')} — {t.get('why', '')}" for t in tests if t.get("verdict") != "real"]
+        out.append("")
     if held:
-        out += ["**Not shown here** (say `show f2.1`):", *held, ""]
+        out += [f"**Not shown** (say `show {held[0][0]}`):", *[h for _, h in held], ""]
+    rest = [f"`{f['path']}` {i.get('verdict') or 'skip'}" for i, f in skimmed] + [f"`{p}` not covered" for p in uncovered]
+    if rest:
+        out += ["**Skimmed:** " + ", ".join(rest), ""]
     print("\n".join(out).rstrip())
 
 
-# --- semantic changes: what changed, by function ---------------------------
-
-def py_entities(text):
-    """Top-level functions and classes, and the methods of classes: {qualified name: (kind, start, end, body)}.
-    `body` is the AST with positions and the entity's own name stripped, so a move or a rename compares equal."""
-    import ast
-    try:
-        tree = ast.parse(text or "")
-    except (SyntaxError, ValueError):
-        return None
-    out = {}
-
-    def add(node, name, kind):
-        saved = node.name
-        node.name = "_"
-        body = ast.dump(node, include_attributes=False)
-        node.name = saved
-        out[name] = (kind, node.lineno, getattr(node, "end_lineno", node.lineno), body)
-
-    for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            add(node, node.name, "function")
-        elif isinstance(node, ast.ClassDef):
-            methods = [n for n in node.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
-            for m in methods:
-                add(m, f"{node.name}.{m.name}", "method")
-            shell = ast.ClassDef(name=node.name, bases=node.bases, keywords=node.keywords, decorator_list=node.decorator_list,
-                                 body=[n for n in node.body if n not in methods] or [ast.Pass()], type_params=getattr(node, "type_params", []))
-            shell.lineno, shell.end_lineno = node.lineno, getattr(node, "end_lineno", node.lineno)
-            add(shell, node.name, "class")
-    return out
-
-
-def semantic_changes(change, limit=200):
-    """Entity-level changes per Python file: added, deleted, changed (logic or formatting only), moved, renamed."""
-    sides = {}
-    for f in change.files:
-        if f["binary"] or not f["path"].endswith((".py", ".pyi")):
-            continue
-        old, new = py_entities(f["old_text"]), py_entities(f["new_text"])
-        if old is None or new is None:
-            continue
-        sides[f["path"]] = (f, old, new)
-    out, gone, born = [], [], []
-    for path, (f, old, new) in sides.items():
-        for name in new.keys() & old.keys():
-            ko, so, eo, bo = old[name]
-            kn, sn, en, bn = new[name]
-            if kn == "class" and bo == bn:
-                continue
-            text_old, text_new = f["old_lines"][so - 1:eo], f["new_lines"][sn - 1:en]
-            if text_old == text_new:
-                continue
-            out.append({"file": path, "name": name, "kind": kn, "change": "changed" if bo != bn else "formatting",
-                        "line": sn, "end": en, "side": "new"})
-        gone += [(path, n, old[n]) for n in old.keys() - new.keys()]
-        born += [(path, n, new[n]) for n in new.keys() - old.keys()]
-    # A deletion and an addition with the same body is a move (another file) or a rename (same file).
-    for g in list(gone):
-        twin = next((b for b in born if b[2][3] == g[2][3] and b[2][0] == g[2][0]), None)
-        if not twin:
-            continue
-        gone.remove(g)
-        born.remove(twin)
-        same_name = g[1].split(".")[-1] == twin[1].split(".")[-1]
-        out.append({"file": twin[0], "name": twin[1], "kind": twin[2][0], "change": "moved" if same_name else "renamed",
-                    "from": g[1] if not same_name else "", "from_file": g[0] if g[0] != twin[0] else "", "line": twin[2][1], "end": twin[2][2], "side": "new"})
-    out += [{"file": p, "name": n, "kind": e[0], "change": "added", "line": e[1], "end": e[2], "side": "new"} for p, n, e in born]
-    out += [{"file": p, "name": n, "kind": e[0], "change": "deleted", "line": e[1], "end": e[2], "side": "old"} for p, n, e in gone]
-    # Methods of an added or deleted class say nothing the class does not.
-    whole = {(c["file"], c["name"], c["change"]) for c in out if c["kind"] == "class" and c["change"] in ("added", "deleted", "moved")}
-    out = [c for c in out if not (c["kind"] == "method" and (c["file"], c["name"].split(".")[0], c["change"]) in whole)]
-    order = {f["path"]: i for i, f in enumerate(change.files)}
-    out.sort(key=lambda c: (order.get(c["file"], 1e9), c["line"]))
-    return out[:limit]
-
-
-def say_entity(c):
-    """One plain sentence for one entity change."""
-    what = {"function": "function", "method": "method", "class": "class"}[c["kind"]]
-    name = f"`{c['name']}`"
-    if c["change"] == "added":
-        return f"New {what} {name}."
-    if c["change"] == "deleted":
-        return f"Deleted {what} {name}."
-    if c["change"] == "formatting":
-        return f"{name} changed only in layout or comments."
-    if c["change"] == "moved":
-        return f"{name} moved here from {c['from_file'].rsplit('/', 1)[-1]}, unchanged." if c.get("from_file") else f"{name} moved within the file, unchanged."
-    if c["change"] == "renamed":
-        return f"`{c['from']}` renamed to {name}" + (f", moved from {c['from_file'].rsplit('/', 1)[-1]}." if c.get("from_file") else ".")
-    return f"{name} changed its logic."
-
-
 # --- html (T3 Code, browser) -----------------------------------------------
-
-def md_inline(text):
-    """Inline markdown on escaped text: code, bold, italic, links."""
-    parts = re.split(r"(`[^`]+`)", text)
-    out = []
-    for part in parts:
-        if part.startswith("`") and part.endswith("`") and len(part) > 1:
-            out.append(f"<code>{html.escape(part[1:-1])}</code>")
-            continue
-        t = html.escape(part, quote=False)
-        t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
-        t = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<i>\1</i>", t)
-        t = re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', t)
-        out.append(t)
-    return "".join(out)
-
-
-def md_html(text):
-    """Enough markdown for outline cards: headings, paragraphs, lists, tables, fenced code, quotes."""
-    lines, out, i = text.split("\n"), [], 0
-    cells = lambda l: [c.strip() for c in re.split(r"(?<!\\)\|", l.strip().strip("|"))]
-    while i < len(lines):
-        line = lines[i]
-        if line.startswith("```"):
-            j = i + 1
-            while j < len(lines) and not lines[j].startswith("```"):
-                j += 1
-            out.append(f"<pre><code>{html.escape(chr(10).join(lines[i + 1:j]))}</code></pre>")
-            i = j + 1
-        elif "|" in line and i + 1 < len(lines) and re.match(r"^\s*\|?\s*:?-{3,}", lines[i + 1]):
-            head, rows, j = cells(line), [], i + 2
-            while j < len(lines) and "|" in lines[j] and lines[j].strip():
-                rows.append(cells(lines[j]))
-                j += 1
-            th = "".join(f"<th>{md_inline(c)}</th>" for c in head)
-            tb = "".join("<tr>" + "".join(f"<td>{md_inline(c.replace(chr(92) + '|', '|'))}</td>" for c in r) + "</tr>" for r in rows)
-            out.append(f"<table><thead><tr>{th}</tr></thead><tbody>{tb}</tbody></table>")
-            i = j
-        elif m := re.match(r"^(#{1,4})\s+(.*)", line):
-            out.append(f"<h4>{md_inline(m[2])}</h4>")
-            i += 1
-        elif re.match(r"^\s*([-*]|\d+\.)\s+", line):
-            tag = "ol" if re.match(r"^\s*\d+\.", line) else "ul"
-            items, j = [], i
-            while j < len(lines) and re.match(r"^\s*([-*]|\d+\.)\s+", lines[j]):
-                items.append(re.sub(r"^\s*([-*]|\d+\.)\s+", "", lines[j]))
-                j += 1
-            out.append(f"<{tag}>" + "".join(f"<li>{md_inline(t)}</li>" for t in items) + f"</{tag}>")
-            i = j
-        elif line.startswith(">"):
-            j = i
-            while j < len(lines) and lines[j].startswith(">"):
-                j += 1
-            out.append(f"<blockquote>{md_inline(' '.join(l.lstrip('> ') for l in lines[i:j]))}</blockquote>")
-            i = j
-        elif not line.strip():
-            i += 1
-        elif re.search(r"[├└│]|^ {2,}\S", line):
-            # A text tree or aligned block: keep its layout.
-            j = i
-            while j < len(lines) and lines[j].strip() and not lines[j].startswith("```"):
-                j += 1
-            out.append(f"<pre>{html.escape(chr(10).join(lines[i:j]))}</pre>")
-            i = j
-        else:
-            j = i
-            while j < len(lines) and lines[j].strip() and not re.match(r"^(#{1,4}\s|```|>|\s*([-*]|\d+\.)\s)", lines[j]) and not ("|" in lines[j] and j + 1 < len(lines) and re.match(r"^\s*\|?\s*:?-{3,}", lines[j + 1])):
-                j += 1
-            out.append(f"<p>{md_inline(' '.join(lines[i:j]))}</p>")
-            i = j
-    return "\n".join(out)
-
 
 def first_sentence(text, limit=110):
     text = re.sub(r"\s+", " ", str(text or "")).strip()
@@ -889,25 +811,6 @@ def annotate_calls(calls, reading, read):
     return "\n".join(out), info
 
 
-def call_summary(calls, callmap):
-    """One plain sentence for the call changes: how many calls moved, where, and from which entry points."""
-    nodes = list(callmap.values())
-    if not nodes:
-        return ""
-    marks = [m[1].strip() for m in map(CALL.match, calls.splitlines()) if m]
-    count = {m: marks.count(m) for m in "+-~"}
-    files = {n["path"] for n in nodes if n["st"]}
-    entries = [n for n in nodes if n["depth"] == 0 and n["changed"]]
-    names = [".".join(re.sub(r"\(.*$", "", k.split("@")[0]).replace("new ", "").split(".")[-2:]) for k, n in callmap.items() if n in entries]
-    parts = [f"{v} {w}" for v, w in ((count["+"], "added"), (count["-"], "removed"), (count["~"], "changed")) if v]
-    if not parts:
-        return "No calls were added or removed."
-    calls = "call" if sum(count.values()) == 1 else "calls"
-    head = f"{', '.join(parts[:-1]) + ' and ' + parts[-1] if len(parts) > 1 else parts[0]} {calls}, in {len(files)} file{'s' if len(files) != 1 else ''}"
-    shown = ", ".join(f"`{x}`" for x in names[:4]) + (f" and {len(names) - 4} more" if len(names) > 4 else "")
-    return f"{head[0].upper() + head[1:]}, reached from {len(entries)} entry point{'s' if len(entries) != 1 else ''}: {shown}." if entries else head + "."
-
-
 def counterpart(f, side, line):
     """The other side's line for `line`: its twin when unchanged, else the last line before the change."""
     for tag, i1, i2, j1, j2 in f.setdefault("_ops", difflib.SequenceMatcher(None, f["old_lines"], f["new_lines"], autojunk=False).get_opcodes()):
@@ -937,10 +840,9 @@ def page_rows(f, rows):
     return {"rows": out, "hunk": [os_, len(olds), ns, len(news)], "side": side}
 
 
-# --- context outside the diff: nearby lines, definitions, callers -----------
+# --- context around a kept range ------------------------------------------
 
 CONTEXT = {"page": 30, "t3": 8}  # lines of folded context on each side of a kept range
-BUILTINS = set(dir(__import__("builtins")))
 
 
 def context_blocks(f, k, kept, span=CONTEXT["page"]):
@@ -967,86 +869,6 @@ def seen_other(f, k):
     if key not in f:
         f[key] = {r["line"] for r in excerpt(f, k) if r["side"] != k.get("side", "new")}
     return f[key]
-
-
-class Lookup:
-    """Definitions and callers read from git at the change's target, for code the diff does not show."""
-
-    def __init__(self, change):
-        self.change, self.by_path, self.ents, self.found = change, change.by_path(), {}, {}
-
-    def text(self, path, side="new"):
-        f = self.by_path.get(path)
-        if f:
-            return f["old_text" if side == "old" else "new_text"] or ""
-        ref = self.change.base if side == "old" else self.change.target
-        return (self.change._blob(ref, path) if ref else self.change._worktree(path)) or ""
-
-    def entities(self, path, side="new"):
-        if (path, side) not in self.ents:
-            self.ents[path, side] = py_entities(self.text(path, side)) or {} if path.endswith(".py") else {}
-        return self.ents[path, side]
-
-    def grep(self, *args):
-        ref = self.change.target if self.change.target else None
-        res = subprocess.run(["git", "grep", "-n", "-I", *args, *([ref] if ref else []), "--", "*.py"], capture_output=True, text=True)
-        out = []
-        for line in res.stdout.splitlines():
-            parts = line.split(":", 3) if ref else [None] + line.split(":", 2)
-            if len(parts) == 4:
-                out.append((parts[1], int(parts[2]), parts[3]))
-        return out
-
-    def prime(self, labels, names):
-        """One grep for every definition and one for every caller the page will ask about."""
-        bare = {re.sub(r"\(.*$", "", l).replace("new ", "").strip() for l in labels}
-        words = {w for n in bare if re.fullmatch(r"[A-Za-z_][\w.]*", n) and n not in BUILTINS for w in n.split(".")}
-        self.defs = {}
-        if words:
-            alt = "|".join(sorted(map(re.escape, words)))
-            for p, line, t in self.grep("-E", rf"^\s*(async\s+)?(def|class)\s+({alt})\b"):
-                self.defs.setdefault(re.match(r"\s*(?:async\s+)?(?:def|class)\s+(\w+)", t)[1], []).append((p, line))
-        self.generic = lambda n: len(n) < 8 and n.isalpha() and n.islower()
-        shorts = {n.rsplit(".", 1)[-1] for n in names} - {n for n in map(lambda x: x.rsplit(".", 1)[-1], names) if self.generic(n)}
-        self.calls = self.grep("-E", rf"({'|'.join(sorted(map(re.escape, shorts)))})\(") if shorts else []
-
-    def define(self, label, path, side):
-        """Where a called name is defined: this file first, then the files in the change, then the repo."""
-        name = re.sub(r"\(.*$", "", label).replace("new ", "").strip()
-        if not re.fullmatch(r"[A-Za-z_][\w.]*", name) or name in BUILTINS:
-            return None
-        if (name, side) in self.found:
-            return self.found[name, side]
-        cls, _, meth = name.rpartition(".")
-        hit = None
-        for p in [path] + [f["path"] for f in self.change.files if f["path"] != path]:
-            e = self.entities(p, side)
-            if name in e:
-                hit = (p, e[name])
-                break
-        if not hit and "." not in name:
-            for p, line in self.defs.get(name, [])[:3]:
-                e = self.entities(p, "new")
-                if name in e:
-                    hit = (p, e[name])
-                    break
-        if not hit and cls and "." not in cls:
-            for p, line in self.defs.get(cls, [])[:3]:
-                e = self.entities(p, "new")
-                if name in e:
-                    hit = (p, e[name])
-                    break
-        self.found[name, side] = hit and {"path": hit[0], "line": hit[1][1], "end": hit[1][2], "name": name}
-        return self.found[name, side]
-
-    def callers(self, name, limit=8, common=25):
-        """Lines in the repo that call `name`, other than its own definition."""
-        short = name.rsplit(".", 1)[-1]
-        if self.generic(short):
-            return {"total": None, "list": []}
-        pat = rf"\.{re.escape(short)}\(" if "." in name else rf"(^|[^\w.]){re.escape(short)}\("
-        hits = [h for h in self.calls if re.search(pat, h[2]) and not re.match(rf"\s*(async\s+)?(def|class)\s+{re.escape(short)}\b", h[2])]
-        return {"total": len(hits), "list": [{"path": p, "line": n, "text": t.strip()[:160]} for p, n, t in hits[:limit]] if len(hits) <= common else []}
 
 
 PAGE = os.path.join(HERE, "..", "assets", "page.html")
@@ -1086,132 +908,89 @@ PAGE_CDN = "https://cdn.jsdelivr.net/gh/Yeshwanthyk/agent-skills@{commit}/skills
 PAGE_PIN = ("", "")  # (commit, sha256 of page.js at that commit)
 
 
-def pack_callmap(callmap):
-    """The call tree's per-node detail, without what the page can rebuild: a node that is unchanged, outside the
-    reading and has no definition to show is left out (its tree row already says where it is); default fields are
-    dropped; paths go through one table; children are indexes into the node order. The page's unpack mirrors this."""
-    paths, out = [], {}
-    def pid(p):
-        if p not in paths:
-            paths.append(p)
-        return paths.index(p)
-    for key, n in callmap.items():
-        if not (n["changed"] or n["range"] or n["finding"] or n.get("def")):
+def range_page(f, k, kept, host):
+    """One kept range as page blocks: shown runs, folds, and folded context above and below."""
+    out, run = [], []
+    for b in blocks(f, k) + [None]:
+        if b and "row" in b:
+            run.append(b["row"])
             continue
-        m = {"p": pid(n["path"]), "line": n["line"]}
-        if not (n["st"] == "" and n["say"].endswith(", unchanged.")):
-            m["say"] = n["say"]
-        for k, default in (("st", ""), ("side", "new"), ("range", ""), ("finding", ""), ("code", None), ("def", None)):
-            if n.get(k, default) != default:
-                m[k] = n[k]
-        if n["end"] != n["line"]:
-            m["end"] = n["end"]
-        if n["kids"]:
-            m["kids"] = [f"{k['label']}@{k['ref']}" for k in n["kids"]]
-        out[key] = m
-    order = {k: i for i, k in enumerate(out)}
-    for m in out.values():
-        if "kids" in m:
-            m["kids"] = [order[k] for k in m["kids"] if k in order]
-    return {"callmap": out, "paths": paths}
+        if run:
+            out.append(page_rows(f, run))
+            run = []
+        if b:
+            out.append({"hidden": b["hidden"], "label": hidden_label(b), **page_rows(f, b["rows"])})
+    ctx = dict(context_blocks(f, k, kept, CONTEXT[host]))
+    out = ([ctx["above"]] if "above" in ctx else []) + out + ([ctx["below"]] if "below" in ctx else [])
+    return {"id": k["_label"].replace(".", "-"), "label": k["_label"], "path": f["path"], "kind": "",
+            "note": k.get("note", ""), "start": k["start"], "end": k["end"], "side": k.get("side", "new"), "blocks": out}
+
+
+def page_title(change):
+    """A heading a person reads: the commit's subject for one commit, else the ref and its commit count."""
+    if not change.target:
+        return "Working changes" + (f" on {change.ref}" if change.ref else "")
+    n = git("rev-list", "--count", f"{change.base}..{change.target}", check=False).strip()
+    if n == "1":
+        return git("log", "-1", "--format=%s", change.target, check=False).strip() or change.ref
+    return f"{change.ref} · {n} commits" if n.isdigit() else change.ref
 
 
 def page_data(change, reading, host="page", max_code=None):
-    """Everything the page draws, with code rows taken from git. The T3 view keeps the first
-    `max_code` code rows of kept ranges; the rest are listed for the full page."""
+    """Everything the page draws: the flow, then the steps with code rows taken from git. The T3 view keeps the
+    first `max_code` code rows; later ranges are listed by id."""
     read, skimmed, uncovered = ordered(change, reading)
-    files, budget, later = [], max_code, []
-    for item, f in read:
+    steps = steps_of(reading, read)
+    tier = reading.get("tier", "M")
+    flow = (reading.get("flow") or "").strip()
+    if tier == "L":
+        calls, _ = annotate_calls(calls_viz(change, read), reading, read)
+        if calls:
+            flow += "\n\n" + re.sub(r"^== diff.*$", "== diff Call changes", calls, count=1, flags=re.M)
+    # Every step keeps its first range whatever the budget, so no step arrives empty; the rest fill in reading
+    # order while the budget lasts, and what does not fit is listed by id.
+    budget, later, out = max_code, [], []
+    built = [[(item, f, k, range_page(f, k, item["keep"], host)) for item, f, k in st["ranges"]] for st in steps]
+    size = lambda r: sum(len(b["rows"]) if "hidden" not in b else 1 for b in r["blocks"])
+    if budget is not None:
+        budget -= sum(size(rs[0][3]) for rs in built if rs)
+    for st, rs in zip(steps, built):
         ranges = []
-        for n, k in enumerate(item["keep"], 1):
-            label, out = f"{item['_id']}.{n}", []
-            bs = blocks(f, k)
-            size = sum(1 for b in bs if "row" in b) + sum(1 for b in bs if "hidden" in b)
-            if budget is not None and size > budget and ranges + files:
-                later.append({"label": label, "path": f["path"], "start": k["start"], "end": k["end"], "note": k.get("note", "")})
-                continue
-            if budget is not None:
-                budget -= size
-            run = []
-            for b in bs + [None]:
-                if b and "row" in b:
-                    run.append(b["row"])
+        for n, (item, f, k, r) in enumerate(rs):
+            if n and budget is not None:
+                if size(r) > budget:
+                    later.append({"label": k["_label"], "path": f["path"], "start": k["start"], "end": k["end"], "note": k.get("note", "")})
                     continue
-                if run:
-                    out.append(page_rows(f, run))
-                    run = []
-                if b:
-                    out.append({"hidden": b["hidden"], "label": hidden_label(b), **page_rows(f, b["rows"])})
-            ctx = dict(context_blocks(f, k, item["keep"], CONTEXT[host]))
-            out = ([ctx["above"]] if "above" in ctx else []) + out + ([ctx["below"]] if "below" in ctx else [])
-            ranges.append({"id": label.replace(".", "-"), "label": label, "note": k.get("note", ""),
-                           "start": k["start"], "end": k["end"], "side": k.get("side", "new"), "blocks": out})
-        files.append({"id": item["_id"], "path": f["path"], "kind": item["kind"], "reason": item.get("reason", ""),
-                      "added": f["added"], "removed": f["removed"], "ranges": ranges})
-    calls, callmap = annotate_calls(calls_viz(change, read), reading, read)
-    by_path = {f["path"]: f for f in change.files}
-    for n in callmap.values():
-        f = by_path.get(n["path"])
-        if n["st"] and f:
-            lines = f["old_lines" if n["side"] == "old" else "new_lines"]
-            n["code"] = lines[n["line"] - 1:min(n["end"], n["line"] + (4 if host == "t3" else 7))]
-    look, defs = Lookup(change), {}
-    look.prime([k.split("@")[0] for k in callmap], [e["name"] for e in semantic_changes(change)])
-    span = 12 if host == "t3" else 40
-    for key, n in callmap.items():
-        d = look.define(key.split("@")[0], n["path"], n["side"])
-        if not d:
-            continue
-        dk = f"{d['path']}:{d['line']}"
-        if dk not in defs:
-            lines = look.text(d["path"], n["side"] if d["path"] in by_path else "new").splitlines()
-            f = by_path.get(d["path"])
-            changed = bool(f) and any(h[3] and h[2] <= d["end"] and h[2] + h[3] > d["line"] for h in f.setdefault("_hunks", hunks(f)))
-            # On T3 a changed definition is already in the diff; carry only the ones the reader cannot see.
-            defs[dk] = None if host == "t3" and changed else d | {"code": lines[d["line"] - 1:min(d["end"], d["line"] + span - 1)], "more": max(0, d["end"] - d["line"] + 1 - span), "changed": changed}
-        if defs[dk]:
-            n["def"] = dk
-    found = reading.get("findings", []) or []
-    kept = [(f["path"], f"{item['_id']}-{n}", k) for item, f in read for n, k in enumerate(item["keep"], 1) if k.get("side", "new") == "new"]
-    entities = []
-    for e in semantic_changes(change):
-        hit = next((x for x in found if x["file"] == e["file"] and x.get("side", "new") == e["side"] and e["line"] <= x["line"] <= e["end"]), None)
-        rng = next((r[1] for r in kept if r[0] == e["file"] and e["side"] == "new" and r[2]["start"] <= e["end"] and r[2]["end"] >= e["line"]), "")
-        who = look.callers(e["name"], limit=4 if host == "t3" else 8) if e["change"] != "formatting" and not re.search(r"(^|/)tests?/|test_[^/]*$", e["file"]) else None
-        if who:
-            for c in who["list"]:
-                f = by_path.get(c["path"])
-                c["new"] = bool(f) and any(h[3] and h[2] <= c["line"] < h[2] + h[3] for h in f.setdefault("_hunks", hunks(f)))
-        entities.append(e | {"say": say_entity(e), "range": rng, "finding": hit["id"] if hit else "", "callers": who})
-    outline = []
-    for c in reading.get("outline", []) or []:
-        kind = c.get("kind", "markdown")
-        outline.append({"title": c.get("title", ""), "kind": kind, "body": c.get("body", "")} | ({"html": md_html(c.get("body", ""))} if kind == "markdown" else {}))
+                budget -= size(r)
+            r["kind"] = item["kind"]
+            ranges.append(r)
+        out.append({"id": st["id"], "n": st["n"], "title": st["title"], "why": st["why"], "check": st["check"], "viz": st["viz"], "ranges": ranges})
+    found = []
+    for x in findings_sorted(reading, read):
+        found.append({k: x[k] for k in ("id", "file", "line", "endLine", "side", "severity", "area", "title", "text") if k in x} | {"step": step_of_finding(steps, x)})
+    tests = reading.get("tests", []) or []
     return {
         "host": host,
-        "key": f"{change.base}:{change.target or 'worktree'}:{change.only or ''}",
-        "title": change.ref or "working changes",
+        "title": page_title(change),
         "label": change.label,
+        "tier": tier,
         "manifest": manifest(change, reading, read),
         "summary": reading.get("summary", ""),
-        "outline": outline,
-        "invariants": reading.get("invariants", []) or [],
-        "calls": calls,
-        "callsum": call_summary(calls, callmap),
-        **pack_callmap(callmap),
-        "entities": entities,
-        "defs": {k: v for k, v in defs.items() if v},
-        "findings": [{k: x[k] for k in ("id", "file", "line", "endLine", "side", "severity", "area", "title", "text", "author") if k in x} for x in findings_sorted(reading, read)],
-        "tests": reading.get("tests", []) or [],
-        "files": [f for f in files if f["ranges"]] if host == "t3" else files,
+        "flow": flow,
+        "steps": out,
+        "findings": found,
+        "tests": {"real": sum(1 for t in tests if t.get("verdict") == "real"),
+                  "bad": [{k: t.get(k, "") for k in ("file", "line", "name", "verdict", "why")} for t in tests if t.get("verdict") != "real"]},
         "later": later,
-        "skimmed": [{"path": f["path"], "kind": i["kind"], "reason": i.get("reason", "")} for i, f in skimmed],
-        "uncovered": uncovered,
+        "skimmed": [{"path": f["path"], "verdict": i.get("verdict") or "skip", "reason": i.get("reason", "")} for i, f in skimmed]
+                   + [{"path": p, "verdict": "skip", "reason": "not covered by the reading"} for p in uncovered],
     }
 
 
 def cmd_render_html(change, reading, args, host="page"):
-    data = page_data(change, reading, host, args.max_code if host == "t3" else None)
+    if reading.get("tier") == "S":
+        print("tier S: no page; reply with render --md instead", file=sys.stderr)
+    data = page_data(change, reading, host, (args.max_code or 400) if host == "t3" else None)
     out = args.o or os.path.join("/tmp/meat-review", re.sub(r"[^\w.-]+", "_", (change.ref or "changes")) + (".t3" if host == "t3" else "") + ".html")
     if host == "t3":
         data["full"] = re.sub(r"\.t3\.html$", ".html", out) if out.endswith(".t3.html") else ""
@@ -1226,7 +1005,7 @@ def cmd_render_html(change, reading, args, host="page"):
             print(f"page.js {'differs from the CDN pin' if PAGE_PIN[0] else 'has no CDN pin'}, so it is inlined (+{len(js) // 1024} KB)", file=sys.stderr)
         script = "<script>\n" + js.decode().replace("</script", "<\\/script") + "\n</script>"
     with open(PAGE) as fh:
-        page = fh.read().replace("/*DATA*/", blob, 1).replace("/*PIERRE*/", "" if host == "t3" else pierre_scripts(f["path"] for f in data["files"]), 1).replace("/*PAGE_JS*/", script, 1).replace("/*VIZ*/", viz_script(host), 1)
+        page = fh.read().replace("/*DATA*/", blob, 1).replace("/*PIERRE*/", "" if host == "t3" else pierre_scripts({r["path"] for st in data["steps"] for r in st["ranges"]}), 1).replace("/*PAGE_JS*/", script, 1).replace("/*VIZ*/", viz_script(host), 1)
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     with open(out, "w") as fh:
         fh.write(page)
@@ -1244,13 +1023,21 @@ def cmd_publish_kvim(change, reading, args):
     scope = ["--mode", "revision", "--ref", change.ref] if change.ref else ["--mode", "changes"]
     if change.only:
         scope += ["--file", change.only]
-    body = {k: reading[k] for k in ("summary", "outline", "files", "tests") if k in reading}
-    if reading.get("invariants"):
-        table = invariants_md(reading["invariants"]).split("\n", 2)[2]
-        body["outline"] = list(body.get("outline", [])) + [{"title": "What must stay true", "kind": "markdown", "body": table}]
-    for item in body.get("files", []):
-        for key in [k for k in item if k.startswith("_")]:
-            del item[key]
+    # kvim reads summary, files with keep ranges, and tests; a step's title and check become the range's note there.
+    steps = reading.get("steps") or []
+    body = {k: reading[k] for k in ("summary", "tests") if k in reading}
+    body["files"] = []
+    for item in reading.get("files", []):
+        item = {k: v for k, v in item.items() if not k.startswith("_") and k != "verdict"}
+        keep = []
+        for k in item.get("keep", []):
+            n = k.get("step", 0)
+            st = steps[n - 1] if 0 < n <= len(steps) else None
+            k = {key: v for key, v in k.items() if not key.startswith("_") and key != "step"}
+            if st:
+                k["note"] = f"{st['title']}: " + (k.get("note") or st.get("check", ""))
+            keep.append(k)
+        body["files"].append(item | {"keep": keep})
     res = subprocess.run([cli, "reading", "publish", "--stdin", *scope], input=json.dumps(body), text=True, capture_output=True)
     if res.returncode != 0:
         sys.exit(res.stderr.strip())
@@ -1300,7 +1087,7 @@ def cmd_pin(commit):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("cmd", choices=["prompt", "check", "render", "publish", "taste", "pin"])
+    p.add_argument("cmd", choices=["triage", "prompt", "check", "render", "publish", "taste", "pin"])
     p.add_argument("reading", nargs="?")
     p.add_argument("--ref")
     p.add_argument("--file")
@@ -1311,7 +1098,7 @@ def main():
     p.add_argument("--t3", action="store_true", help="compact page for T3 Code's html_render: no sidebar, theme variables, first --max-code rows")
     p.add_argument("--open", action="store_true")
     p.add_argument("--only")
-    p.add_argument("--max-code", type=int, default=120, help="markdown and --t3: code lines before the rest is listed (default 120)")
+    p.add_argument("--max-code", type=int, help="markdown and --t3: code lines before the rest is listed (default 120 in markdown, 400 on a T3 page)")
     p.add_argument("--max-calls", type=int, default=30, help="markdown: call-change lines shown (default 30)")
     p.add_argument("--kvim", action="store_true")
     p.add_argument("--author", default="meat-review")
@@ -1330,6 +1117,8 @@ def main():
         if value and not os.path.isabs(value):
             setattr(args, name, os.path.abspath(value))
     change = Change(args.ref, args.file)
+    if args.cmd == "triage":
+        return cmd_triage(change)
     if args.cmd == "prompt":
         return cmd_prompt(change, args)
     if not args.reading:

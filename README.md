@@ -64,7 +64,7 @@ Whether it helps is measured with `python3 scripts/audit-sessions.py --days N`, 
 | [`formal-verification-skill`](./skills/formal-verification-skill) | Build or fix a project skill that formally verifies one high-risk property and reruns on every change. |
 | [`how`](./skills/how) | Explain how code works and why it was built that way, or teach it in plain layers. |
 | [`invariants`](./skills/invariants) | Model state in TLA+ or Lean, then break the invariants with property tests or fuzzing. |
-| [`meat-review`](./skills/meat-review) | Review a diff, branch, or PR as a short annotated reading. |
+| [`meat-review`](./skills/meat-review) | Review a diff, branch, or PR as a walk: an interactive flow, then a few steps of the code that matters, sized to the change. |
 | [`notify`](./skills/notify) | Get a Mac alert (chime and dialog) when a check, deploy, or background job finishes. |
 | [`plan`](./skills/plan) | Turn a settled approach into ordered chunks with risks and proof. |
 | [`recap`](./skills/recap) | Catch up on a chat: what's done, what's left, and what needs your call. |

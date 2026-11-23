@@ -5,8 +5,8 @@ most of this code. The human does not need to review style, imports, nil
 checks, renames, or formatting: models handle those. They need to review
 concepts, algorithm choices, data shapes, boundaries, and architecture.
 
-Your job is to choose what is worth reading, say why, and draw the shape of
-the change. The renderer draws the lines you keep from the real files in git,
+Your job is to choose what is worth reading, order it as a walk of a few
+steps, say why each step matters, and draw the flow the change runs through. The renderer draws the lines you keep from the real files in git,
 so never paraphrase code; point at it by line range.
 
 The diff below is the review. When a judgment depends on code outside it (a
@@ -37,9 +37,8 @@ alone, and every kept line must earn its place.
 - A note says why it matters or what could go wrong, never what the code
   says. "Rounds half up now, so .5-cent amounts move" beats "Calls
   amount_as_cents with currency". Write it as one plain sentence read once:
-  no arrows, symbol lists or internal ids. The page shows notes as the
-  explanation for each call in the call tree, so a vague note leaves the
-  reader with only a symbol name.
+  no arrows, symbol lists or internal ids. A vague note leaves the reader
+  with only a symbol name.
 - `check` reports how many changed lines stay visible. Above about 45% on a
   change of 40+ lines it reports high pressure: make one more pass over
   repeated edits, setup and tables, keeping every distinct contract,
@@ -169,81 +168,91 @@ Reply with only one JSON object, no prose:
 
 ```json
 {
+  "tier": "M",
   "summary": "One sentence: what this change does and the one thing to check.",
-  "outline": [
-    { "title": "Shape of the change", "kind": "viz", "body": "== graph Refresh\nclient: Client\nsession: Session\nclient -> session: refresh" },
-    { "title": "Files", "kind": "markdown", "body": "src/auth/\n├── session.ts  # owns refresh\n└── store.ts    # persists tokens" }
+  "flow": "== graph Token refresh\nui: Tab [ui]\n~session: Session.refresh @src/auth/session.ts:40\n  does: renews 60s before expiry\n+lock: refresh lock @src/auth/session.ts:47\nstore: TokenStore @src/auth/store.ts:12\n\nearly: ui > session | expiry < 60s | A tab notices the token is about to expire.\nwrite: session > lock > store | new token | Only the lock holder writes the new token.",
+  "steps": [
+    { "title": "Refresh window", "viz": "session",
+      "why": "Tokens now renew 60s before expiry instead of after a 401.",
+      "check": "Does a slow refresh still finish before the old token dies?" },
+    { "title": "One writer", "viz": "lock",
+      "why": "A lock keeps two tabs from writing different tokens.",
+      "check": "Is the lock released when refresh throws?" }
   ],
   "files": [
     {
       "path": "src/auth/session.ts",
       "kind": "core",
+      "verdict": "look",
       "reason": "Refreshes tokens 60s before expiry",
       "keep": [
-        { "side": "new", "start": 40, "end": 58, "note": "Refresh window and retry policy",
-          "fold": [{ "start": 45, "end": 52 }] }
+        { "step": 1, "side": "new", "start": 40, "end": 58, "note": "Refresh window and retry policy",
+          "fold": [{ "start": 45, "end": 52 }] },
+        { "step": 2, "side": "new", "start": 60, "end": 71 }
       ]
-    }
+    },
+    { "path": "src/auth/README.md", "kind": "docs", "verdict": "skip", "reason": "Describes the new window", "keep": [] }
   ],
   "findings": [
     { "id": "refresh-race", "file": "src/auth/session.ts", "side": "new", "line": 47,
-      "severity": "risk", "area": "bug", "text": "Two tabs can refresh at once; the second overwrites the first token." }
+      "severity": "risk", "area": "bug", "title": "Two tabs can still refresh at once",
+      "text": "The lock is per tab, so the second tab overwrites the first token." }
   ],
   "tests": [
     { "file": "src/auth/session.test.ts", "line": 88, "name": "refreshes before expiry",
       "proves": "token renewed 60s early", "verdict": "real",
-      "why": "Uses the real clock seam and asserts the new token." },
-    { "file": "src/auth/session.test.ts", "line": 120, "name": "handles refresh failure",
-      "proves": "nothing about the retry", "verdict": "fake",
-      "why": "Patches refresh() itself, then asserts the patched value." }
+      "why": "Uses the real clock seam and asserts the new token." }
   ]
 }
 ```
 
-- `outline`: one to three views, smallest that shows the shape. Use a `viz`
-  card for interaction, a flow, a sequence or a state machine (its body is
-  [viz grammar](../../viz/references/grammar.md); `view: seq` for a sequence,
-  `view: states` for states), a `tree` card for a changed call path, a
-  markdown text tree for responsibilities, pseudocode for logic, a
-  before/after `diff` block for a changed flow. Keep a `viz` card to about
-  eight nodes; chat shows its source as text.
-- `tree` cards: one node per line, two spaces per level, an optional marker
-  in column 0 (`+` added, `-` removed, `~` changed, `!` fails, `?` not
-  verified), then `label @path:line # note`. Give every node a real
-  `@path:line` from the review so the reader can jump to it:
-
-  ```text
-    submitForm @routes/submit.ts:12
-  ~   createSession @sessions/create.ts:8 # returns a handle now
-  -     persistPrompt @sessions/persist.ts:4
-  +     queuePrompt @sessions/queue.ts:9
-  ```
-
-  The renderer already adds the calldiff call tree for core and supporting files,
-  so draw a tree only for a path calldiff cannot see (dynamic dispatch,
-  events, queues) or to tell the story in fewer nodes.
-- `reason`: at most one short line, the why, not the what.
+- `tier`: how deep this reading goes, decided from `meat_review.py triage`
+  before the full prompt. `S` is a small change with one idea (a fix in one
+  function, a config tweak, docs): no `flow`, and `steps` are optional (each
+  kept file becomes its own step). `M` is a change with a few moving parts:
+  a `flow` and three to six steps. `L` crosses a boundary (schema, wire
+  format, auth, concurrency, many callers): as `M`, plus the blast radius
+  outside the diff (callers, consumers, migrations) as `Check` lines and
+  findings, and the page adds the calldiff call changes as a second tab of
+  the flow. Do not spend an `M` reading on an `S` change.
+- `flow` (`M`, `L`): one [viz](../../viz/references/grammar.md) graph of the
+  path the change runs through, not the diff's file list. Draw the callers
+  and consumers the change reaches, even outside the diff, so the reader sees
+  where it lands. About five to ten nodes. Use what viz can do:
+  - mark nodes `+` added, `-` removed, `~` changed, `!` where a finding sits;
+  - give every node a real `@path:line` so its inspector opens the code;
+  - add one or two inspector lines under a node (`  does:`, `  reads:`,
+    `  writes:`, `  fails:`, `  note:`) with what it now owns;
+  - write each path a step walks as `name: a > b > c | payload | narration`,
+    so pressing play walks the change in order; one named path per step is a
+    good default, and a step's `viz` can name it;
+  - when the change moves behavior, a second `==` section showing the
+    before path keeps the old shape one click away.
+  Run nothing to draw it; `check` parses it.
+- `steps`: the walk, in reading order. Each step is one idea a reviewer must
+  understand before the next makes sense. `title` is at most four words;
+  `why` is one sentence on what changed and why; `check` (required for `M`
+  and `L`) is the one question to answer while reading this step's code;
+  `viz` names the flow node or path this step is about, so hovering the
+  step lights it in the flow and hovering it in the flow names the step.
+- `files`: every file in the change, with its `kind`, a `verdict`
+  (`look` has kept ranges, `skim` is worth a glance, `skip` is not) and a
+  `reason`: at most one short line, the why, not the what.
 - `keep`: line ranges in the new file (`side: "new"`), or in the old file
-  for removed code (`side: "old"`), taken from the diff's hunk headers.
-  Fold the interior of long ranges rather than splitting them into many
-  small ones; after folds, a range should show under about 30 lines. Order
-  ranges in the order a reader should see them.
-- Put files in reading order: the file that explains the change first.
+  for removed code (`side: "old"`), taken from the gutter. Each range names
+  its `step` (1-based); every step needs at least one range, and a file's
+  ranges can serve different steps. Fold the interior of long ranges rather
+  than splitting them; after folds a range should show under about 30
+  lines.
 - `findings` (optional): concrete risks, questions or notes a reviewer should
   act on, each on one real line (`line`, optional `endLine`, `side` as for
   `keep`). `severity` is `risk`, `question` or `note`; `area` is `bug`,
   `quality`, `structure` or `tests`, so the reviewer's taste rules (the Taste
   section after this rubric) land as `quality`/`structure` findings. State the
   trigger and the consequence; leave findings out rather than restate what the
-  code does.
-  Give each finding a `title`: one plain sentence a reviewer can act on
-  without reading the text ("A retry sends the welcome email twice").
-- `invariants` (optional): what must stay true for the change to be safe,
-  one entry per rule: `rule` (a plain sentence, "Each order is charged at
-  most once"), `held_by` (the code that enforces it, `file:line` or a named
-  lock or constraint), `evidence` (the test, model check or reading that
-  shows it) and `status` (`holds`, `broken` or `unproven`). A `broken` or
-  `unproven` rule that matters also gets a finding.
+  code does. Give each a `title`: one plain sentence a reviewer can act on
+  ("A retry sends the welcome email twice"). A finding shows inside the step
+  whose range holds its line, so anchor it to a kept line when you can.
 - `tests`: one entry per test case the change adds or changes, in file order:
   `file`, `line` of the test's definition (new side), `name`, `proves` (what
   it establishes, under ten words), `verdict` (`real`, `weak` or `fake`, as
