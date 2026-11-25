@@ -11,7 +11,7 @@ Capture:
 - named transitions with guards and effects
 - safety invariants
 - progress properties where completion or eventual delivery matters
-- representative witnesses for success, retry, recovery, and concurrent ordering
+- representative witnesses for success, retry, recovery, and concurrent ordering; when production operations can overlap, model at least two participants and show that overlap is reachable
 
 Keep the model at the smallest boundary that contains the invariant.
 
@@ -42,6 +42,8 @@ When no verifier runs on the code's language, say so, and test the real code wit
 For a state machine, find counterexamples with a model checker first. A model checker returns a trace; a failed proof returns none. Move to Lean when the model checks clean and a guarantee beyond the bound is worth the proof effort.
 
 ## Feed generated tests
+
+Report model verdicts, source findings, and application replay separately. To verify a fix, rerun the same properties, bounds, and event domains, then replay the original counterexample. If the check inputs must change, say why and mark the comparison as partial.
 
 A model and its proofs establish facts about the model. Property and fuzz tests establish that the code behaves like the model. Wire each verified property to the invariants Property or Fuzz branch (steps 2-5), or record why none applies:
 
