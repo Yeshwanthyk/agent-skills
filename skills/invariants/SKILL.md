@@ -61,6 +61,7 @@ Read only the matching language reference: [Python](references/python.md), [Rust
 - Generate boundary values, valid combinations, and explicit invalid cases where rejection is the contract.
 - Build constraints into constructive generators rather than broad filters. Check that meaningful cases reach the target instead of being skipped or rejected by setup.
 - For stateful contracts, generate operations against the real system and check invariants after meaningful transitions. Reset state for each example.
+- Verify the generator as its own property: every value lies in the domain, every shrink candidate stays in it and is strictly smaller, and values vary across the dimensions the claim depends on.
 
 **Fuzz:**
 
@@ -69,15 +70,17 @@ Read only the matching language reference: [Python](references/python.md), [Rust
 - Seed with small valid and invalid inputs. For deep structured formats, use a structure-aware generator or mutator so cases get past the first parse.
 - Confirm through coverage feedback or a focused probe that instrumentation reaches the intended production code.
 
-**Done** when a reached-target check or coverage shows the harness exercises the claimed boundary.
+**Done** when a reached-target check or coverage shows the harness exercises the claimed boundary, and, for Property, the generator check passes.
 
 ### 4. Run bounded
 
 Set an explicit budget: example count for Property; time, input-size, memory, and timeout limits for Fuzz. Start with the smallest relevant command or a short smoke run, and expand only when the task and findings justify it. For a new harness, show it catches a known regression or a temporary defect in an isolated copy when practical; otherwise report its sensitivity as unverified. Record target, command, tool version, corpus, budget, and instrumentation limits.
 
+When a run that was asked to find bugs comes back clean, change the test before adding budget: aim the generator at one uncovered region or unproduced shape at a time, measuring coverage before and after; add a second oracle on the same code; count the inputs each oracle discards or excludes. After two rounds with no failure and flat coverage, move to another part of the target. For long runs, collect failures by distinct signature rather than stopping at the first.
+
 ### 5. Shrink, classify, keep
 
-Reproduce each failure outside the search loop and minimize it with the framework; keep the original if the minimized input no longer reproduces. Classify the cause as contract, generator, harness, or implementation. Keep the concrete minimized values or operations as a regression case in the ordinary suite. Save the seed or path and tool version too, but seeds depend on framework versions. When fixing, preserve the intended assertion and input domain, and confirm the fix against the saved input.
+Reproduce each failure outside the search loop and minimize it with the framework; keep the original if the minimized input no longer reproduces. Classify the cause as contract, generator, harness, or implementation; a new oracle that fails on more than about 1% of inputs points at the oracle first. Keep the concrete minimized values or operations as a regression case in the ordinary suite. Save the seed or path and tool version too, but seeds depend on framework versions. When fixing, preserve the intended assertion and input domain, and confirm the fix against the saved input.
 
 ## Completion
 
