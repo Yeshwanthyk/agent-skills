@@ -81,3 +81,11 @@ tier = "task"
 prompt = "Model-check this retry race in the payment job and leave a verify skill for it."
 expect = { methods = ["formal-verification-skill"], answer = ["scratch|broken variant|mutant", "red|fail|counterexample"] }
 notes = "Done means the check was seen red on a scratch break and back at baseline, not a planned model or a statechart."
+
+[[case]]
+id = "formal-skill-keeps-rule-inventory"
+activation = "router"
+tier = "task"
+prompt = "Create a reusable TLA+ verification skill for orders/state.py covering both promises: a paid order never becomes pending again (NoReopen), and cancelled orders never change status (CancelledIsTerminal). Show the checker command the generated skill uses, including what to run if setup is blocked. Leave product code alone."
+expect = { methods = ["formal-verification-skill"], answer = ['--require-rule[ =]+NoReopen\b', '--require-rule[ =]+CancelledIsTerminal\b'] }
+notes = "Read and routing checks alone cannot catch a generated run command that silently drops the second promise. This checks the reported command; test_rule_coverage.py checks the runner's fail-closed behavior."

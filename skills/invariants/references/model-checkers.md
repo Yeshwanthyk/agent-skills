@@ -2,36 +2,26 @@
 
 Search every interleaving of a small model for a state that breaks an invariant. A violation comes back as a trace; translate it into code steps per [formal-modeling](formal-modeling.md#feed-generated-tests).
 
-## Which checker
+## TLA+ with EveryState
 
-| Situation | Use |
-| --- | --- |
-| A user-facing flow with a statechart, or a race or retry in one service | **TLA+ with everystate**, through [`tla_chart.py`](../scripts/tla_chart.py) |
-| The repo already has `.tla` specs | TLA+, whatever the size |
-| Integers, long queues, or a state space too large to enumerate in memory | Shrink the instance: smaller constants, a `CONSTRAINT`, or `SYMMETRY`; say what the bound leaves out |
-
-[everystate](https://github.com/mattzcarey/everystate) is the default: a TLA+ model checker in Rust with TLC's command line, output format and exit codes, and no Java. It searches breadth-first, so the first counterexample is the shortest one; each step names the action that ran, which is the statechart edge; and it can dump the whole state graph to compare with the chart. It also checks a log of the real code against the spec (`conform`), and the script turns the spec into types for that log (`types`). On the invented two-tab gift card example in [`assets/tla/giftcard`](../assets/tla/giftcard), the whole `run --viz --fix` took 0.33 s on one laptop, against 4.4 s with Java TLC 1.7.4, with the same verdicts, trace and checked chart.
-
-TLA+ is the one modeling language here, and everystate the one checker; nothing in these skills needs Java. A repo with models in another language (Quint, Alloy) is out of scope: say so rather than port it silently.
-
-## TLA+ with everystate
+Use TLA+ for the model and [EveryState](https://github.com/mattzcarey/everystate) to explore its reachable states. It reads TLC-format configs and traces without Java. If the project uses a different modeling language, report the mismatch before porting it.
 
 Start from [`assets/tla/Skeleton.tla`](../assets/tla/Skeleton.tla) and its `.cfg`. Keep the constants small (2-3 actors, short queues).
 
 ```sh
-python3 <invariants>/scripts/tla_chart.py run Spec.tla                       # check every rule in Spec.cfg
-python3 <invariants>/scripts/tla_chart.py run Spec.tla --viz chart.viz --fix Fixed.cfg   # and compare with the statechart
+python3 <invariants>/scripts/tla_chart.py run Spec.tla --require-rule Safe                       # check every rule in Spec.cfg
+python3 <invariants>/scripts/tla_chart.py run Spec.tla --require-rule Safe --viz chart.viz --fix Fixed.cfg   # and compare with the statechart
 python3 <invariants>/scripts/tla_chart.py types Spec.tla -o spec.types.ts     # types for the code's trace lines
 python3 <invariants>/scripts/tla_chart.py conform run.jsonl Spec.tla          # is this recorded run a behavior of the spec?
 python3 <invariants>/scripts/test_tla_chart.py                               # after editing the script
 ```
 
-The script builds everystate from source at a pinned commit (`ES_COMMIT` in the script; git checks the tree against that hash) once, into `~/.cache/everystate/`, which takes about 30 s and needs `git` and `cargo`. Set `EVERYSTATE` to use another binary. When `git` or `cargo` is missing, or GitHub is unreachable, it exits 3 and prints `SETUP NEEDED` with the fix: tell the user what is missing and ask with your question tool whether to set it up for them, run that command only after a yes, then rerun. A counterexample is the same trace on every run, so it can be saved as a regression. The script reads each result from the exit code: 0 clean, 11 deadlock, 12 invariant, 13 temporal property, 150/151 parse errors.
+The runner builds the pinned release once with `git` and `cargo`, then caches it. For a prebuilt binary, set `EVERYSTATE` to an executable reporting the same release. On exit 3 (`SETUP NEEDED`), show the suggested fix and ask before installing anything.
 
-**Every rule gets a verdict.** The checker stops at the first broken rule, so one bug hides the next. The script checks each INVARIANT, deadlock (unless the cfg says `CHECK_DEADLOCK FALSE`), and each PROPERTY. When one breaks, it prints the shortest counterexample, drops that rule, and reruns. Each rule ends as `holds`, `broken` with its trace, or `not checked` with the reason (a run past `--timeout`, default 300s, or a model error). A counterexample is one line per step: who moved, which action, the statechart hop, and what else changed.
+**Coverage.** Pass `--require-rule NAME` for each independently inventoried invariant or progress property. Both configs need named rules. A fix must retain all baseline rules, including deadlock checking if enabled. The runner removes each violated safety rule and reruns, then checks each progress property separately. Report `holds`, `broken` with a trace, or `not checked` with the reason for every rule.
 
 ```text
-current (GiftCard.cfg): 1 broken · 13 distinct states, depth 5 · everystate c1544c8
+current (GiftCard.cfg): 1 broken · 13 distinct states, depth 5 · everystate 0.4.1 (28fd7c5)
   NoDoubleCredit: broken, 4 steps
     1. t1 Press: form -> checking   (seen[t1] = "unused")
     2. t2 Press: form -> checking   (seen[t2] = "unused")
@@ -40,7 +30,7 @@ current (GiftCard.cfg): 1 broken · 13 distinct states, depth 5 · everystate c1
   deadlock: holds
 ```
 
-The bare command is `everystate -config Spec.cfg Spec.tla` (`python3 tla_chart.py engine` prints the binary's path), run from the spec's folder, where it finds the spec's modules. Note that `-deadlock` turns deadlock checking *off*. The checker explores every reachable state of the finite instance and keeps them in memory (a few million is the practical limit), so report the constants as the bound. A model with no bound on its states runs until `--timeout`. Keep the constants small or add a `CONSTRAINT`.
+Report constants and constraints as bounds: EveryState keeps the reachable states in memory. If exploration times out, report the affected rules as unchecked; reducing the instance changes the claim.
 
 Not supported, and not needed by the conventions below: labels and subexpression selectors, Java module overrides, disk-backed state storage, and TLAPS proofs (parsed and skipped).
 
@@ -48,7 +38,7 @@ Not supported, and not needed by the conventions below: labels and subexpression
 
 A pass verifies the model. `conform` checks that the running code behaves like it: log one JSON line per model step where the step takes effect in the code, using the model's action and variable names (`{"action": "Answer", "params": ["t1"], "state": {"credits": 1}}`; the first line is the initial state, variables left out are unconstrained). Exit 0 means the run is a behavior of the spec; 20 means it is not, and the report names the first line the spec cannot match, with the steps it allowed there; 12 means the spec allows the run and the run breaks an invariant, so the model admits the bug. Options after the spec go to `everystate conform` (`-hidden N` for unlogged steps, `-stutter` for sampled logs, `-json`); see `$(tla_chart.py engine) conform -help`. Decide which side is wrong against the code, as with a counterexample, and fix the logging before loosening the check.
 
-`types` writes TypeScript for those log lines from the spec: a `Step` union with one member per action (arity from the spec, parameters typed as the cfg's model values), and a `State` interface whose fields are the literal values each variable takes in the reachable states. Type the code's logging call and its handling of each state against them, with a `never` default in every switch over a state. A renamed action, a value the spec never reaches, or a state the code does not handle then fails the compile. Commit the generated file and regenerate it in the same change as the spec. Value types are only as wide as the cfg's bounds: integers widen to `number`, but a model value or string that only appears at larger constants is missing until the bound grows.
+`types` writes TypeScript for those log lines from the spec: a `Step` union with one member per action (arity from the spec, parameters typed as the cfg's model values), and a `State` interface whose fields are the literal values each variable takes in the reachable states. Type the code's logging call and its handling of each state against them, with a `never` default in every switch over a state. A renamed action, a value the spec never reaches, or a state the code does not handle then fails the compile. Commit the generated file and regenerate it in the same change as the spec. Value types are only as wide as the cfg's bounds: integers widen to `number`, but a model value or string that only appears at larger constants is missing until the bound grows. If production accepts values beyond that instance, derive the production type from its declared domain instead of treating the observed values as exhaustive.
 
 ### Statechart conventions
 
@@ -77,7 +67,7 @@ With `--viz`, the script asks for the full state graph (`-dump dot,actionlabels`
 
 An undrawn step means the code can do something the reader never agreed to: draw it, or find why the code allows it. An arrow the model never takes is a story the code cannot produce, or a part of the code the model leaves out. Both go in the hand-off. With `SYMMETRY` or `VIEW`, the checker stores one state for each class, and the graph shows that one. Above `--graph-limit` states (default 20,000), the script checks stories with one witness run each (`~(end predicate)` as an invariant), judges only the shortest witness against the drawn path, and skips the arrow comparison, and it says so. Render the output with [viz](../../viz/SKILL.md). The script exits 0 when every rule of the final model holds, 1 when one breaks, and 2 on an error or a rule not checked.
 
-Source: [everystate](https://github.com/mattzcarey/everystate) (commit c1544c8, Nov 2026: 122/122 tlaplus/Examples models and 384/414 of TLC's test models match TLC, per its CONFORMANCE.md).
+Source: [EveryState v0.4.1](https://github.com/mattzcarey/everystate/tree/v0.4.1).
 
 ## Sizing
 

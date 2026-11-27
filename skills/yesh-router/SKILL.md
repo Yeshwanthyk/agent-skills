@@ -35,7 +35,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 
 **Shape and plan**
 - architecture / boundary / where should this live / data model / entities: an unsettled boundary → [architect](../architect/SKILL.md)
-- invariants / state machine / concurrency / recovery / lock or pin X to Y / versions / replay / property test / fuzz: authoritative state, generated-input contracts, untrusted parsers → [invariants](../invariants/SKILL.md)
+- state analysis / invariants / state machine / concurrency / recovery / lock or pin X to Y / versions / replay / property test / fuzz: authoritative state, TLA+ with EveryState for transition orderings, generated-input contracts, untrusted parsers → [invariants](../invariants/SKILL.md)
 - *On request:* sharpen / what's the real goal: shape a task before starting, then match again → [sharpen](../sharpen/SKILL.md)
 - plan / breakdown / handoff / migration plan / list the full plan: a settled approach needs ordered chunks; a speculative one goes to architect first → [plan](../plan/SKILL.md)
 - try it / sketch / prototype: a design question a throwaway run can settle → [prototype](playbooks/prototype.md)
@@ -51,7 +51,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - untangle / decouple / refactor this area / too many special cases: restructure and fix, not just report → [untangle](../untangle/SKILL.md)
 - blast radius / what could this break: beyond the diff → [blast-radius](../blast-radius/SKILL.md)
 - verifier / verification skill / drive the app: create, audit, or repair a project-local verifier that launches and drives a real surface → [verification-skill](../verification-skill/SKILL.md)
-- formally verify / model-check / prove, leaving a check the next agent reruns: create, audit, or repair a project-local formal verifier for one high-risk property; ends with the check seen red on a scratch break → [formal-verification-skill](../formal-verification-skill/SKILL.md)
+- reusable formal check / create, audit, or repair a project verifier → [formal-verification-skill](../formal-verification-skill/SKILL.md)
 - eval / does this skill change help: agent behavior before and after → [eval](playbooks/eval.md)
 
 **Coordinate**

@@ -52,7 +52,7 @@ def expect(label, out, *patterns, absent=()):
 def main():
     # 1. The example as shipped: one bug, fixed by the conditional write, one dead arrow.
     d = variant()
-    code, out = run(d, "--viz", "chart.viz", "--fix", "GiftCardFixed.cfg")
+    code, out = run(d, "--viz", "chart.viz", "--fix", "GiftCardFixed.cfg", "--require-rule", "NoDoubleCredit")
     chart = open(os.path.join(d, "chart.checked.viz")).read()
     expect("example", out, r"^  NoDoubleCredit: broken, 4 steps", r"^    4\. t2 Answer: checking -> credited",
            r"^  redeem: works", r"^  twotabs: fixed", r"^  dropped: unreached", r"checking -> offline: the model never takes")
@@ -86,7 +86,8 @@ AllCredited == <>(\\A t \\in Tabs : ui[t] = "credited")
                 edit_chart=lambda c: re.sub(r"checking -> rejected.*\n|reuse:.*\n", "", c),
                 cfg="CONSTANTS Tabs = {t1, t2}\nFix = FALSE\nSPECIFICATION Spec\n"
                     "INVARIANTS NoDoubleCredit SeenOK\nPROPERTIES Answered AllCredited\n")
-    code, out = run(d, "--config", "Test.cfg", "--viz", "chart.viz")
+    code, out = run(d, "--config", "Test.cfg", "--viz", "chart.viz",
+                    "--require-rule", "SeenOK", "--require-rule", "Answered")
     expect("rules", out, r"^  NoDoubleCredit: broken", r"^  SeenOK: broken", r"^  deadlock: holds", r"^  Answered: holds",
            r"^  AllCredited: broken", r"repeat forever", r"checking -> rejected by Answer: no arrow",
            r"rejected -> form by Retry: no arrow")
