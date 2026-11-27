@@ -40,10 +40,11 @@ import tempfile
 import time
 import xml.etree.ElementTree as ET
 
-VERSION = "4"  # bump on a behavior change; a verify skill that copies this file records it
+VERSION = "5"  # bump on a behavior change; a verify skill that copies this file records it
 ES_REPO = "https://github.com/mattzcarey/everystate"
-ES_COMMIT = "c1544c8dc536fb3460badab96db354f1165700ed"  # git checks the tree against this hash
-ENGINE = f"everystate {ES_COMMIT[:7]}"
+ES_COMMIT = "28fd7c5f9069a021b7a9702007e2f2b054a789fb"  # EveryState v0.4.1
+ES_VERSION = "0.4.1"
+ENGINE = f"everystate {ES_VERSION} ({ES_COMMIT[:7]})"
 HERE = os.path.dirname(os.path.abspath(__file__))
 VIZ_PY = os.path.join(HERE, "..", "..", "viz", "scripts", "viz.py")
 EXIT = {0: "clean", 10: "assumption violated", 11: "deadlock", 12: "invariant violated",
@@ -75,7 +76,13 @@ def setup_needed(what, fix):
 def engine_path():
     """The pinned everystate binary: $EVERYSTATE, or a build of ES_COMMIT cached under ~/.cache/everystate."""
     if os.environ.get("EVERYSTATE"):
-        return os.environ["EVERYSTATE"]
+        binary = shutil.which(os.environ["EVERYSTATE"])
+        if binary:
+            version = subprocess.run([binary, "--version"], capture_output=True, text=True)
+            if version.returncode == 0 and version.stdout.strip() == f"everystate {ES_VERSION}":
+                return os.path.abspath(binary)
+        setup_needed(f"EVERYSTATE must point to everystate {ES_VERSION}.",
+                     "unset EVERYSTATE to build the pinned release, or point it to the matching executable")
     cache = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "everystate", ES_COMMIT[:12])
     binary = os.path.join(cache, "everystate.exe" if sys.platform == "win32" else "everystate")
     if os.path.exists(binary):
@@ -766,8 +773,8 @@ def witness_stories(es, spec, cfg, nodes, stories, a):
 
 # ---------- commands ----------
 
-def coverage_gap(cfg, required):
-    invs, props, dl = cfg_rules(read_cfg(cfg))
+def coverage_gap(cfg, rules, required):
+    invs, props, _ = rules
     configured = set(invs + props)
     missing = sorted(set(required) - configured)
     if missing:
@@ -780,11 +787,13 @@ def coverage_gap(cfg, required):
 def cmd_run(a):
     spec = os.path.abspath(a.spec)
     cfg = os.path.abspath(a.config or os.path.splitext(spec)[0] + ".cfg")
-    gap = coverage_gap(cfg, a.require_rule)
+    baseline = cfg_rules(read_cfg(cfg))
+    gap = coverage_gap(cfg, baseline, a.require_rule)
     if not gap and a.fix:
-        invs, props, baseline_dl = cfg_rules(read_cfg(cfg))
-        gap = coverage_gap(a.fix, invs + props)
-        if baseline_dl and not cfg_rules(read_cfg(a.fix))[2]:
+        invs, props, baseline_dl = baseline
+        fixed = cfg_rules(read_cfg(a.fix))
+        gap = coverage_gap(a.fix, fixed, invs + props)
+        if not gap and baseline_dl and not fixed[2]:
             gap = f"{a.fix}: not checked (baseline deadlock check disabled)"
     if gap:
         print(gap, file=sys.stderr)

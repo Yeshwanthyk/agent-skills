@@ -21,17 +21,17 @@ Keep the model at the smallest boundary that contains the invariant.
 - **Able to fail.** Show each property going red on a broken variant of what it guards (a removed guard, a reordered write, a dropped retry check), then restore. A check never seen red proves nothing.
 - **Findings stay findings.** When the current design or code breaks the property, report the counterexample. Keep the property and the model as stated; fix product code only when asked.
 - **Scoped.** Every result names its reach: sampled traces, every trace up to a bound, every input up to a bound, or every input. List the assumptions (bounds, fairness, axioms, trusted code) it rests on.
-- **Every rule judged.** A checker that stops at the first violation leaves the other rules unchecked, not passing. Give each rule its own verdict: holds, broken with its counterexample, or not checked with the reason.
+- **Every rule judged.** For state analysis, inventory each promise in scope with its TLA+ `INVARIANT` or `PROPERTY` name. Pass `--require-rule NAME` once per inventory entry, independently of what the cfg currently lists. A checker that stops at the first violation leaves the other rules unchecked, not passing. Give each rule its own verdict: holds, broken with its counterexample, or not checked with the reason.
 - **Plain.** State the property and the harm in one sentence each. Tell a counterexample as a numbered sequence of steps in the user's nouns when the flow has a statechart ("you walk away, then open it on your phone"), each step citing the code symbol it runs; otherwise in the code's nouns.
 
 ## Choose the tool
 
-Pick the cheapest tool that answers the question. When the repo already uses one, use it. Read only the matching reference.
+For reachable states, transition orderings, and progress, use TLA+ with EveryState. The other tools below answer different questions about code or mathematical proofs. Read only the matching reference.
 
 | Property shape | Tool | First command | The counterexample | On the statechart |
 | --- | --- | --- | --- | --- |
-| Bad ordering in a user-facing flow, a race, a retry, recovery | **TLA+ / everystate** ([model-checkers](model-checkers.md)) | `tla_chart.py run Spec.tla --viz chart.viz` | Shortest trace, one numbered step per action: actor, action, node hop, changed variables | A `!` path along the hops, ending at the `fails:` harm node; the runner writes it |
-| Progress: a request eventually completes, nothing waits forever | **TLA+ / everystate** with fairness (`PROPERTY` in the cfg) | `tla_chart.py run Spec.tla` | A lasso: steps, then "back to state k" repeating | A `!` path ending at the node the user waits on, narrated as a loop |
+| Bad ordering in a user-facing flow, a race, a retry, recovery | **TLA+ / EveryState** ([model-checkers](model-checkers.md)) | `tla_chart.py run Spec.tla --require-rule Safe --viz chart.viz` | Shortest trace, one numbered step per action: actor, action, node hop, changed variables | A `!` path along the hops, ending at the `fails:` harm node; the runner writes it |
+| Progress: a request eventually completes, nothing waits forever | **TLA+ / EveryState** with fairness (`PROPERTY` in the cfg) | `tla_chart.py run Spec.tla --require-rule EventuallyDone` | A lasso: steps, then "back to state k" repeating | A `!` path ending at the node the user waits on, narrated as a loop |
 | A Rust transition function keeps the invariant for every state and event | **Kani** ([code-verifiers](code-verifiers.md)) | `cargo kani --harness step_keeps_invariant` | `VERIFICATION:- FAILED`, the failed assertion, and with `--concrete-playback=print` the concrete state and event as a unit test | One `!` edge: from the state's node, on the event, to the harm node |
 | A pure function or algorithm holds for every input and length, or an executable spec is needed as an oracle | **Lean 4** ([lean](lean.md)) | `lake build` | No trace: a goal that does not close | Nothing to draw; a clean check leaves the stories plain, with no bound |
 

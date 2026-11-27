@@ -1,5 +1,7 @@
 # everystate in our formal-verification skills, and spec-derived types
 
+Historical snapshot. For the current checker pin and commands, use the [model-checker guide](../../skills/invariants/references/model-checkers.md).
+
 Question: can [everystate](https://github.com/mattzcarey/everystate) replace TLA+ in `invariants` and `formal-verification-skill`, and how do we use it to make type checking catch more? Pinned to everystate `c1544c8` (repo HEAD, 2026-11-18) and npm `everystate@0.3.1` (2026-11-17), against our `tlc_chart.py` pinned to TLC 1.7.4, on macOS arm64.
 
 ## Status (2026-11-17): adopted
