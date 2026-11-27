@@ -1,6 +1,6 @@
 ---
 name: formal-verification-skill
-description: Create, audit, or repair a project-local verify-formal-* skill that model-checks, proves, or formally verifies one high-risk property of the code and can be rerun on every change.
+description: Create, audit, or repair a project-local verify-formal-* skill that checks every invariant of a high-risk code path at creation and on each use. Use EveryState + TLA+ for state machines and races.
 disable-model-invocation: true
 ---
 
@@ -16,32 +16,38 @@ A formal verify skill is a project-local `verify-formal-<area>/` skill that lets
 
 Return exactly one: **created** (the new skill caught a scratch break and returned to baseline), **clean**, **findings**, **changed**, or **blocked** (name the missing tool, prerequisite, or failed proof). Audit and repair roll per-check outcomes into these as described below. Report product defects; change product source only when the user also asked for product repair.
 
-**Create is done** only when a check has been seen red on a scratch break in the real code and back at baseline after it, or the outcome is `blocked` with the reason. A written model, a planned check, or a statechart without a run is a draft, not an outcome. When users see the flow, the deliverable is the flow's checked statechart with each story marked works, bug found, fixed, or unreached.
+**Create is done** only when every inventoried obligation has been seen red on a scratch break in the real code and back at baseline after it, or the outcome is `blocked` with the reason. A written model, a planned check, or a statechart without a run is a draft, not an outcome. When users see the flow, the deliverable is the flow's checked statechart with each story marked works, bug found, fixed, or unreached.
 
 ## Choose the target
 
 Answer from the codebase; ask the user only what you cannot observe. Start from the area or bug the user named, if any.
 
-A strong target is a promise the code makes, where a break harms users and tests rarely reach the breaking case: concurrent writers, retries and recovery, state machines, parsers of untrusted input, unsafe or arithmetic-heavy code. Rank candidates by harm times how poorly current tests reach them, and choose the strongest, not the easiest to verify. Build the packet for it with step 1 of [invariants](../invariants/SKILL.md). When users see the flow, that includes the statechart (`chart.viz`). Then pick the tool from the decision table in formal-modeling; for a charted flow or a race the default is TLA+ with everystate. Tell the user why this target and this tool.
+Choose an area where a broken promise harms users and tests rarely reach the breaking case: concurrent writers, retries and recovery, state machines, parsers of untrusted input, unsafe or arithmetic-heavy code. Rank candidates by harm times how poorly current tests reach them, and choose the strongest, not the easiest to verify. Build the packet for it with step 1 of [invariants](../invariants/SKILL.md). When users see the flow, that includes the statechart (`chart.viz`). Then pick the tool from the decision table in formal-modeling; for a state machine or race, write the spec in TLA+ and run it with EveryState. Tell the user why this target and this tool.
+
+Before writing checks, inventory every invariant in that area from the code, tests, and intended behavior. Walk each writer and transition, including errors, retries, and recovery. Ask what must remain true before and after it, who may act, and what must eventually happen. Keep progress obligations separate from safety invariants. A chart story or one representative property is not the inventory.
 
 ## Generate
 
 Write the skill in the repository's configured skill location, with a `verify-formal-<area>` name matching its directory and a description naming the area and the paths whose changes should trigger it. Use this repo's commands, paths, and nouns, with no placeholders. Include these sections:
 
 - **Scope**: the coverage record. For each check, the files and symbols it models, and the sync commit: the last commit at which you confirmed that the verification describes that code. A change touching them, or new code writing the state a check guards, means the verification needs another look. Move the sync commit forward only after confirming the verification describes the code at the new commit.
-- **Property**: each property and its harm, one plain sentence each, and the reach and assumptions of a pass.
-- **Run**: one command with pinned tool versions (`lean-toolchain`, a pinned commit or CLI version), its expected runtime, and how to install the tool. Ship the command as a script inside the skill; read [build-the-lever](../yesh-router/references/principles/build-the-lever.md). For TLA+, copy [`tla_chart.py`](../invariants/scripts/tla_chart.py) into the skill, which builds everystate from a pinned commit (needs `git` and `cargo`; about 30 s once, then cached), record the copy's `tla_chart.py --version`, and make the run script one line: `tla_chart.py run <Area>.tla --viz chart.viz [--fix <Area>Fixed.cfg]`. Its traces are the same on every run, and it gives every rule a verdict.
+- **Property**: keep one row per inventoried obligation: promise and harm, code symbols, named executable rule, bounds and assumptions. For EveryState, map each row to an enabled `INVARIANT` or `PROPERTY` in the TLA+ config. Record the verdict and scratch-break evidence per row; a missing rule or verdict blocks a coverage claim.
+- **Run**: one command with pinned tool versions (`lean-toolchain`, a pinned commit or CLI version), its expected runtime, and how to install the tool. Ship the command as a script inside the skill; read [build-the-lever](../yesh-router/references/principles/build-the-lever.md). For TLA+, copy [`tla_chart.py`](../invariants/scripts/tla_chart.py) into the skill, which builds EveryState from a pinned commit (needs `git` and `cargo`; about 30 s once, then cached), record the copy's `tla_chart.py --version`, and include this check in the run script: `tla_chart.py run <Area>.tla --require-rule NAME --viz chart.viz [--fix <Area>Fixed.cfg]`. Repeat `--require-rule NAME` for every inventoried `INVARIANT` and `PROPERTY`; take names from the inventory, not from the config being checked. Before checking states, the runner validates the baseline and optional `--fix` config: each needs named rules and every required name, and the fix must retain every baseline rule. Its traces are the same on every run, and it gives every rule a verdict.
 - **Chart**: when the flow has a statechart, keep `chart.viz` (the intended stories, drawn before modeling) in the skill, and say where the run writes `chart.checked.viz`. That file is the result: each story marked works, `!` bug found, `+` fixed, or `?` unreached, plus each step or arrow where model and chart disagree, per formal-modeling's "Report on the statechart".
 - **Read the result**: what a pass covers, how to turn a counterexample into code steps (each trace step names the action, which cites a code symbol) and replay it, and how to tell a product defect (the replay fails on the code) from a modeling error (it does not).
 - **Linked tests**: the property or fuzz tests wired from each property per formal-modeling's "Feed generated tests", with their commands. For TLA+, that includes the integration test whose JSON-lines log `tla_chart.py conform` checks against the spec, and the generated `<area>.types.ts` the code's logging and state switches compile against; the run script regenerates it with `tla_chart.py types` and fails on a diff.
 - **Update**: when an intended change alters verified behavior, update the model or proof in the same change, show each property red on a broken variant again, and rerun the linked tests. For TLA+, regenerate the types file and let the compiler list each call site the spec change reaches.
 - **Known findings**: counterexamples the current code exhibits, each with its replay.
 
+In the generated skill, require this on **every use**: compare the inventory with the current code (including new writers and promises), reconcile it with the enabled rules, then run the full command and linked tests. Report every row, including known failures and unchecked rules. A green exit from yesterday’s rule set does not cover a new invariant.
+
 ## Prove the skill
 
 Read [prove-it-works](../yesh-router/references/principles/prove-it-works.md). Then follow the generated skill once, cold, as the next agent would:
 
-1. Make a scratch change in the real code that breaks a property (remove a guard, reorder a write).
+For EveryState, first exercise the coverage guard with scratch configs: remove all named rules, omit an inventoried rule, then omit a baseline rule from the fix. Each run must reject the config before model checking. Restore the configs before testing behavior.
+
+1. For each inventory row in turn, make a scratch change in the real code that breaks its promise (remove a guard, reorder a write).
 2. Run the skill's command. It must go red, its counterexample must replay on the scratch code, and on a charted flow the checked chart must show a `!` path ending at the harm node.
 3. Drop the scratch change and rerun. The check returns to its baseline: passing, or failing only on known findings, with the chart's stories back to their baseline marks.
 
@@ -54,7 +60,7 @@ Locate the skill by what it does: a project-local skill that runs a model checke
 A check that keeps passing after the code changed can describe code that no longer exists. That pass looks like a proof, so it is the dangerous case. Audit stops before editing.
 
 1. **Collect.** For each check, read the property, the code it covers, the bounds and assumptions, the command, and the sync commit. When the skill records no sync commit, use the last commit that changed the verification files, and say so.
-2. **Run it as it is.** Run each check once before changing anything, and record the result. A pass says only that the old description still holds; a failure can be drift or a bug, so do not judge it yet.
+2. **Run it as it is.** Run each check once before changing anything, and record the result. Rebuild the inventory from current code and compare it to the recorded rows and executed rules; report omissions as findings in audit, and close them in repair. A pass says only that the old description still holds; a failure can be drift or a bug, so do not judge it yet.
 3. **Read every change to covered code.** Diff the covered files from the sync commit to `HEAD` and read each commit message; read [evidence-lifecycle](../yesh-router/references/principles/evidence-lifecycle.md). Follow covered symbols that moved, were renamed, or split, and look for new code that writes the guarded state. Classify each change against the model, not the commit message:
    - **No effect**: nothing the verification describes changed.
    - **Shape changed**: an atomic step is now two, a branch or check moved, a new path reaches the guarded state, or a value's range changed. The model or harness must change.

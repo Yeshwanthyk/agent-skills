@@ -2,7 +2,7 @@
 """Model-check a TLA+ spec with everystate and report the result on the flow's statechart.
 
   tla_chart.py run SPEC.tla [--config C.cfg] [--chart ui] [--viz CHART.viz] [--fix FIXED.cfg]
-                            [-o OUT.viz] [--timeout 300] [--graph-limit 20000]
+                            [--require-rule NAME ...] [-o OUT.viz] [--timeout 300] [--graph-limit 20000]
   tla_chart.py conform TRACE.jsonl SPEC.tla [--config C.cfg] [everystate conform options]
   tla_chart.py types SPEC.tla [--config C.cfg] [-o SPEC.types.ts]
   tla_chart.py log TRACE.txt [--chart ui]      read a TLC-format trace printed elsewhere
@@ -766,10 +766,30 @@ def witness_stories(es, spec, cfg, nodes, stories, a):
 
 # ---------- commands ----------
 
+def coverage_gap(cfg, required):
+    invs, props, dl = cfg_rules(read_cfg(cfg))
+    configured = set(invs + props)
+    missing = sorted(set(required) - configured)
+    if missing:
+        return f"{cfg}: not checked (missing configured rules: {', '.join(missing)})"
+    if not configured:
+        return f"{cfg}: not checked (no named INVARIANT or PROPERTY)"
+    return None
+
+
 def cmd_run(a):
-    es = engine_path()
     spec = os.path.abspath(a.spec)
     cfg = os.path.abspath(a.config or os.path.splitext(spec)[0] + ".cfg")
+    gap = coverage_gap(cfg, a.require_rule)
+    if not gap and a.fix:
+        invs, props, baseline_dl = cfg_rules(read_cfg(cfg))
+        gap = coverage_gap(a.fix, invs + props)
+        if baseline_dl and not cfg_rules(read_cfg(a.fix))[2]:
+            gap = f"{a.fix}: not checked (baseline deadlock check disabled)"
+    if gap:
+        print(gap, file=sys.stderr)
+        return 2
+    es = engine_path()
     now = check_rules(es, spec, cfg, a)
     report_rules("current", cfg, now)
     after = None
@@ -779,6 +799,8 @@ def cmd_run(a):
         report_rules("fixed", fcfg, after)
     if a.viz:
         write_chart(a, es, spec, cfg, now, after)
+    if after and (now["stop"] or any(r["outcome"] == "not checked" for r in now["rules"].values())):
+        return 2
     return final_code(after or now)
 
 
@@ -1026,6 +1048,8 @@ def main():
     r = sub.add_parser("run")
     r.add_argument("spec")
     r.add_argument("--config")
+    r.add_argument("--require-rule", action="append", default=[], metavar="NAME",
+                   help="require this inventoried INVARIANT or PROPERTY in the config; repeat for each")
     r.add_argument("--chart", default="ui", help="variable mapping each actor to its statechart node (default ui)")
     r.add_argument("--viz", help="the statechart drawn before modeling")
     r.add_argument("--fix", help="config of the fixed model, same spec")
