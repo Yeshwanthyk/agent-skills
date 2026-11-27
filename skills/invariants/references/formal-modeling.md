@@ -21,7 +21,7 @@ Keep the model at the smallest boundary that contains the invariant.
 - **Able to fail.** Show each property going red on a broken variant of what it guards (a removed guard, a reordered write, a dropped retry check), then restore. A check never seen red proves nothing.
 - **Findings stay findings.** When the current design or code breaks the property, report the counterexample. Keep the property and the model as stated; fix product code only when asked.
 - **Scoped.** Every result names its reach: sampled traces, every trace up to a bound, every input up to a bound, or every input. List the assumptions (bounds, fairness, axioms, trusted code) it rests on.
-- **Every rule judged.** For state analysis, inventory each promise in scope with its TLA+ `INVARIANT` or `PROPERTY` name. Pass `--require-rule NAME` once per inventory entry, independently of what the cfg currently lists. A checker that stops at the first violation leaves the other rules unchecked, not passing. Give each rule its own verdict: holds, broken with its counterexample, or not checked with the reason.
+- **Every rule judged.** Inventory safety and progress promises before reading the config. For TLA+, require a verdict for every inventory row using the [runner’s coverage guard](model-checkers.md).
 - **Plain.** State the property and the harm in one sentence each. Tell a counterexample as a numbered sequence of steps in the user's nouns when the flow has a statechart ("you walk away, then open it on your phone"), each step citing the code symbol it runs; otherwise in the code's nouns.
 
 ## Choose the tool
@@ -43,9 +43,9 @@ For a state machine, find counterexamples with a model checker first. A model ch
 
 ## Feed generated tests
 
-Report model verdicts, source findings, and application replay separately. To verify a fix, rerun the same properties, bounds, and event domains, then replay the original counterexample. If the check inputs must change, say why and mark the comparison as partial.
+Report model verdicts, source findings, and application replay separately. To verify a fix, rerun the same properties, bounds, and event domains, then replay the original counterexample. If the check inputs must change, say why and mark the comparison as partial. This fixed-input comparison comes from [Stately’s state review workflow](https://github.com/statelyai/skills/blob/b9167d8/skills/stately/README.md).
 
-A model and its proofs establish facts about the model. Property and fuzz tests establish that the code behaves like the model. Wire each verified property to the invariants Property or Fuzz branch (steps 2-5), or record why none applies:
+A model verdict applies to the model. Generated tests compare the code with it on the inputs exercised. Wire each verified property to the invariants Property or Fuzz branch (steps 2-5), or record why none applies:
 
 1. **Invariant as oracle.** Each named invariant becomes the assertion in the step 2 record. A stateful property test checks it against the real entry point after each transition, with the operation alphabet taken from the model's transitions.
 2. **Counterexample as regression.** Translate each counterexample trace into concrete operations and replay it on the real code. A replay that fails is the irrefutable proof of the defect and becomes a regression case in the ordinary suite. A trace that does not replay is a modeling gap: fix the model before trusting its other results.

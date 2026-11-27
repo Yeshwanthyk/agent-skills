@@ -12,7 +12,7 @@ Find the breakage a diff or grep result can miss. Trace the changed behavior thr
 
 1. Read the diff and changed/deleted symbols. Note behavior that is implicit in types, serialization, timing, flags, generated output, or downstream consumers.
 2. Identify the small set of safety facts that make the change safe or unsafe. Look beyond callers: inspect dependency source/version, lifecycle ordering, wire and storage formats, other languages, feature flags, and multi-hop consumers when relevant. When the change removes or replaces an API, format, or behavior, read [migrate-callers](../yesh-router/references/principles/migrate-callers.md).
-3. For stateful changes, trace changed writes and guards, exits that bypass cleanup, and work that is no longer awaited. For each finding, give the starting state, ordered events with code references, consequence, and smallest confirming check. If safety depends on which writer, retry, or cleanup runs first, use [invariants](../invariants/SKILL.md) to check the orderings in a bounded TLA+ model with EveryState; replay a counterexample against the code before reporting a confirmed defect.
+3. For stateful changes, trace changed writes and guards, exits that bypass cleanup, and work that is no longer awaited. For each finding, give the starting state, ordered events with code references, consequence, and smallest confirming check. When event ordering determines safety, check the interleavings with [invariants](../invariants/SKILL.md). Confirm the defect by replaying the trace on the code.
 4. Classify risks by real likelihood and consequence. Separate confirmed risks, checked-and-cleared paths, and unresolved facts. Cite concrete paths/symbols and avoid invented callers.
 
 ## Prove

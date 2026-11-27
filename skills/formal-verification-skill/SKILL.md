@@ -1,12 +1,12 @@
 ---
 name: formal-verification-skill
-description: Create, audit, or repair a project-local verify-formal-* skill that checks every invariant of a high-risk code path at creation and on each use. Use EveryState + TLA+ for state machines and races.
+description: Build, audit, or repair a rerunnable formal check for a high-risk code path.
 disable-model-invocation: true
 ---
 
 # Formal verification skill
 
-A formal verify skill is a project-local `verify-formal-<area>/` skill that lets a cold agent, mid-change, tell whether the change touches verified code, rerun the check, tell a real bug from a modeling error, and update the verification when the change is intended. The model, the tool choice, and the rules for honest results come from [formal-modeling](../invariants/references/formal-modeling.md); this skill covers target choice, the generated skill, its proof, and its upkeep. For a verifier that launches and drives an application surface, use [verification-skill](../verification-skill/SKILL.md).
+A project-local `verify-formal-<area>/` skill ties each verified promise to the code that makes it. Use [formal-modeling](../invariants/references/formal-modeling.md) to choose a verifier and interpret its results. To launch and drive an application instead, use [verification-skill](../verification-skill/SKILL.md).
 
 ## Branches and outcomes
 
@@ -16,7 +16,7 @@ A formal verify skill is a project-local `verify-formal-<area>/` skill that lets
 
 Return exactly one: **created** (the new skill caught a scratch break and returned to baseline), **clean**, **findings**, **changed**, or **blocked** (name the missing tool, prerequisite, or failed proof). Audit and repair roll per-check outcomes into these as described below. Report product defects; change product source only when the user also asked for product repair.
 
-**Create is done** only when every inventoried obligation has been seen red on a scratch break in the real code and back at baseline after it, or the outcome is `blocked` with the reason. A written model, a planned check, or a statechart without a run is a draft, not an outcome. When users see the flow, the deliverable is the flow's checked statechart with each story marked works, bug found, fixed, or unreached.
+**Create is done** when every inventoried rule catches a scratch break in real code and returns to baseline after restoration. Otherwise report `blocked` and name the unproven rule.
 
 ## Choose the target
 
@@ -32,14 +32,14 @@ Write the skill in the repository's configured skill location, with a `verify-fo
 
 - **Scope**: the coverage record. For each check, the files and symbols it models, and the sync commit: the last commit at which you confirmed that the verification describes that code. A change touching them, or new code writing the state a check guards, means the verification needs another look. Move the sync commit forward only after confirming the verification describes the code at the new commit.
 - **Property**: keep one row per inventoried obligation: promise and harm, code symbols, named executable rule, bounds and assumptions. For EveryState, map each row to an enabled `INVARIANT` or `PROPERTY` in the TLA+ config. Record the verdict and scratch-break evidence per row; a missing rule or verdict blocks a coverage claim.
-- **Run**: one command with pinned tool versions (`lean-toolchain`, a pinned commit or CLI version), its expected runtime, and how to install the tool. Ship the command as a script inside the skill; read [build-the-lever](../yesh-router/references/principles/build-the-lever.md). For TLA+, copy [`tla_chart.py`](../invariants/scripts/tla_chart.py) into the skill, which builds EveryState from a pinned commit (needs `git` and `cargo`; about 30 s once, then cached), record the copy's `tla_chart.py --version`, and include this check in the run script: `tla_chart.py run <Area>.tla --require-rule NAME --viz chart.viz [--fix <Area>Fixed.cfg]`. Repeat `--require-rule NAME` for every inventoried `INVARIANT` and `PROPERTY`; take names from the inventory, not from the config being checked. Before checking states, the runner validates the baseline and optional `--fix` config: each needs named rules and every required name, and the fix must retain every baseline rule. Its traces are the same on every run, and it gives every rule a verdict.
+- **Run**: ship one script with pinned tools, setup instructions and expected runtime. For TLA+, copy [`tla_chart.py`](../invariants/scripts/tla_chart.py) into the skill and record its `--version`. Run it with `--require-rule NAME` for each inventory row, taking names from the inventory rather than the config. Add `--viz` for a chart and `--fix` for a comparison. See [model-checkers](../invariants/references/model-checkers.md) for setup and verdicts.
 - **Chart**: when the flow has a statechart, keep `chart.viz` (the intended stories, drawn before modeling) in the skill, and say where the run writes `chart.checked.viz`. That file is the result: each story marked works, `!` bug found, `+` fixed, or `?` unreached, plus each step or arrow where model and chart disagree, per formal-modeling's "Report on the statechart".
 - **Read the result**: what a pass covers, how to turn a counterexample into code steps (each trace step names the action, which cites a code symbol) and replay it, and how to tell a product defect (the replay fails on the code) from a modeling error (it does not).
 - **Linked tests**: the property or fuzz tests wired from each property per formal-modeling's "Feed generated tests", with their commands. For TLA+, that includes the integration test whose JSON-lines log `tla_chart.py conform` checks against the spec, and the generated `<area>.types.ts` the code's logging and state switches compile against; the run script regenerates it with `tla_chart.py types` and fails on a diff.
 - **Update**: when an intended change alters verified behavior, update the model or proof in the same change, show each property red on a broken variant again, and rerun the linked tests. For TLA+, regenerate the types file and let the compiler list each call site the spec change reaches.
 - **Known findings**: counterexamples the current code exhibits, each with its replay.
 
-In the generated skill, require this on **every use**: compare the inventory with the current code (including new writers and promises), reconcile it with the enabled rules, then run the full command and linked tests. Report every row, including known failures and unchecked rules. A green exit from yesterday’s rule set does not cover a new invariant.
+On **every use**, check the inventory against current writers and promises. Reconcile it with the enabled rules, run the script and linked tests, and report a verdict for every row, including known failures and unchecked rules.
 
 ## Prove the skill
 
@@ -74,4 +74,4 @@ Each check ends **in sync** (no relevant change, passes), **updated** (now descr
 
 ## Hand off
 
-Render the checked chart with [viz](../viz/SKILL.md) and lead the report with it. Then report what was verified, the tool and why, the bounds and assumptions, the findings in plain words with their replays, the run command, the linked tests, and what is not covered. Suggest a second target only when a close one turned up.
+For a charted flow, lead with the checked chart rendered by [viz](../viz/SKILL.md). Give the run command, covered promises, bounds and assumptions, linked tests, findings with replays, and coverage gaps.

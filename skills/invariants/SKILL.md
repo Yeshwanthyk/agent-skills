@@ -1,6 +1,6 @@
 ---
 name: invariants
-description: "Model state and break invariants: authority, transitions, concurrency, recovery, with EveryState checking TLA+ models, Lean proofs, or Kani-style verifiers on the code; property-test contracts over generated values or operation sequences; fuzz a parser or untrusted-input boundary."
+description: "Analyze state transitions, races, and recovery with TLA+ and EveryState; prove code properties, property-test contracts, or fuzz untrusted inputs."
 ---
 
 # Invariants
@@ -32,7 +32,7 @@ A Model claim that needs generated evidence continues to step 2 for that claim.
 5. Define invariants and place each enforcement point at the boundary that owns it. When the model names the states and transitions code will represent, read [model-the-domain](../yesh-router/references/principles/model-the-domain.md); when it changes representations or constructors, also read [type-system-discipline](../yesh-router/references/principles/type-system-discipline.md).
 6. Trace concurrent transitions, retries, ordering, freshness, and lifecycle restoration through representative scenarios.
 7. Shape commands around intent and reads around explicit freshness semantics.
-8. When asked to analyze possible state orderings, when a concurrent or critical transition stays ambiguous after the table, or a property must hold for every case in scope, take the **Formal** sub-branch and read [references/formal-modeling.md](references/formal-modeling.md). Its decision table picks the tool by property shape (TLA+ with EveryState for orderings in a charted flow, Kani on a Rust transition function, Lean for unbounded proofs) and wires each result into steps 2-5. For a charted flow, [`scripts/tla_chart.py`](scripts/tla_chart.py) checks each configured rule against the independent inventory (`--require-rule NAME` per obligation) and returns the chart with each story marked works, bug found, fixed, or unreached, plus each step the model takes that the chart lacks and each arrow it never takes. To keep the check rerunnable on every change, generate a verify skill through the Formal branch of [verification-skill](../verification-skill/SKILL.md).
+8. For reachable states, ambiguous orderings, or a guarantee over every case in scope, follow [formal-modeling](references/formal-modeling.md). It maps each promise to a check and distinguishes model verdicts from code evidence. To leave a rerunnable project skill, use [formal-verification-skill](../formal-verification-skill/SKILL.md).
 9. Give each transition, invariant, race, replay, and recovery path in scope a proof strategy: a boundary test, generated exploration (step 2), or a named open question. When choosing, read [prove-it-works](../yesh-router/references/principles/prove-it-works.md).
 
 **Done** when every in-scope transition has an owner and a proof strategy or open question, every invariant has an enforcement point, concurrency, freshness, replay, and recovery each have a scenario, and a user-facing flow has its statechart.

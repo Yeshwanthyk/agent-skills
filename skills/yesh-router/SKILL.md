@@ -51,7 +51,7 @@ Each line leads with the words the user types. Lines marked *On request* run onl
 - untangle / decouple / refactor this area / too many special cases: restructure and fix, not just report → [untangle](../untangle/SKILL.md)
 - blast radius / what could this break: beyond the diff → [blast-radius](../blast-radius/SKILL.md)
 - verifier / verification skill / drive the app: create, audit, or repair a project-local verifier that launches and drives a real surface → [verification-skill](../verification-skill/SKILL.md)
-- formally verify / model-check / prove, leaving a check the next agent reruns: create, audit, or repair a project-local formal verifier for a high-risk area; demonstrate each obligation fails on a scratch break → [formal-verification-skill](../formal-verification-skill/SKILL.md)
+- reusable formal check / create, audit, or repair a project verifier → [formal-verification-skill](../formal-verification-skill/SKILL.md)
 - eval / does this skill change help: agent behavior before and after → [eval](playbooks/eval.md)
 
 **Coordinate**
