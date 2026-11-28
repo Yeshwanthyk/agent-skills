@@ -24,10 +24,10 @@ class Checkout(BaseHTTPRequestHandler):
         with sqlite3.connect(self.server.db) as db:
             db.row_factory = sqlite3.Row
             if url.path == '/ledger':
-                return self.respond(200, [dict(r) for r in db.execute('SELECT * FROM ledger ORDER BY id')])
-            if url.path == '/receipt' and self.server.variant != 'stale':
+                return self.respond(200, [dict(r) for r in db.execute('SELECT * FROM payments ORDER BY id')])
+            if url.path == '/receipt':
                 key = parse_qs(url.query).get('key', [''])[0]
-                row = db.execute('SELECT * FROM ledger WHERE key=? ORDER BY id DESC LIMIT 1', (key,)).fetchone()
+                row = db.execute('SELECT * FROM payments WHERE order_id=? ORDER BY id DESC LIMIT 1', (key,)).fetchone()
                 if row:
                     return self.respond(200, dict(row))
         self.respond(404, {'error': 'Not found'})
@@ -47,11 +47,11 @@ class Checkout(BaseHTTPRequestHandler):
         with sqlite3.connect(self.server.db) as db:
             db.row_factory = sqlite3.Row
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute('SELECT * FROM ledger WHERE key=? ORDER BY id LIMIT 1', (key,)).fetchone()
+            row = db.execute('SELECT * FROM payments WHERE order_id=? ORDER BY id LIMIT 1', (key,)).fetchone()
             first = row is None
-            if first or self.server.variant == 'duplicate':
-                rid = db.execute('INSERT INTO ledger(key, amount_cents) VALUES (?, 2500)', (key,)).lastrowid
-                row = db.execute('SELECT * FROM ledger WHERE id=?', (rid,)).fetchone()
+            if first:
+                rid = db.execute('INSERT INTO payments(order_id, amount_cents) VALUES (?, 2500)', (key,)).lastrowid
+                row = db.execute('SELECT * FROM payments WHERE id=?', (rid,)).fetchone()
         if first:  # Commit has completed. Close without writing even a status line.
             self.close_connection = True
             return
@@ -63,11 +63,10 @@ if __name__ == '__main__':
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8000)
     parser.add_argument('--db', default='checkout.sqlite')
-    parser.add_argument('--variant', choices=('correct', 'duplicate', 'stale'), default='correct')
     args = parser.parse_args()
     with sqlite3.connect(args.db) as db:
-        db.execute('CREATE TABLE IF NOT EXISTS ledger (id INTEGER PRIMARY KEY, key TEXT NOT NULL, amount_cents INTEGER NOT NULL)')
+        db.execute('CREATE TABLE IF NOT EXISTS payments (id INTEGER PRIMARY KEY, order_id TEXT NOT NULL, amount_cents INTEGER NOT NULL)')
     with ThreadingHTTPServer((args.host, args.port), Checkout) as server:
-        server.db, server.variant = args.db, args.variant
+        server.db = args.db
         print(f'Listening on http://{args.host}:{server.server_port}', flush=True)
         server.serve_forever()
