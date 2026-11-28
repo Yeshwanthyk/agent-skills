@@ -1,0 +1,7 @@
+[[case]]
+id = "retire-v1-reader"
+tier = "task"
+activation = "router"
+prompt = "Review this cleanup request, no edits: All source writers now emit v2. Delete the v1 reader and unused private normalize_tmp helper? Release ledger: installed v1 offline apps still supported; queue retry retention 30 days, only last day's deliveries sampled; archived drafts have no expiry and no format census. Private helper is unexported and has no references or dynamic lookup. Give deletion verdicts and measurable retirement gates."
+expect = { no_edits = true, answer = ["normalize_tmp", "(installed|offline|client)", "(queue|retry|retries)", "(draft|archive)"] }
+notes = "Grade the decisions, not keyword hits: remove the private helper now; keep v1 until supported senders cannot produce it, outstanding v1 deliveries are drained or expired after the last possible enqueue, and restorable v1 drafts are migrated or remain readable. Neither clean source nor one quiet day establishes those conditions."
