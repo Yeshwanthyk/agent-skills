@@ -34,3 +34,17 @@ The evaluator snapshots only the generated skill, records SHA-256 per file, then
 | Stale | One payment, successful retry, but after actual browser reload the receipt no longer matches the submitted order | Product defect: reload only |
 
 Inspect scripts and logs, not just exit codes. Credit only an actual browser submit/retry/reload plus a read of durable storage tied to the observed order. Require the failing observation, expected vs actual, and enough output to distinguish the other passing check. A launch error, generic timeout, source inspection, API-only substitute, comparing fixture identities, or unconditional failure does not detect a product defect. A handwritten reference drive validates the fixture; never substitute its matrix for a missing agent run.
+
+## First trial (unchanged skill)
+
+The standard Claude/pi CLI trial was unavailable (no harness executable; no score). A separate hosted cold trial used GPT-6.2 Astra, medium, the case prompt, and the unmodified verification skill at `ca9030c`. It saw the good app, not the rubric, mutants or reference driver. This tested following the skill, **not router selection**. One trial is not a pass-rate estimate.
+
+The [frozen verifier](https://github.com/Yeshwanthyk/agent-skills/tree/b85b51bd512457057794527d2db05427bec7f647/trial-output/verify-checkout) checked both the ledger and the reloaded receipt. All file hashes stayed unchanged on replay:
+
+| Variant | Exit | Generated verifier's evidence |
+| --- | ---: | --- |
+| Good | 0 | Same $25 payment before retry and after reload; reloaded receipt for order-1. |
+| Duplicate | 1 | Retry ledger printed both $25 payments for order-1. Stopped before reload. |
+| Stale | 1 | One payment after retry; timed out waiting for the expected receipt after reload. Did **not** print the actual wrong order. |
+
+The reference drive identified `previous-order`; the generated verifier did not, so don't credit it with diagnosing the stale view. During calibration, duplicate initially changed the receipt number too. The final mutant preserves the original receipt and adds only a second payment; the good app and generated verifier were unchanged. Keep the eval, not new recovery instructions: the existing skill already elicited both checks in this trial.

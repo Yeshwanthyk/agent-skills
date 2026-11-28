@@ -7,7 +7,11 @@ mkdir -p "$dest"
 src=$(dirname "$0")/app.py
 case "$variant" in
   good) cp "$src" "$dest/app.py" ;;
-  duplicate) sed 's/^            if first:$/            if True:/' "$src" > "$dest/app.py" ;;
+  # Duplicate only the durable effect; keep the browser receipt byte-for-byte correct.
+  duplicate) sed -e '/^            if first:$/i\
+            if not first:\
+                db.execute("INSERT INTO payments(order_id, amount_cents) VALUES (?, 2500)", (key,))' \
+    -e 's/ORDER BY id DESC LIMIT 1/ORDER BY id LIMIT 1/' "$src" > "$dest/app.py" ;;
   stale) sed 's/return self.respond(200, dict(row))/return self.respond(200, dict(row, order_id="previous-order"))/' "$src" > "$dest/app.py" ;;
 esac
 cp "$(dirname "$0")/checkout.html" "$dest/"

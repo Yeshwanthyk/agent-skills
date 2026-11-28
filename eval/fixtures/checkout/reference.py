@@ -70,7 +70,8 @@ def run(setup, variant):
                 raise RuntimeError(f'Unexpected startup: {line!r}')
             opts = webdriver.ChromeOptions()
             opts.binary_location = shutil.which('chromium') or 'chromium'
-            for arg in ['--headless', '--no-sandbox', '--disable-dev-shm-usage']:
+            opts.add_experimental_option('prefs', {'net.network_prediction_options': 2})
+            for arg in ['--disable-preconnect', '--headless', '--no-sandbox', '--disable-dev-shm-usage']:
                 opts.add_argument(arg)
             opts.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
             with webdriver.Chrome(service=Service(shutil.which('chromedriver')), options=opts) as browser:
