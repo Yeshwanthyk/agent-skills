@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Checkout</title>
+<h1>Checkout</h1><p>Order total: $25.00</p><p role="status" id="message"></p><button id="pay">Submit order</button>
+<script>
+const key = 'order-1';
+function receipt(row) {
+  message.textContent = `Receipt #${row.id} — Paid $${(row.amount_cents/100).toFixed(2)}`;
+  pay.hidden = true;
+}
+pay.onclick = async () => {
+  pay.disabled = true;
+  try {
+    const response = await fetch('/checkout', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key})});
+    if (!response.ok) throw new Error();
+    receipt(await response.json());
+    history.replaceState(null, '', '#receipt');
+  } catch {
+    message.textContent = 'Connection lost. Retry to confirm your order.';
+    pay.textContent = 'Retry'; pay.disabled = false;
+  }
+};
+if (location.hash === '#receipt') {
+  pay.hidden = true;
+  fetch('/receipt?key='+key).then(async r => {
+    if (!r.ok) throw new Error();
+    receipt(await r.json());
+  }).catch(() => { message.textContent = 'Receipt unavailable'; });
+}
+</script></html>
