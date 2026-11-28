@@ -131,3 +131,10 @@ Skill use is detected from what the agent did, in any harness:
 
 `lint` lists the catalog methods that no case covers. Treat that list as the
 coverage to-do.
+
+### Checkout: blind generation and frozen replay
+
+`checkout-create` grades routing first. To grade the verifier the agent actually
+produced, retain its workspace and replay the skill unchanged. See the
+[checkout rubric](fixtures/checkout/RUBRIC.md) for baseline and candidate
+commands, mutation expectations, and what does **not** count as evidence.
