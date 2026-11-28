@@ -1,0 +1,8 @@
+[[case]]
+id = "checkout-create"
+fixture = "checkout"
+tier = "task"
+activation = "router"
+prompt = "Create a project-local verification skill for the checkout UI. A customer should be able to finish checkout when confirmation is interrupted, retry, and return to the page. Prove the workflow through the browser, including its lasting effects. Leave a rerunnable .claude/skills/verify-checkout/SKILL.md and a noninteractive run.sh next to it. From the repo root, sh .claude/skills/verify-checkout/run.sh must print evidence and exit zero only when verification passes. Do not edit the application."
+expect = { methods = ["verification-skill"] }
+notes = "Routing smoke check only. Apply fixtures/checkout/RUBRIC.md to frozen replay evidence."
