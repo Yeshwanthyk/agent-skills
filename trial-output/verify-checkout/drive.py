@@ -41,8 +41,9 @@ with TemporaryDirectory(prefix='checkout-run-') as scratch:
 
             check(not ledger('doctor'), 'Ledger must be empty')
             opts = webdriver.ChromeOptions()
+            opts.add_experimental_option("prefs", {"net.network_prediction_options": 2})
             opts.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
-            for arg in ('--headless', '--no-sandbox', '--disable-dev-shm-usage', '--user-data-dir='+scratch+'/profile'):
+            for arg in ('--disable-preconnect', '--headless', '--no-sandbox', '--disable-dev-shm-usage', '--user-data-dir='+scratch+'/profile'):
                 opts.add_argument(arg)
             with webdriver.Chrome(service=Service('/usr/bin/chromedriver'), options=opts) as b:
                 wait = WebDriverWait(b, 8)
