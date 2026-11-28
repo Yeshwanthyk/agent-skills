@@ -2,6 +2,8 @@
 
 Keep this file, the reference browser driver, and mutation sources out of the generation workspace. Use the same prompt for both skill revisions. Run generation against the default (good) app only; no fixture paths, fault names, rubric, previous answers, or reference outputs in the prompt. Staging is context isolation, not a security sandbox: run untrusted generated code in a disposable environment without credentials or access to this repository.
 
+Run the [reference browser drive](REPLAY.md) to check the fixture itself. It is appropriate here because the claim includes what the customer sees after reload; a storage-only invariant does not by itself require a browser.
+
 ## Blind generation
 
 From `eval/`, pin a pre-change skills revision and use the **same runner, fixture, model and harness** for both trials. `--activation plain` alone is not a baseline: it still installs the current skills.
