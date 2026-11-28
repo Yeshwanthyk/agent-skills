@@ -45,11 +45,14 @@ def drive(browser, url, db):
     before = wait.until(lambda _: element('receipt').text)
     rows = ledger()
     browser.refresh()
-    after = wait.until(lambda _: element('receipt').text)
+    wait.until(lambda _: browser.find_element(By.TAG_NAME, 'body').get_attribute('data-reconciled') == order)
+    after = element('receipt').text
+    view = element('status').text
     receipt = re.fullmatch(r'Receipt #\d+ for (.+) — Paid \$25\.00', after)
     return dict(order=order, status=status, first_rows=first_rows, network_errors=errors,
                 retry_rows=rows, before_reload=before, after_reload=after,
-                drop=drop, durable=rows == [(order,)], reload=bool(receipt and receipt[1] == order))
+                drop=drop, durable=rows == [(order,)], reconciled=order, status_after_reload=view,
+                receipt_order=receipt[1] if receipt else None)
 
 
 def run(setup, variant):
@@ -87,10 +90,14 @@ if __name__ == '__main__':
     parser.add_argument('--setup', type=Path, default=Path(__file__).with_name('setup.sh'))
     args = parser.parse_args()
     ok = True
-    for name in ('good', 'duplicate', 'stale'):
+    for name in ('good', 'duplicate', 'stale', 'spinner'):
         evidence = run(args.setup.resolve(), name)
-        matched = (evidence['drop'], evidence['durable'], evidence['reload']) == (
-            True, name != 'duplicate', name != 'stale')
+        expected_order = {'stale': 'previous-order', 'spinner': None}.get(name, evidence['order'])
+        expected_view = 'Loading receipt…' if name == 'spinner' else 'Order confirmed'
+        matched = (evidence['drop'] and evidence['durable'] == (name != 'duplicate')
+                   and evidence['receipt_order'] == expected_order
+                   and evidence['status_after_reload'] == expected_view
+                   and (name != 'spinner' or evidence['after_reload'] == ''))
         print(json.dumps(dict(variant=name, expected_signature=matched, **evidence)), flush=True)
         ok &= matched
     raise SystemExit(0 if ok else 1)

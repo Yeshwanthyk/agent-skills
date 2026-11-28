@@ -23,9 +23,12 @@ pay.onclick = async () => {
 };
 if (location.hash === '#receipt') {
   pay.hidden = true;
+  message.textContent = 'Loading receipt…';
   fetch('/receipt?key='+key).then(async r => {
     if (!r.ok) throw new Error();
-    showReceipt(await r.json());
+    const receipt = await r.json();
+    showReceipt(receipt);
+    document.body.dataset.reconciled = key;
   }).catch(() => { document.querySelector('#receipt').textContent = 'Receipt unavailable'; });
 }
 </script></html>

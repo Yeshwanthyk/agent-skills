@@ -25,13 +25,14 @@ python3 fixtures/checkout/replay.py "$workspace" results/checkout-base-replay
 # Repeat with the head trial workspace and a new output directory.
 ```
 
-The evaluator snapshots only the generated skill, records SHA-256 per file, then executes identical bytes from the same relative path on three freshly staged apps. The variant name is passed to fixture setup only. The generated script owns launch, browser, DB, evidence and cleanup; it must not need prior state. Save the logs and manifest before removing the kept trial workspaces. Nonzero from the replay runner means the expected exit pattern was not observed or replay could not complete. Zero is **not** a quality score.
+The evaluator snapshots only the generated skill, records SHA-256 per file, then executes identical bytes from the same relative path on four freshly staged apps. The variant name is passed to fixture setup only. The generated script owns launch, browser, DB, evidence and cleanup; it must not need prior state. Save the logs and manifest before removing the kept trial workspaces. Nonzero from the replay runner means the expected exit pattern was not observed or replay could not complete. Zero is **not** a quality score.
 
 | App | Browser and independent storage observations required | Verdict |
 | --- | --- | --- |
 | Good | First submit loses its confirmation after commit; retry the same order in the browser; reload retains that order's receipt; one payment for that order | Pass |
 | Duplicate | Same recovery and matching receipt after reload, but independently observed extra payment for that order | Product defect: ledger only |
 | Stale | One payment, successful retry, but after actual browser reload the receipt no longer matches the submitted order | Product defect: reload only |
+| Spinner | One payment and successful retry; after refresh the lookup settles but the UI still shows loading with no receipt | Product defect: reload never finishes on screen |
 
 Inspect scripts and logs, not just exit codes. Credit only an actual browser submit/retry/reload plus a read of durable storage tied to the observed order. Require the failing observation, expected vs actual, and enough output to distinguish the other passing check. A launch error, generic timeout, source inspection, API-only substitute, comparing fixture identities, or unconditional failure does not detect a product defect. A handwritten reference drive validates the fixture; never substitute its matrix for a missing agent run.
 
@@ -46,5 +47,6 @@ The [frozen verifier](https://github.com/Yeshwanthyk/agent-skills/tree/b85b51bd5
 | Good | 0 | Same $25 payment before retry and after reload; reloaded receipt for order-1. |
 | Duplicate | 1 | Retry ledger printed both $25 payments for order-1. Stopped before reload. |
 | Stale | 1 | One payment after retry; timed out waiting for the expected receipt after reload. Did **not** print the actual wrong order. |
+| Spinner | 1 | Same generic timeout after reload as stale. No observation of loading after reconciliation; **not diagnosed**. |
 
-The reference drive identified `previous-order`; the generated verifier did not, so don't credit it with diagnosing the stale view. During calibration, duplicate initially changed the receipt number too. The final mutant preserves the original receipt and adds only a second payment; the good app and generated verifier were unchanged. Keep the eval, not new recovery instructions: the existing skill already elicited both checks in this trial.
+The reference drive identified `previous-order`; the generated verifier did not, so don't credit it with diagnosing the stale view. During calibration, duplicate initially changed the receipt number too. The final mutant preserves the original receipt and adds only a second payment; the generated verifier remained frozen, including when the reload checkpoint and spinner were added later. Keep the eval, not new recovery instructions: the existing skill already elicited both checks in this trial.

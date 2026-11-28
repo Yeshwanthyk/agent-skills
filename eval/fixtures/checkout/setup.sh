@@ -2,11 +2,11 @@
 set -eu
 dest=$1
 variant=${2:-good}
-case "$variant" in good|duplicate|stale) ;; *) echo "Unknown checkout variant: $variant" >&2; exit 2 ;; esac
+case "$variant" in good|duplicate|stale|spinner) ;; *) echo "Unknown checkout variant: $variant" >&2; exit 2 ;; esac
 mkdir -p "$dest"
 src=$(dirname "$0")/app.py
 case "$variant" in
-  good) cp "$src" "$dest/app.py" ;;
+  good|spinner) cp "$src" "$dest/app.py" ;;
   # Duplicate only the durable effect; keep the browser receipt byte-for-byte correct.
   duplicate) sed -e '/^            if first:$/i\
             if not first:\
@@ -14,7 +14,12 @@ case "$variant" in
     -e 's/ORDER BY id DESC LIMIT 1/ORDER BY id LIMIT 1/' "$src" > "$dest/app.py" ;;
   stale) sed 's/return self.respond(200, dict(row))/return self.respond(200, dict(row, order_id="previous-order"))/' "$src" > "$dest/app.py" ;;
 esac
-cp "$(dirname "$0")/checkout.html" "$dest/"
+page=$(dirname "$0")/checkout.html
+if [ "$variant" = spinner ]; then
+  sed '/^    showReceipt(receipt);$/d' "$page" > "$dest/checkout.html"
+else
+  cp "$page" "$dest/"
+fi
 cd "$dest"
 printf '*.sqlite*\n__pycache__/\n' > .gitignore
 git init -q

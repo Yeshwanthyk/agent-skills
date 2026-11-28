@@ -38,7 +38,7 @@ def main():
     shutil.copytree(source, frozen)
     (out / 'manifest.json').write_text(json.dumps(files, indent=2))
     matches = True
-    for variant in ('good', 'duplicate', 'stale'):
+    for variant in ('good', 'duplicate', 'stale', 'spinner'):
         with tempfile.TemporaryDirectory(prefix='checkout-') as tmp:
             ws = Path(tmp) / 'repo'
             subprocess.run(['sh', HERE / 'setup.sh', ws, variant], check=True)
